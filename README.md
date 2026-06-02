@@ -74,6 +74,7 @@ Career-ops는 에이전트 기반으로 작동합니다: Claude Code가 Playwrig
 | **파이프라인 무결성** | 자동 병합, 중복 제거, 상태 정규화, 헬스 체크 |
 
 ## 빠른 시작
+Add it to .env:   GEMINI_API_KEY=your_key_here
 
 ```powershell
 git clone https://github.com/career-korea/career-ops.git
