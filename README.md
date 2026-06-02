@@ -3,25 +3,23 @@
 [English](README.md) | [Español](README.es.md) | [Português (Brasil)](README.pt-BR.md) | [한국어](README.ko-KR.md) | [日本語](README.ja.md) | [Русский](README.ru.md) | [简体中文](README.cn.md) | [繁體中文](README.zh-TW.md)
 
 <p align="center">
-  <a href="https://x.com/santifer"><img src="docs/hero-banner.jpg" alt="Career-Ops — Multi-Agent Job Search System" width="800"></a>
+  <a href="https://x.com/santifer"><img src="docs/hero-banner.jpg" alt="Career-Ops -- 멀티 에이전트 취업 시스템" width="800"></a>
 </p>
 
 <p align="center">
-  <em>I spent months applying to jobs the hard way. So I engineered the system I wish I had.</em><br>
-  Companies use AI to filter candidates. <strong>I just gave candidates AI to <em>choose</em> companies.</strong><br>
-  <em>Now it's open source.</em>
+  <em>수개월간의 비효율적인 수동 지원 끝에, 직접 구직 파이프라인 시스템을 설계했습니다.</em><br>
+  기업은 AI로 지원자를 걸러냅니다. <strong>저는 지원자에게 AI를 줘서 <em>기업을 고르게</em> 했습니다.</strong><br>
+  <em>이제 오픈소스입니다.</em>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Claude_Code-000?style=flat&logo=anthropic&logoColor=white" alt="Claude Code">
   <img src="https://img.shields.io/badge/OpenCode-111827?style=flat&logo=terminal&logoColor=white" alt="OpenCode">
-  <img src="https://img.shields.io/badge/Gemini_CLI-4285F4?style=flat&logo=google&logoColor=white" alt="Gemini CLI">
   <img src="https://img.shields.io/badge/Codex_(soon)-6B7280?style=flat&logo=openai&logoColor=white" alt="Codex">
   <img src="https://img.shields.io/badge/Node.js-339933?style=flat&logo=node.js&logoColor=white" alt="Node.js">
   <img src="https://img.shields.io/badge/Go-00ADD8?style=flat&logo=go&logoColor=white" alt="Go">
   <img src="https://img.shields.io/badge/Playwright-2EAD33?style=flat&logo=playwright&logoColor=white" alt="Playwright">
   <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT">
-  <a href="TRADEMARK.md"><img src="https://img.shields.io/badge/Trademark-Policy-blue.svg" alt="Trademark Policy"></a>
   <a href="https://discord.gg/8pRpHETxa4"><img src="https://img.shields.io/badge/Discord-5865F2?style=flat&logo=discord&logoColor=white" alt="Discord"></a>
   <br>
   <img src="https://img.shields.io/badge/EN-blue?style=flat" alt="EN">
@@ -30,181 +28,153 @@
   <img src="https://img.shields.io/badge/FR-blue?style=flat" alt="FR">
   <img src="https://img.shields.io/badge/PT--BR-green?style=flat" alt="PT-BR">
   <img src="https://img.shields.io/badge/KO-white?style=flat" alt="KO">
-  <img src="https://img.shields.io/badge/JA-red?style=flat" alt="JA">
-  <img src="https://img.shields.io/badge/ZH--CN-red?style=flat" alt="ZH-CN">
-  <img src="https://img.shields.io/badge/ZH--TW-blue?style=flat" alt="ZH-TW">
 </p>
 
 ---
 
 <p align="center">
-  <img src="docs/demo.gif" alt="Career-Ops Demo" width="800">
+  <img src="docs/demo.gif" alt="Career-Ops 데모" width="800">
 </p>
 
-<p align="center"><strong>740+ job listings evaluated · 100+ personalized CVs · 1 dream role landed</strong></p>
+<p align="center"><strong>740개 이상의 채용 공고 평가 · 100개 이상의 맞춤형 이력서 생성 · 꿈의 직장 1곳 합격</strong></p>
 
-<p align="center"><a href="https://discord.gg/8pRpHETxa4"><img src="https://img.shields.io/badge/Join_the_community-Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a></p>
+<p align="center"><a href="https://discord.gg/8pRpHETxa4"><img src="https://img.shields.io/badge/커뮤니티_참여하기-Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a></p>
 
-## What Is This
+## 이게 뭔가요
 
-Career-Ops turns any AI coding CLI into a full job search command center. Instead of manually tracking applications in a spreadsheet, you get an AI-powered pipeline that:
+Career-Ops는 AI 코딩 CLI를 취업 활동 전체를 관리하는 커맨드 센터로 바꿔줍니다. 스프레드시트에서 수동으로 지원 현황을 관리하는 대신, AI 파이프라인이 알아서 처리합니다:
 
-- **Evaluates offers** with a structured A-F scoring system (10 weighted dimensions)
-- **Generates tailored PDFs** -- ATS-optimized CVs customized per job description
-- **Scans portals** automatically (Greenhouse, Ashby, Lever, company pages)
-- **Processes in batch** -- evaluate 10+ offers in parallel with sub-agents
-- **Tracks everything** in a single source of truth with integrity checks
+- **공고 평가** -- 구조화된 A-F 스코어링 (10개 가중 평가 항목)
+- **맞춤형 PDF 생성** -- JD별로 최적화된 ATS 이력서
+- **포털 자동 스캔** -- Greenhouse, Ashby, Lever, 기업 채용 페이지
+- **일괄 처리** -- 서브 에이전트로 10개 이상의 공고를 병렬 평가
+- **통합 추적** -- 무결성 검사가 포함된 단일 데이터 소스
 
-> **Important: This is NOT a spray-and-pray tool.** Career-ops is a filter -- it helps you find the few offers worth your time out of hundreds. The system strongly recommends against applying to anything scoring below 4.0/5. Your time is valuable, and so is the recruiter's. Always review before submitting.
+> **중요: 이 도구는 무차별 지원 도구가 아닙니다.** Career-ops는 필터입니다 -- 수백 개의 공고 중 당신의 시간을 투자할 가치가 있는 소수의 공고를 찾아줍니다. 4.0/5 미만의 공고에는 지원하지 않는 것을 강력히 권장합니다. 당신의 시간도, 채용 담당자의 시간도 소중합니다. 제출 전에 항상 직접 검토하세요.
 
-Career-ops is agentic: Claude Code navigates career pages with Playwright, evaluates fit by reasoning about your CV vs the job description (not keyword matching), and adapts your resume per listing.
+Career-ops는 에이전트 기반으로 작동합니다: Claude Code가 Playwright로 채용 페이지를 탐색하고, 키워드 매칭이 아닌 이력서와 JD를 비교 분석하여 적합도를 판단하고, 공고별로 이력서를 맞춤 생성합니다.
 
-> **Heads up: the first evaluations won't be great.** The system doesn't know you yet. Feed it context -- your CV, your career story, your proof points, your preferences, what you're good at, what you want to avoid. The more you nurture it, the better it gets. Think of it as onboarding a new recruiter: the first week they need to learn about you, then they become invaluable.
+> **참고: 처음 몇 번의 평가는 정확하지 않을 수 있습니다.** 시스템이 아직 당신을 모르기 때문입니다. 이력서, 커리어 스토리, 주요 성과, 선호도, 잘하는 것, 피하고 싶은 것 등 맥락을 알려주세요. 정보를 줄수록 더 정확해집니다. 새로운 리크루터를 온보딩한다고 생각하세요: 첫 주는 당신을 파악하는 시간이고, 그 이후부터 진가를 발휘합니다.
 
-Built by someone who used it to evaluate 740+ job offers, generate 100+ tailored CVs, and land a Head of Applied AI role. [Read the full case study](https://santifer.io/career-ops-system).
+740개 이상의 채용 공고를 평가하고, 100개 이상의 맞춤 이력서를 생성하여, Head of Applied AI 포지션에 합격한 사람이 직접 만들었습니다. [전체 케이스 스터디 읽기](https://santifer.io/career-ops-system).
 
-## Features
+## 주요 기능
 
-| Feature | Description |
-|---------|-------------|
-| **Auto-Pipeline** | Paste a URL, get a full evaluation + PDF + tracker entry |
-| **6-Block Evaluation** | Role summary, CV match, level strategy, comp research, personalization, interview prep (STAR+R) |
-| **Interview Story Bank** | Accumulates STAR+Reflection stories across evaluations -- 5-10 master stories that answer any behavioral question |
-| **Negotiation Scripts** | Salary negotiation frameworks, geographic discount pushback, competing offer leverage |
-| **ATS PDF Generation** | Keyword-injected CVs with Space Grotesk + DM Sans design |
-| **Portal Scanner** | 45+ companies pre-configured (Anthropic, OpenAI, ElevenLabs, Retool, n8n...) + custom queries across Ashby, Greenhouse, Lever, Wellfound |
-| **Batch Processing** | Parallel evaluation with `claude -p` workers |
-| **Dashboard TUI** | Terminal UI to browse, filter, and sort your pipeline |
-| **Human-in-the-Loop** | AI evaluates and recommends, you decide and act. The system never submits an application -- you always have the final call |
-| **Pipeline Integrity** | Automated merge, dedup, status normalization, health checks |
+| 기능 | 설명 |
+|------|------|
+| **자동 파이프라인** | URL 입력만으로 [평가 → PDF 생성 → 트래커 등록] 전 과정 자동화 |
+| **6단계 정밀 평가** | 직무 요약, 이력서 매치, 레벨링 전략, 연봉 리서치, 개인화, 면접 준비 (STAR+R) |
+| **면접 스토리 뱅크** | 평가 데이터 기반 STAR+Reflection 스토리 축적 -- 어떤 행동 면접 질문도 커버하는 5~10개의 마스터 답변 생성 |
+| **협상 전략 스크립트** | 연봉 협상 프레임워크, 거주지 기반 연봉 차등(Geographic Discount) 대응 논리, 경쟁 오퍼 활용 전략 |
+| **ATS PDF 생성** | Space Grotesk + DM Sans 디자인, 키워드가 주입된 이력서 |
+| **포털 스캐너** | 45개 이상의 기업 사전 설정 (Anthropic, OpenAI, ElevenLabs, Retool, n8n 등) + Ashby, Greenhouse, Lever, Wellfound 전반의 커스텀 검색 |
+| **일괄 처리** | `claude -p` 워커로 병렬 평가 |
+| **Dashboard TUI** | 터미널 UI에서 파이프라인 탐색, 필터링, 정렬 |
+| **Human-in-the-Loop** | AI가 평가하고 추천하면, 당신이 판단하고 행동합니다. 시스템은 절대 지원서를 자동 제출하지 않습니다 -- 최종 결정은 항상 당신의 몫 |
+| **파이프라인 무결성** | 자동 병합, 중복 제거, 상태 정규화, 헬스 체크 |
 
-## Quick Start
+## 빠른 시작
 
-```bash
-# 1. Clone and install
-git clone https://github.com/santifer/career-ops.git
-cd career-ops && npm install
-npx playwright install chromium   # Required for PDF generation
-
-# 2. Check setup
-npm run doctor                     # Validates all prerequisites
-
-# 3. Configure
-cp config/profile.example.yml config/profile.yml  # Edit with your details
-cp templates/portals.example.yml portals.yml       # Customize companies
-
-# 4. Add your CV
-# Create cv.md in the project root with your CV in markdown
-
-# 5. Personalize with Claude
-claude   # Open Claude Code in this directory
-
-# Then ask Claude to adapt the system to you:
-# "Change the archetypes to backend engineering roles"
-# "Translate the modes to English"
-# "Add these 5 companies to portals.yml"
-# "Update my profile with this CV I'm pasting"
-
-# 6. Start using
-# Paste a job URL or run /career-ops
-```
-
-> **The system is designed to be customized by Claude itself.** Modes, archetypes, scoring weights, negotiation scripts -- just ask Claude to change them. It reads the same files it uses, so it knows exactly what to edit.
-
-See [docs/SETUP.md](docs/SETUP.md) for the full setup guide.
-
-## Gemini CLI Integration
-
-Career-ops supports [Gemini CLI](https://github.com/google-gemini/gemini-cli) natively — the same way it supports Claude Code and OpenCode. All 15 slash commands are available, using the same `modes/*.md` evaluation logic.
-
-### Option A — Native Gemini CLI (Recommended)
-
-```bash
-# 1. Install Gemini CLI
-npm install -g @google/gemini-cli
-# or: npx @google/gemini-cli --version
-
-# 2. Authenticate (free — uses your Google account)
-gemini auth
-
-# 3. Run in the career-ops directory
+```powershell
+git clone https://github.com/career-korea/career-ops.git
 cd career-ops
-gemini
-
-# 4. Use slash commands just like Claude Code
-/career-ops "Senior AI Engineer at Anthropic..."
-/career-ops-evaluate --file ./jds/openai.txt
-/career-ops-scan
-/career-ops-pdf
-/career-ops-tracker
-```
-
-The `GEMINI.md` file is auto-loaded as context. All 15 commands are defined in `.gemini/commands/*.toml`.
-
-### Option B — Standalone API Script (No CLI install needed)
-
-```bash
-# 1. Get a free API key at https://aistudio.google.com/apikey
-cp .env.example .env
-# Edit .env → set GEMINI_API_KEY=your_key_here
-
-# 2. Install dependencies
 npm install
-
-# 3. Evaluate a job description
-node gemini-eval.mjs "We are looking for a Senior AI Engineer..."
-node gemini-eval.mjs --file ./jds/my-job.txt
-npm run gemini:eval -- "JD text here"
 ```
 
-> **Free tier:** Both options work without billing. Native CLI uses Google OAuth; the API script uses `gemini-2.5-flash` (15 RPM, 1M tokens/day free).
+개인 설정 파일 만들기:
 
-## Usage
-
-Career-ops is a single slash command with multiple modes:
-
-```
-/career-ops                → Show all available commands
-/career-ops {paste a JD}   → Full auto-pipeline (evaluate + PDF + tracker)
-/career-ops scan           → Scan portals for new offers
-/career-ops pdf            → Generate ATS-optimized CV
-/career-ops batch          → Batch evaluate multiple offers
-/career-ops tracker        → View application status
-/career-ops apply          → Fill application forms with AI
-/career-ops pipeline       → Process pending URLs
-/career-ops contacto       → LinkedIn outreach message
-/career-ops deep           → Deep company research
-/career-ops training       → Evaluate a course/cert
-/career-ops project        → Evaluate a portfolio project
+```powershell
+Copy-Item .env.example .env
+Copy-Item config\profile.example.yml config\profile.yml
+Copy-Item templates\portals.example.yml portals.yml
+Copy-Item examples\cv-example.md cv.md
 ```
 
-Or just paste a job URL or description directly -- career-ops auto-detects it and runs the full pipeline.
+한국 포털 scan 테스트:
 
-## How It Works
-
-```
-You paste a job URL or description
-        │
-        ▼
-┌──────────────────┐
-│  Archetype       │  Classifies: LLMOps / Agentic / PM / SA / FDE / Transformation
-│  Detection       │
-└────────┬─────────┘
-         │
-┌────────▼─────────┐
-│  A-F Evaluation  │  Match, gaps, comp research, STAR stories
-│  (reads cv.md)   │
-└────────┬─────────┘
-         │
-    ┌────┼────┐
-    ▼    ▼    ▼
- Report  PDF  Tracker
-  .md   .pdf   .tsv
+```powershell
+npm run scan -- --dry-run
 ```
 
-## Pre-configured Portals
+저장까지 하려면:
 
-The scanner comes with **45+ companies** ready to scan and **19 search queries** across major job boards. Copy `templates/portals.example.yml` to `portals.yml` and add your own:
+```powershell
+npm run scan
+```
+
+웹 UI까지 실행하려면 추가로:
+
+```powershell
+cd web-wrapper\backend
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+```
+
+다른 터미널에서:
+
+```powershell
+cd career-ops\web-wrapper\frontend
+npm install
+npm run dev
+```
+
+접속:
+- API: `http://localhost:8000/docs`
+- UI: `http://localhost:5173`
+
+웹 래퍼 `.env`는 `web-wrapper\.env.example` 참고해서 `CAREER_OPS_ROOT`를 clone한 `career-ops` 경로로 맞추면 돼.
+
+> **이 시스템은 Claude가 직접 커스터마이즈하도록 설계되었습니다.** 모드, 아키타입, 스코어링 가중치, 협상 스크립트 -- 그냥 요청하세요. Claude가 사용하는 파일을 직접 읽기 때문에, 무엇을 수정해야 하는지 정확히 알고 있습니다.
+
+자세한 설정 가이드는 [docs/SETUP.md](docs/SETUP.md)를 참고하세요.
+
+## 사용법
+
+Career-ops는 다양한 모드를 가진 하나의 슬래시 커맨드입니다:
+
+```
+/career-ops                → 사용 가능한 모든 명령어 표시
+/career-ops {JD 붙여넣기}  → 전체 자동 파이프라인 (평가 + PDF + 트래커)
+/career-ops scan           → 포털에서 새 공고 스캔
+/career-ops pdf            → ATS 최적화 이력서 생성
+/career-ops batch          → 여러 공고 일괄 평가
+/career-ops tracker        → 지원 현황 확인
+/career-ops apply          → AI로 지원서 양식 작성
+/career-ops pipeline       → 대기 중인 URL 처리
+/career-ops contacto       → LinkedIn 아웃리치 메시지
+/career-ops deep           → 기업 심층 리서치
+/career-ops training       → 교육 및 자격증 가치 평가
+/career-ops project        → 포트폴리오 프로젝트 평가
+```
+
+채용 공고 URL이나 설명을 바로 붙여넣어도 됩니다 -- career-ops가 자동으로 감지하여 전체 파이프라인을 실행합니다.
+
+## 작동 원리
+
+```
+채용 공고 URL 또는 설명을 붙여넣기
+          │
+          ▼
+┌────────────────────────┐
+│  아키타입 감지           │  직무 페르소나(Archetype) 분류: LLMOps / Agentic / PM / SA / FDE / Transformation
+└──────────┬─────────────┘
+           │
+┌──────────▼─────────────┐
+│  A-F 평가               │  이력서 기반 매칭도 및 갭 분석, 연봉 리서치, STAR 스토리
+│  (cv.md 참조)           │
+└──────────┬─────────────┘
+           │
+      ┌────┼────┐
+      ▼    ▼    ▼
+   Report  PDF  Tracker
+    .md   .pdf   .tsv
+```
+
+## 사전 설정된 포털
+
+스캐너에는 **45개 이상의 기업**과 주요 채용 보드에 걸친 **19개의 검색 쿼리**가 사전 설정되어 있습니다. `templates/portals.example.yml`을 `portals.yml`로 복사하고 원하는 기업을 추가하세요:
 
 **AI Labs:** Anthropic, OpenAI, Mistral, Cohere, LangChain, Pinecone
 **Voice AI:** ElevenLabs, PolyAI, Parloa, Hume AI, Deepgram, Vapi, Bland AI
@@ -215,19 +185,11 @@ The scanner comes with **45+ companies** ready to scan and **19 search queries**
 **Automation:** n8n, Zapier, Make.com
 **European:** Factorial, Attio, Tinybird, Clarity AI, Travelperk
 
-**Job boards searched:** Ashby, Greenhouse, Lever, Wellfound, Workable, RemoteFront
-
-By default `node scan.mjs` (a.k.a. `npm run scan`) trusts what each ATS feed returns. Some companies leave stale postings in their public API even after the role is closed, so those expired entries can leak into `pipeline.md`. Pass `--verify` to launch Playwright after the API pass and drop expired postings before they hit the pipeline:
-
-```bash
-node scan.mjs --verify          # zero-token discovery + Playwright liveness check
-```
-
-The verification is sequential and only runs against new offers (after dedup), so the cost stays bounded.
+**검색 대상 채용 보드:** Ashby, Greenhouse, Lever, Wellfound, Workable, RemoteFront
 
 ## Dashboard TUI
 
-The built-in terminal dashboard lets you browse your pipeline visually:
+내장 터미널 대시보드로 파이프라인을 시각적으로 탐색할 수 있습니다:
 
 ```bash
 cd dashboard
@@ -235,39 +197,38 @@ go build -o career-dashboard .
 ./career-dashboard --path ..
 ```
 
-Features: 6 filter tabs, 4 sort modes, grouped/flat view, lazy-loaded previews, inline status changes.
+기능: 6개의 필터 탭, 4가지 정렬 모드, 그룹/플랫 뷰, 지연 로딩 미리보기, 인라인 상태 변경.
 
-## Project Structure
+## 프로젝트 구조
 
 ```
 career-ops/
-├── AGENTS.md                    # Canonical agent instructions (all CLIs)
-├── CLAUDE.md                    # Claude Code wrapper (imports AGENTS.md)
-├── cv.md                        # Your CV (create this)
-├── article-digest.md            # Your proof points (optional)
+├── CLAUDE.md                    # 에이전트 지시사항
+├── cv.md                        # 내 이력서 (직접 생성)
+├── article-digest.md            # 주요 성과 정리 (선택)
 ├── config/
-│   └── profile.example.yml      # Template for your profile
-├── modes/                       # 14 skill modes
-│   ├── _shared.md               # Shared context (customize this)
-│   ├── oferta.md                # Single evaluation
-│   ├── pdf.md                   # PDF generation
-│   ├── scan.md                  # Portal scanner
-│   ├── batch.md                 # Batch processing
+│   └── profile.example.yml      # 프로필 템플릿
+├── modes/                       # 14개 스킬 모드
+│   ├── _shared.md               # 공유 컨텍스트 (커스터마이즈 가능)
+│   ├── oferta.md                # 개별 평가
+│   ├── pdf.md                   # PDF 생성
+│   ├── scan.md                  # 포털 스캐너
+│   ├── batch.md                 # 일괄 처리
 │   └── ...
 ├── templates/
-│   ├── cv-template.html         # ATS-optimized CV template
-│   ├── portals.example.yml      # Scanner config template
-│   └── states.yml               # Canonical statuses
+│   ├── cv-template.html         # ATS 최적화 이력서 템플릿
+│   ├── portals.example.yml      # 스캐너 설정 템플릿
+│   └── states.yml               # 정규 상태값
 ├── batch/
-│   ├── batch-prompt.md          # Self-contained worker prompt
-│   └── batch-runner.sh          # Orchestrator script
-├── dashboard/                   # Go TUI pipeline viewer
-├── data/                        # Your tracking data (gitignored)
-├── reports/                     # Evaluation reports (gitignored)
-├── output/                      # Generated PDFs (gitignored)
+│   ├── batch-prompt.md          # 독립형 워커 프롬프트(Self-contained)
+│   └── batch-runner.sh          # 오케스트레이터 스크립트
+├── dashboard/                   # Go TUI 파이프라인 뷰어
+├── data/                        # 트래킹 데이터 (gitignored)
+├── reports/                     # 평가 리포트 (gitignored)
+├── output/                      # 생성된 PDF (gitignored)
 ├── fonts/                       # Space Grotesk + DM Sans
-├── docs/                        # Setup, customization, architecture
-└── examples/                    # Sample CV, report, proof points
+├── docs/                        # 설정, 커스터마이즈, 아키텍처
+└── examples/                    # 예시 이력서, 리포트, 성과
 ```
 
 ## Tech Stack
@@ -278,21 +239,21 @@ career-ops/
 ![Go](https://img.shields.io/badge/Go-00ADD8?style=flat&logo=go&logoColor=white)
 ![Bubble Tea](https://img.shields.io/badge/Bubble_Tea-FF75B5?style=flat&logo=go&logoColor=white)
 
-- **Agent**: Claude Code with custom skills and modes
-- **PDF**: Playwright/Puppeteer + HTML template
-- **Scanner**: Playwright + Greenhouse API + WebSearch
-- **Dashboard**: Go + Bubble Tea + Lipgloss (Catppuccin Mocha theme)
-- **Data**: Markdown tables + YAML config + TSV batch files
+- **에이전트**: Claude Code + 커스텀 스킬 및 모드
+- **PDF**: Playwright/Puppeteer + HTML 템플릿
+- **스캐너**: Playwright + Greenhouse API + WebSearch
+- **대시보드**: Go + Bubble Tea + Lipgloss (Catppuccin Mocha 테마)
+- **데이터**: Markdown 테이블 + YAML 설정 + TSV 배치 파일
 
-## Also Open Source
+## 관련 오픈소스 프로젝트
 
-- **[cv-santiago](https://github.com/santifer/cv-santiago)** -- The portfolio website (santifer.io) with AI chatbot, LLMOps dashboard, and case studies. If you need a portfolio to showcase alongside your job search, fork it and make it yours.
+- **[cv-santiago](https://github.com/santifer/cv-santiago)** -- 포트폴리오 웹사이트 (santifer.io). AI 챗봇, LLMOps 대시보드, 케이스 스터디가 포함되어 있습니다. 취업 활동과 함께 포트폴리오가 필요하다면, 포크해서 자유롭게 활용하세요.
 
-## About the Author
+## 저자 소개
 
-I'm Santiago -- Head of Applied AI, former founder (built and sold a business that still runs with my name on it). I built career-ops to manage my own job search. It worked: I used it to land my current role.
+Santiago입니다 -- Head of Applied AI, 전직 창업자 (직접 사업을 만들고 매각했으며, 아직도 제 이름으로 운영되고 있습니다). 제 취업 활동을 관리하기 위해 career-ops를 만들었습니다. 효과가 있었습니다: 이 시스템으로 현재 포지션에 합격했습니다.
 
-My portfolio and other open source projects → [santifer.io](https://santifer.io)
+포트폴리오 및 기타 오픈소스 프로젝트 → [santifer.io](https://santifer.io)
 
 ## Star History
 
@@ -300,37 +261,26 @@ My portfolio and other open source projects → [santifer.io](https://santifer.i
  <picture>
    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=santifer/career-ops&type=timeline&theme=dark&legend=top-left" />
    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=santifer/career-ops&type=timeline&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=santifer/career-ops&type=timeline&legend=top-left" />
+   <img alt="Star History 차트" src="https://api.star-history.com/chart?repos=santifer/career-ops&type=timeline&legend=top-left" />
  </picture>
 </a>
 
-## Disclaimer
+## 면책 조항
 
-**career-ops is a local, open-source tool — NOT a hosted service.** By using this software, you acknowledge:
+**career-ops는 로컬 오픈소스 도구이며, 별도의 호스팅 서비스가 아닙니다.** 이 소프트웨어를 사용함으로써 다음 사항에 동의하는 것으로 간주됩니다:
 
-1. **You control your data.** Your CV, contact info, and personal data stay on your machine and are sent directly to the AI provider you choose (Anthropic, OpenAI, etc.). We do not collect, store, or have access to any of your data.
-2. **You control the AI.** The default prompts instruct the AI not to auto-submit applications, but AI models can behave unpredictably. If you modify the prompts or use different models, you do so at your own risk. **Always review AI-generated content for accuracy before submitting.**
-3. **You comply with third-party ToS.** You must use this tool in accordance with the Terms of Service of the career portals you interact with (Greenhouse, Lever, Workday, LinkedIn, etc.). Do not use this tool to spam employers or overwhelm ATS systems.
-4. **No guarantees.** Evaluations are recommendations, not truth. AI models may hallucinate skills or experience. The authors are not liable for employment outcomes, rejected applications, account restrictions, or any other consequences.
+1. **데이터 주권:** 모든 데이터는 사용자의 로컬 머신에 머물며, 선택한 AI 프로바이더와 직접 통신합니다. 이력서, 연락처, 개인정보는 사용자의 컴퓨터에 저장되며, 선택한 AI 제공사 (Anthropic, OpenAI 등)에게만 직접 전송됩니다. 저희는 어떤 데이터도 수집, 저장, 접근하지 않습니다.
+2. **AI 제어는 사용자 책임입니다.** 기본 프롬프트는 AI가 지원서를 자동 제출하지 않도록 설정되어 있으나, AI 모델은 예측 불가능하게 동작할 수 있습니다. 프롬프트를 수정하거나 다른 모델을 사용하는 경우 사용자의 책임입니다. **제출 전에 항상 AI가 생성한 콘텐츠의 정확성을 확인하세요.**
+3. **약관 준수:** 채용 포털(Greenhouse, Lever, Workday, LinkedIn 등)의 이용약관을 반드시 준수하세요. 본 도구를 스팸 전송이나 ATS 시스템 과부하 용도로 사용하는 것을 금지합니다.
+4. **보증은 없습니다.** 평가 결과는 추천이지 사실이 아닙니다. AI 모델은 스킬이나 경험을 허위로 생성할 수 있습니다. 저자는 채용 결과, 거절된 지원, 계정 제한 또는 기타 결과에 대해 책임지지 않습니다.
 
-See [LEGAL_DISCLAIMER.md](LEGAL_DISCLAIMER.md) for full details. This software is provided under the [MIT License](LICENSE) "as is", without warranty of any kind.
+자세한 내용은 [LEGAL_DISCLAIMER.md](LEGAL_DISCLAIMER.md)를 참고하세요. 이 소프트웨어는 [MIT 라이선스](LICENSE)에 따라 어떠한 보증 없이 "있는 그대로" 제공됩니다.
 
-## Contributors
+## 라이선스
 
-<a href="https://github.com/santifer/career-ops/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=santifer/career-ops" />
-</a>
+MIT
 
-Got hired using career-ops? [Share your story!](https://github.com/santifer/career-ops/issues/new?template=i-got-hired.yml)
-
-## License & Trademark
-
-The code is licensed under [MIT](LICENSE). The "career-ops" name and
-brand are governed by the [Trademark Policy](TRADEMARK.md) — permissive
-for community use, reserved for commercial product naming and
-endorsement.
-
-## Let's Connect
+## 소통하기
 
 [![Website](https://img.shields.io/badge/santifer.io-000?style=for-the-badge&logo=safari&logoColor=white)](https://santifer.io)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/santifer)
