@@ -1,0 +1,9 @@
+.env
+node_modules/
+dist/
+venv/
+.venv*/
+__pycache__/
+*.py[cod]
+uvicorn.*.log
+.claude/

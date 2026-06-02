@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "tsx": "latest",
+    "typescript": "latest",
+    "zod": "latest",
+    "openai": "latest"
+  },
+  "devDependencies": {}
+}

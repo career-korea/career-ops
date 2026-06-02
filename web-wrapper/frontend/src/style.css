@@ -1,0 +1,31 @@
+
+:root { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color:#111827; background:#f6f7fb; }
+* { box-sizing: border-box; }
+body { margin:0; }
+main { max-width: 1120px; margin:0 auto; padding:32px; }
+header { display:flex; justify-content:space-between; gap:24px; align-items:center; margin-bottom:20px; }
+h1 { margin:0; font-size:32px; letter-spacing:-0.04em; }
+p { color:#6b7280; }
+.status, .pill { border-radius:999px; padding:8px 12px; font-size:13px; font-weight:700; }
+.good, .ok { background:#dcfce7; color:#166534; }
+.fail, .bad { background:#fee2e2; color:#991b1b; }
+.warn { background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; padding:12px 14px; border-radius:14px; margin-bottom:14px; }
+.root { font-size:13px; color:#4b5563; background:#fff; border:1px solid #e5e7eb; padding:10px 12px; border-radius:12px; margin-bottom:18px; }
+nav { display:flex; gap:10px; flex-wrap:wrap; margin:20px 0; }
+button { display:inline-flex; align-items:center; gap:8px; border:0; border-radius:12px; padding:10px 14px; background:#111827; color:white; font-weight:700; cursor:pointer; }
+button:disabled { opacity:.5; cursor:not-allowed; }
+nav button { background:white; color:#111827; border:1px solid #e5e7eb; }
+nav button.active { background:#111827; color:white; }
+.card, .output { background:white; border:1px solid #e5e7eb; border-radius:22px; padding:22px; box-shadow:0 12px 35px rgba(17,24,39,.06); margin-top:16px; }
+textarea, input { width:100%; border:1px solid #d1d5db; border-radius:14px; padding:12px; font:inherit; margin:10px 0 14px; }
+textarea { resize:vertical; }
+.row { display:flex; gap:10px; flex-wrap:wrap; }
+pre { white-space:pre-wrap; word-break:break-word; background:#0b1020; color:#e5e7eb; border-radius:14px; padding:16px; overflow:auto; max-height:520px; }
+.stderr { color:#fecaca; }
+.cmd, .path { color:#6b7280; font-size:13px; margin:8px 0; }
+.loading { margin-top:16px; font-weight:800; }
+table { width:100%; border-collapse:collapse; margin-top:16px; font-size:14px; }
+th, td { text-align:left; border-bottom:1px solid #e5e7eb; padding:10px; vertical-align:top; }
+th { color:#6b7280; font-size:12px; text-transform:uppercase; letter-spacing:.05em; }
+code { background:#f3f4f6; padding:2px 5px; border-radius:6px; }
+a { color:#2563eb; }
