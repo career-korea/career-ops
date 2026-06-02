@@ -105,7 +105,10 @@ npm run scan
 웹 UI까지 실행하려면 추가로:
 
 ```powershell
-cd web-wrapper\backend
+cd web-wrapper
+Copy-Item .env.example .env
+
+cd backend
 python -m venv .venv
 .\.venv\Scripts\activate
 pip install -r requirements.txt
