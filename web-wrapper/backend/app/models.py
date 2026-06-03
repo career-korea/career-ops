@@ -20,6 +20,21 @@ class EvaluateRequest(BaseModel):
     model: Optional[str] = None
     no_save: bool = False
 
+class CareerOpsRequest(BaseModel):
+    mode: str = ""
+    input: str = ""
+    model: Optional[str] = None
+    max_turns: int = 20
+    max_budget_usd: Optional[float] = None
+    no_save: bool = False
+
+class CareerOpsInputRequest(BaseModel):
+    input: str = ""
+    model: Optional[str] = None
+    max_turns: int = 20
+    max_budget_usd: Optional[float] = None
+    no_save: bool = False
+
 class PdfRequest(BaseModel):
     html: str = Field(..., min_length=20)
     filename: str = "cv-web"
