@@ -1,7 +1,7 @@
 import type { TrackerRow } from '../types';
 
 export function TrackerTable({ rows }: { rows: TrackerRow[] }) {
-  if (!rows.length) return <p className="muted">No applications in the tracker yet.</p>;
+  if (!rows.length) return <p className="muted">트래커에 지원 내역이 없습니다.</p>;
 
   return (
     <div className="table-wrap">
@@ -9,11 +9,11 @@ export function TrackerTable({ rows }: { rows: TrackerRow[] }) {
         <thead>
           <tr>
             <th>#</th>
-            <th>Date</th>
-            <th>Company</th>
-            <th>Role</th>
-            <th>Score</th>
-            <th>Status</th>
+            <th>날짜</th>
+            <th>회사</th>
+            <th>직무</th>
+            <th>점수</th>
+            <th>상태</th>
           </tr>
         </thead>
         <tbody>
@@ -24,7 +24,7 @@ export function TrackerTable({ rows }: { rows: TrackerRow[] }) {
               <td>{r.company}</td>
               <td>{r.role}</td>
               <td>{r.score}</td>
-              <td><span className="status-dot">{r.status || 'Unknown'}</span></td>
+              <td><span className="status-dot">{r.status || '미확인'}</span></td>
             </tr>
           ))}
         </tbody>

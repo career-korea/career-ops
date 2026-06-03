@@ -109,24 +109,24 @@ export function App() {
         <nav className="page-switcher" aria-label="Primary navigation">
           <button className={page === 'workspace' ? 'active' : ''} onClick={() => setPage('workspace')}>
             <Sparkles size={16} />
-            Workspace
+            워크스페이스
           </button>
           <button className={page === 'offer' ? 'active' : ''} onClick={() => setPage('offer')}>
             <Activity size={16} />
-            Offer Fit
+            적합도 분석
           </button>
           <button className={page === 'discover' ? 'active' : ''} onClick={() => setPage('discover')}>
             <Search size={16} />
-            Discover
+            공고 탐색
           </button>
           <button className={page === 'api' ? 'active' : ''} onClick={() => setPage('api')}>
             <Layers3 size={16} />
-            API Modes
+            API 모드
           </button>
         </nav>
         <div className="nav-status">
           <span className={cx('connection', health?.ok ? 'online' : 'offline')} />
-          {health?.ok ? 'Backend connected' : 'Backend offline'}
+          {health?.ok ? '백엔드 연결됨' : '백엔드 오프라인'}
         </div>
       </header>
 
@@ -262,15 +262,15 @@ function WorkspacePage({
     <>
       <section className="hero">
         <div className="hero-copy">
-          <span className="eyebrow"><BriefcaseBusiness size={16} /> Career-Ops Command Center</span>
-          <h1>Job search control room.</h1>
+          <span className="eyebrow"><BriefcaseBusiness size={16} /> Career-Ops 커맨드 센터</span>
+          <h1>취업 성공 60% 증가</h1>
           <p>
-            Run every backend career mode, evaluate roles, scan portals, and keep your pipeline moving from one workspace.
+            백엔드 커리어 모드 실행, 직무 평가, 포털 스캔, 파이프라인 관리를 한 곳에서.
           </p>
           <div className="hero-actions">
-            <button onClick={() => setPage('api')}><Layers3 size={18} /> Open API modes</button>
-            <button onClick={() => setTab('evaluate')}><Sparkles size={18} /> Evaluate a role</button>
-            <button className="secondary" onClick={() => setTab('scan')}><Search size={18} /> Find openings</button>
+            <button onClick={() => setPage('api')}><Layers3 size={18} /> API 모드 열기</button>
+            <button onClick={() => setTab('evaluate')}><Sparkles size={18} /> 직무 평가</button>
+            <button className="secondary" onClick={() => setTab('scan')}><Search size={18} /> 공고 찾기</button>
           </div>
         </div>
 
@@ -281,28 +281,28 @@ function WorkspacePage({
           <div className="stone-form" />
           <div className="folio-sheet">
             <span>01</span>
-            <strong>Score fit</strong>
-            <small>A-G evaluation</small>
+            <strong>적합도 점수</strong>
+            <small>A-G 평가</small>
           </div>
           <div className="folio-sheet offset">
             <span>02</span>
-            <strong>Tailor CV</strong>
-            <small>Role narrative</small>
+            <strong>CV 맞춤화</strong>
+            <small>직무 서사</small>
           </div>
           <div className="yellow-dot" />
           <div className="visual-overlay" aria-label="Career ops overview">
-            <span><Activity size={15} /> Live workspace</span>
+            <span><Activity size={15} /> 라이브 워크스페이스</span>
             <div>
               <strong>{commands.length}</strong>
-              <small>router modes</small>
+              <small>라우터 모드</small>
             </div>
             <div>
               <strong>{pipeline.length}</strong>
-              <small>inbox</small>
+              <small>인박스</small>
             </div>
             <div>
               <strong>{tracker.length}</strong>
-              <small>tracked</small>
+              <small>추적 중</small>
             </div>
           </div>
         </div>
@@ -329,8 +329,8 @@ function WorkspacePage({
               <>
                 <div className="section-head">
                   <div>
-                    <span className="kicker">Role intelligence</span>
-                    <h2>Evaluate a job description or run any career-ops mode.</h2>
+                    <span className="kicker">직무 인텔리전스</span>
+                    <h2>채용 공고를 평가하거나 career-ops 모드를 실행하세요.</h2>
                   </div>
                   <select value={mode} onChange={(e) => setMode(e.target.value)} aria-label="Career ops mode">
                     {modeOptions.map((option) => <option key={option} value={option}>{option}</option>)}
@@ -340,16 +340,16 @@ function WorkspacePage({
                   rows={13}
                   value={jd}
                   onChange={(e) => setJd(e.target.value)}
-                  placeholder="Paste a job URL, full JD, or instructions like: deep research on Anthropic for an applied AI role..."
+                  placeholder="직무 URL, 전체 JD, 또는 지시사항을 붙여넣으세요. 예: Anthropic 응용 AI 직무 심층 리서치..."
                 />
                 <div className="button-row">
                   <button disabled={loading || jd.trim().length < 3} onClick={() => run(() => runCareerOps(mode, jd))}>
                     {loading ? <Loader2 className="spin" size={18} /> : <Play size={18} />}
-                    Run agent
+                    에이전트 실행
                   </button>
                   <button className="secondary" disabled={loading} onClick={() => run(() => runCareerOps('', ''))}>
                     <MapPinned size={18} />
-                    Show commands
+                    명령어 보기
                   </button>
                 </div>
               </>
@@ -359,19 +359,19 @@ function WorkspacePage({
               <>
                 <div className="section-head">
                   <div>
-                    <span className="kicker">Opportunity discovery</span>
-                    <h2>Scan target portals and add relevant roles to your inbox.</h2>
+                    <span className="kicker">기회 발굴</span>
+                    <h2>타겟 포털을 스캔하고 관련 직무를 인박스에 추가하세요.</h2>
                   </div>
                 </div>
-                <input value={company} onChange={(e) => setCompany(e.target.value)} placeholder="Optional company filter, e.g. OpenAI" />
+                <input value={company} onChange={(e) => setCompany(e.target.value)} placeholder="회사 필터 (선택), 예: OpenAI" />
                 <div className="button-row">
                   <button disabled={loading} onClick={() => run(() => post<CommandResult>('/api/scan', { dry_run: true, company: company || null }))}>
                     <Search size={18} />
-                    Preview scan
+                    스캔 미리보기
                   </button>
                   <button className="secondary" disabled={loading} onClick={() => run(() => post<CommandResult>('/api/scan', { dry_run: false, company: company || null }))}>
                     <Send size={18} />
-                    Save matches
+                    매칭 저장
                   </button>
                 </div>
               </>
@@ -381,8 +381,8 @@ function WorkspacePage({
               <>
                 <div className="section-head">
                   <div>
-                    <span className="kicker">Offer inbox</span>
-                    <h2>Review roles waiting for evaluation.</h2>
+                    <span className="kicker">공고 인박스</span>
+                    <h2>평가 대기 중인 직무를 확인하세요.</h2>
                   </div>
                   <button className="icon-button" onClick={loadPipeline} aria-label="Refresh pipeline"><RefreshCw size={17} /></button>
                 </div>
@@ -394,13 +394,13 @@ function WorkspacePage({
               <>
                 <div className="section-head">
                   <div>
-                    <span className="kicker">Application pipeline</span>
-                    <h2>See what is evaluated, applied, and waiting.</h2>
+                    <span className="kicker">지원 파이프라인</span>
+                    <h2>평가, 지원, 대기 상태를 확인하세요.</h2>
                   </div>
                   <button className="icon-button" onClick={loadTracker} aria-label="Refresh tracker"><RefreshCw size={17} /></button>
                 </div>
                 <div className="stat-row">
-                  <div><strong>{tracker.length}</strong><span>Total</span></div>
+                  <div><strong>{tracker.length}</strong><span>전체</span></div>
                   {trackerStats.map(([label, count]) => <div key={label}><strong>{count}</strong><span>{label}</span></div>)}
                 </div>
                 <TrackerTable rows={tracker} />
@@ -411,14 +411,14 @@ function WorkspacePage({
               <>
                 <div className="section-head">
                   <div>
-                    <span className="kicker">CV packaging</span>
-                    <h2>Generate a PDF from an HTML CV preview.</h2>
+                    <span className="kicker">CV 패키징</span>
+                    <h2>HTML CV 미리보기에서 PDF를 생성하세요.</h2>
                   </div>
                 </div>
                 <textarea rows={13} value={html} onChange={(e) => setHtml(e.target.value)} />
                 <button disabled={loading} onClick={() => run(() => post<CommandResult>('/api/pdf', { html, filename: 'career-ops-cv', format: 'a4' }))}>
                   <FileText size={18} />
-                  Generate PDF
+                  PDF 생성
                 </button>
               </>
             )}
@@ -464,28 +464,28 @@ function OfferFitPage({
     <>
       <section className="focus-hero offer-hero">
         <div className="focus-copy">
-          <span className="eyebrow"><Activity size={16} /> Offer Fit</span>
-          <h1>Read the role before it reads you.</h1>
+          <span className="eyebrow"><Activity size={16} /> 적합도 분석</span>
+          <h1>채용공고, 기업별 맞춤설계 </h1>
           <p>
-            Paste a job description or URL and let career-ops grade fit, risks, legitimacy, narrative, and next actions.
+            채용 공고나 URL을 붙여넣으면 career-ops가 적합도, 리스크, 신뢰성, 서사, 다음 액션을 평가합니다.
           </p>
           <div className="api-mode-strip">
-            <span>A-G scoring</span>
-            <span>CV signals</span>
-            <span>tracker ready</span>
+            <span>A-G 점수</span>
+            <span>CV 시그널</span>
+            <span>트래커 연동</span>
           </div>
         </div>
         <div className="focus-art offer-art" aria-label="Offer fit collage">
           <div className="fit-orbit" />
           <div className="fit-card primary">
-            <span>fit</span>
+            <span>적합도</span>
             <strong>4.2</strong>
-            <small>apply signal</small>
+            <small>지원 신호</small>
           </div>
           <div className="fit-card secondary">
-            <span>risk</span>
+            <span>리스크</span>
             <strong>B</strong>
-            <small>role clarity</small>
+            <small>역할 명확도</small>
           </div>
           <div className="fit-document">
             <i />
@@ -505,8 +505,8 @@ function OfferFitPage({
         <div className="focus-panel">
           <div className="section-head">
             <div>
-              <span className="kicker">Role intelligence</span>
-              <h2>Evaluate a job description or run any career-ops mode.</h2>
+              <span className="kicker">직무 인텔리전스</span>
+              <h2>채용 공고를 평가하거나 career-ops 모드를 실행하세요.</h2>
             </div>
             <select value={mode} onChange={(e) => setMode(e.target.value)} aria-label="Career ops mode">
               {modeOptions.map((option) => <option key={option} value={option}>{option}</option>)}
@@ -516,16 +516,16 @@ function OfferFitPage({
             rows={13}
             value={jd}
             onChange={(e) => setJd(e.target.value)}
-            placeholder="Paste a job URL, full JD, or instructions like: evaluate this applied AI role and explain fit, risks, and next actions..."
+            placeholder="직무 URL, 전체 JD, 또는 지시사항을 붙여넣으세요. 예: 이 응용 AI 직무를 평가하고 적합도, 리스크, 다음 액션을 설명해주세요..."
           />
           <div className="button-row">
             <button disabled={loading || jd.trim().length < 3} onClick={() => run(() => runCareerOps(mode, jd))}>
               {loading ? <Loader2 className="spin" size={18} /> : <Play size={18} />}
-              Run fit review
+              적합도 분석 실행
             </button>
             <button className="secondary" disabled={loading} onClick={() => run(() => runCareerOps('', ''))}>
               <MapPinned size={18} />
-              Show commands
+              명령어 보기
             </button>
           </div>
         </div>
@@ -565,15 +565,15 @@ function DiscoverPage({
     <>
       <section className="focus-hero discover-hero">
         <div className="focus-copy">
-          <span className="eyebrow"><Search size={16} /> Discover</span>
-          <h1>Find roles worth a second look.</h1>
+          <span className="eyebrow"><Search size={16} /> 공고 탐색</span>
+          <h1>관심기업 자유롭게 추가하고 분석</h1>
           <p>
-            Scan configured portals, preview matches, and move promising jobs into the inbox without turning search into noise.
+            설정된 포털을 스캔하고, 매칭된 직무를 미리보고, 유망한 공고를 인박스에 추가하세요.
           </p>
           <div className="api-mode-strip">
-            <span>portal scan</span>
-            <span>{pipeline.length} inbox</span>
-            <span>dry-run first</span>
+            <span>포털 스캔</span>
+            <span>인박스 {pipeline.length}건</span>
+            <span>미리보기 먼저</span>
           </div>
         </div>
         <div className="focus-art discover-art" aria-label="Discover collage">
@@ -581,14 +581,14 @@ function DiscoverPage({
           <div className="discover-path one" />
           <div className="discover-path two" />
           <div className="discover-card">
-            <span>new role</span>
+            <span>새 직무</span>
             <strong>AI Ops</strong>
-            <small>matched portal</small>
+            <small>매칭된 포털</small>
           </div>
           <div className="discover-card alt">
-            <span>queue</span>
+            <span>대기열</span>
             <strong>{pipeline.length}</strong>
-            <small>inbox items</small>
+            <small>인박스 항목</small>
           </div>
           <div className="discover-teal" />
           <div className="discover-coral" />
@@ -602,20 +602,20 @@ function DiscoverPage({
         <div className="focus-panel">
           <div className="section-head">
             <div>
-              <span className="kicker">Opportunity discovery</span>
-              <h2>Scan target portals and add relevant roles to your inbox.</h2>
+              <span className="kicker">기회 발굴</span>
+              <h2>타겟 포털을 스캔하고 관련 직무를 인박스에 추가하세요.</h2>
             </div>
-            <button className="icon-button" onClick={loadPipeline} aria-label="Refresh pipeline"><RefreshCw size={17} /></button>
+            <button className="icon-button" onClick={loadPipeline} aria-label="파이프라인 새로고침"><RefreshCw size={17} /></button>
           </div>
-          <input value={company} onChange={(e) => setCompany(e.target.value)} placeholder="Optional company filter, e.g. OpenAI" />
+          <input value={company} onChange={(e) => setCompany(e.target.value)} placeholder="회사 필터 (선택), 예: OpenAI" />
           <div className="button-row">
             <button disabled={loading} onClick={() => run(() => post<CommandResult>('/api/scan', { dry_run: true, company: company || null }))}>
               <Search size={18} />
-              Preview scan
+              스캔 미리보기
             </button>
             <button className="secondary" disabled={loading} onClick={() => run(() => post<CommandResult>('/api/scan', { dry_run: false, company: company || null }))}>
               <Send size={18} />
-              Save matches
+              매칭 저장
             </button>
           </div>
           <div className="discover-inbox">
@@ -662,15 +662,15 @@ function ApiModesPage({
     <>
       <section className="api-hero">
         <div className="api-hero-copy">
-          <span className="eyebrow"><Braces size={16} /> Backend router surface</span>
-          <h1>API Modes</h1>
+          <span className="eyebrow"><Braces size={16} /> 백엔드 라우터 인터페이스</span>
+          <h1>API 모음</h1>
           <p>
-            A dedicated console for every career-ops endpoint: auto-pipeline, scan, batch, followup, tracker, PDF, and interview prep.
+            auto-pipeline, scan, batch, followup, tracker, PDF, 면접 준비까지 — 모든 career-ops 엔드포인트 전용 콘솔.
           </p>
           <div className="api-mode-strip">
-            <span>{commands.length} modes</span>
-            <span>POST router</span>
-            <span>{health?.ok ? 'online' : 'offline'}</span>
+            <span>{commands.length}개 모드</span>
+            <span>POST 라우터</span>
+            <span>{health?.ok ? '온라인' : '오프라인'}</span>
           </div>
         </div>
 
@@ -683,7 +683,7 @@ function ApiModesPage({
           <div className="api-terminal">
             <span>POST</span>
             <strong>/api/career-ops</strong>
-            <small>mode router</small>
+            <small>모드 라우터</small>
           </div>
           <div className="api-node alpha" />
           <div className="api-node beta" />
@@ -702,8 +702,8 @@ function ApiModesPage({
         <div className="api-run-card">
           <div className="section-head">
             <div>
-              <span className="kicker">Backend API surface</span>
-              <h2>Run every career-ops router mode through its own endpoint.</h2>
+              <span className="kicker">백엔드 API 인터페이스</span>
+              <h2>전용 엔드포인트로 모든 career-ops 라우터 모드를 실행하세요.</h2>
             </div>
             <button className="icon-button" onClick={loadCommands} aria-label="Refresh commands"><RefreshCw size={17} /></button>
           </div>
@@ -714,19 +714,19 @@ function ApiModesPage({
               <h3>{selectedCommand.command}</h3>
               <p>{selectedCommand.description}</p>
             </div>
-            <span>{commands.length} modes registered</span>
+            <span>{commands.length}개 모드 등록됨</span>
           </div>
 
           <div className="api-runner">
             <div>
-              <label htmlFor="api-mode">Endpoint</label>
+              <label htmlFor="api-mode">엔드포인트</label>
               <select id="api-mode" value={selectedApiMode} onChange={(e) => setSelectedApiMode(e.target.value)}>
                 {commands.map((item) => <option key={item.mode} value={item.mode}>{`/api/career-ops/${item.mode}`}</option>)}
               </select>
             </div>
             <button disabled={loading} onClick={() => run(() => runCareerOpsMode(selectedApiMode, commandInput))}>
               {loading ? <Loader2 className="spin" size={18} /> : <Play size={18} />}
-              Run endpoint
+              엔드포인트 실행
             </button>
           </div>
 
@@ -734,7 +734,7 @@ function ApiModesPage({
             rows={9}
             value={commandInput}
             onChange={(e) => setCommandInput(e.target.value)}
-            placeholder="Optional input for the selected mode. Paste JD text, company research target, pipeline instructions, interview prep context, or leave blank for status-style commands."
+            placeholder="선택된 모드의 입력값 (선택). JD 텍스트, 회사 리서치 대상, 파이프라인 지시사항, 면접 준비 내용을 입력하거나, 상태 조회 명령어는 비워두세요."
           />
         </div>
 
@@ -744,8 +744,8 @@ function ApiModesPage({
       <section className="command-catalog">
         <div className="section-head">
           <div>
-            <span className="kicker">Mode catalog</span>
-            <h2>Choose the exact workflow you want the backend to execute.</h2>
+            <span className="kicker">모드 카탈로그</span>
+            <h2>실행할 백엔드 워크플로우를 선택하세요.</h2>
           </div>
         </div>
         <CommandGrid
@@ -774,20 +774,20 @@ function StatusAndMetrics({ health, commands, pipeline, tracker, compact = false
       {!compact && (
         <section className="metric-ribbon" aria-label="Career ops metrics">
           <div>
-            <span>Router modes</span>
+            <span>라우터 모드</span>
             <strong>{commands.length}</strong>
           </div>
           <div>
-            <span>Inbox items</span>
+            <span>인박스 항목</span>
             <strong>{pipeline.length}</strong>
           </div>
           <div>
-            <span>Tracked applications</span>
+            <span>추적 중인 지원</span>
             <strong>{tracker.length}</strong>
           </div>
           <div>
-            <span>Backend</span>
-            <strong>{health?.ok ? 'Online' : 'Offline'}</strong>
+            <span>백엔드</span>
+            <strong>{health?.ok ? '온라인' : '오프라인'}</strong>
           </div>
         </section>
       )}
@@ -795,13 +795,13 @@ function StatusAndMetrics({ health, commands, pipeline, tracker, compact = false
       <section className={cx('topbar', compact && 'compact-status')}>
         <div>
           <span className={cx('connection', health?.ok ? 'online' : 'offline')} />
-          {health?.ok ? 'Backend connected' : 'Backend offline'}
+          {health?.ok ? '백엔드 연결됨' : '백엔드 오프라인'}
           {health?.career_ops_root && <small>{health.career_ops_root}</small>}
         </div>
         <OnboardingStrip health={health} />
       </section>
 
-      {health && !health.ok && <div className="warn">Backend cannot find CAREER_OPS_ROOT: {health.error}</div>}
+      {health && !health.ok && <div className="warn">백엔드에서 CAREER_OPS_ROOT를 찾을 수 없습니다: {health.error}</div>}
     </>
   );
 }

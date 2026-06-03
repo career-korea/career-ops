@@ -6,9 +6,9 @@ export function OnboardingStrip({ health }: { health?: Health }) {
   const checks = health?.onboarding || {};
   const items = [
     ['CV', checks.cv],
-    ['Profile', checks.profile],
-    ['Modes', checks.mode_profile],
-    ['Portals', checks.portals],
+    ['프로필', checks.profile],
+    ['모드', checks.mode_profile],
+    ['포털', checks.portals],
   ];
 
   return (

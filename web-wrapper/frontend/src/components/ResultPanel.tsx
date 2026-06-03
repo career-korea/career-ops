@@ -8,8 +8,8 @@ export function ResultPanel({ result }: { result?: CommandResult }) {
       <aside className="result-empty">
         <Activity size={18} />
         <div>
-          <strong>Agent output</strong>
-          <span>Run an evaluation or scan to see the agent output here.</span>
+          <strong>에이전트 출력</strong>
+          <span>평가 또는 스캔을 실행하면 여기에 결과가 표시됩니다.</span>
         </div>
       </aside>
     );
@@ -19,7 +19,7 @@ export function ResultPanel({ result }: { result?: CommandResult }) {
     <aside className="result-panel" aria-live="polite">
       <div className="result-head">
         <span className={cx('badge', result.ok ? 'success' : 'danger')}>
-          {result.ok ? 'Completed' : `Needs attention${result.returncode ? ` ${result.returncode}` : ''}`}
+          {result.ok ? '완료' : `확인 필요${result.returncode ? ` ${result.returncode}` : ''}`}
         </span>
         {result.mode && <span className="mode-chip">{result.mode}</span>}
       </div>

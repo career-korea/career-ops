@@ -11,7 +11,7 @@ type CommandGridProps = {
 };
 
 export function CommandGrid({ commands, selectedMode, loading, onSelect, onRun }: CommandGridProps) {
-  if (!commands.length) return <p className="muted">Backend command registry is empty or still loading.</p>;
+  if (!commands.length) return <p className="muted">백엔드 명령어 레지스트리가 비어 있거나 로딩 중입니다.</p>;
 
   return (
     <div className="command-grid">
@@ -36,7 +36,7 @@ export function CommandGrid({ commands, selectedMode, loading, onSelect, onRun }
             }}
           >
             <Play size={15} />
-            Run
+            실행
           </button>
         </article>
       ))}
