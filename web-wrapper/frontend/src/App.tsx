@@ -232,11 +232,22 @@ function WorkspacePage({
           </div>
         </div>
 
-        <div className="hero-visual">
-          <img
-            src="/assets/career-command-center.png"
-            alt="Generated command center interface preview for career operations"
-          />
+        <div className="hero-visual editorial-collage" aria-label="Career ops editorial workspace artwork">
+          <div className="paper-arch" />
+          <div className="coral-slab" />
+          <div className="teal-window" />
+          <div className="stone-form" />
+          <div className="folio-sheet">
+            <span>01</span>
+            <strong>Score fit</strong>
+            <small>A-G evaluation</small>
+          </div>
+          <div className="folio-sheet offset">
+            <span>02</span>
+            <strong>Tailor CV</strong>
+            <small>Role narrative</small>
+          </div>
+          <div className="yellow-dot" />
           <div className="visual-overlay" aria-label="Career ops overview">
             <span><Activity size={15} /> Live workspace</span>
             <div>
@@ -423,8 +434,20 @@ function ApiModesPage({
           </div>
         </div>
 
-        <div className="api-art">
-          <img src="/assets/api-command-center.png" alt="Generated API command center interface preview" />
+        <div className="api-art api-collage" aria-label="Career ops API mode artwork">
+          <div className="router-ring" />
+          <div className="router-line one" />
+          <div className="router-line two" />
+          <div className="router-line three" />
+          <div className="api-coral" />
+          <div className="api-terminal">
+            <span>POST</span>
+            <strong>/api/career-ops</strong>
+            <small>mode router</small>
+          </div>
+          <div className="api-node alpha" />
+          <div className="api-node beta" />
+          <div className="api-node gamma" />
           <div className="api-art-panel">
             <span className="endpoint-chip strong">{`POST /api/career-ops/${selectedCommand.mode}`}</span>
             <strong>{selectedCommand.command}</strong>
