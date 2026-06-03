@@ -100,7 +100,7 @@ export function App() {
   }
 
   return (
-    <main>
+    <main className={`page-${page}`}>
       <header className="app-nav">
         <div className="brand-mark" aria-label="career-ops brand">
           <BriefcaseBusiness size={17} />
