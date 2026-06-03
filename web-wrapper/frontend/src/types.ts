@@ -1,6 +1,6 @@
 import type React from 'react';
 
-export type Page = 'workspace' | 'api';
+export type Page = 'workspace' | 'offer' | 'discover' | 'api';
 
 export type Tab = 'evaluate' | 'scan' | 'pipeline' | 'tracker' | 'pdf';
 

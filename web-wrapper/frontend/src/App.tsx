@@ -111,6 +111,14 @@ export function App() {
             <Sparkles size={16} />
             Workspace
           </button>
+          <button className={page === 'offer' ? 'active' : ''} onClick={() => setPage('offer')}>
+            <Activity size={16} />
+            Offer Fit
+          </button>
+          <button className={page === 'discover' ? 'active' : ''} onClick={() => setPage('discover')}>
+            <Search size={16} />
+            Discover
+          </button>
           <button className={page === 'api' ? 'active' : ''} onClick={() => setPage('api')}>
             <Layers3 size={16} />
             API Modes
@@ -122,7 +130,7 @@ export function App() {
         </div>
       </header>
 
-      {page === 'workspace' ? (
+      {page === 'workspace' && (
         <WorkspacePage
           tab={tab}
           setTab={setTab}
@@ -147,7 +155,41 @@ export function App() {
           loadPipeline={loadPipeline}
           loadTracker={loadTracker}
         />
-      ) : (
+      )}
+
+      {page === 'offer' && (
+        <OfferFitPage
+          health={health}
+          result={result}
+          loading={loading}
+          jd={jd}
+          setJd={setJd}
+          mode={mode}
+          setMode={setMode}
+          commands={commands}
+          pipeline={pipeline}
+          tracker={tracker}
+          run={run}
+          runCareerOps={runCareerOps}
+        />
+      )}
+
+      {page === 'discover' && (
+        <DiscoverPage
+          health={health}
+          result={result}
+          loading={loading}
+          company={company}
+          setCompany={setCompany}
+          commands={commands}
+          pipeline={pipeline}
+          tracker={tracker}
+          loadPipeline={loadPipeline}
+          run={run}
+        />
+      )}
+
+      {page === 'api' && (
         <ApiModesPage
           health={health}
           result={result}
@@ -384,6 +426,204 @@ function WorkspacePage({
 
           <ResultPanel result={result} />
         </section>
+      </section>
+    </>
+  );
+}
+
+type OfferFitPageProps = {
+  health: Health | undefined;
+  result: CommandResult | undefined;
+  loading: boolean;
+  jd: string;
+  setJd: (value: string) => void;
+  mode: string;
+  setMode: (value: string) => void;
+  commands: CareerCommand[];
+  pipeline: PipelineItem[];
+  tracker: TrackerRow[];
+  run: (action: () => Promise<CommandResult>) => Promise<void>;
+  runCareerOps: (selectedMode: string, input: string) => Promise<CommandResult>;
+};
+
+function OfferFitPage({
+  health,
+  result,
+  loading,
+  jd,
+  setJd,
+  mode,
+  setMode,
+  commands,
+  pipeline,
+  tracker,
+  run,
+  runCareerOps,
+}: OfferFitPageProps) {
+  return (
+    <>
+      <section className="focus-hero offer-hero">
+        <div className="focus-copy">
+          <span className="eyebrow"><Activity size={16} /> Offer Fit</span>
+          <h1>Read the role before it reads you.</h1>
+          <p>
+            Paste a job description or URL and let career-ops grade fit, risks, legitimacy, narrative, and next actions.
+          </p>
+          <div className="api-mode-strip">
+            <span>A-G scoring</span>
+            <span>CV signals</span>
+            <span>tracker ready</span>
+          </div>
+        </div>
+        <div className="focus-art offer-art" aria-label="Offer fit collage">
+          <div className="fit-orbit" />
+          <div className="fit-card primary">
+            <span>fit</span>
+            <strong>4.2</strong>
+            <small>apply signal</small>
+          </div>
+          <div className="fit-card secondary">
+            <span>risk</span>
+            <strong>B</strong>
+            <small>role clarity</small>
+          </div>
+          <div className="fit-document">
+            <i />
+            <i />
+            <i />
+            <i />
+          </div>
+          <div className="fit-ruler" />
+          <div className="fit-coral" />
+          <div className="fit-yellow" />
+        </div>
+      </section>
+
+      <StatusAndMetrics health={health} commands={commands} pipeline={pipeline} tracker={tracker} compact />
+
+      <section className="focus-layout">
+        <div className="focus-panel">
+          <div className="section-head">
+            <div>
+              <span className="kicker">Role intelligence</span>
+              <h2>Evaluate a job description or run any career-ops mode.</h2>
+            </div>
+            <select value={mode} onChange={(e) => setMode(e.target.value)} aria-label="Career ops mode">
+              {modeOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+            </select>
+          </div>
+          <textarea
+            rows={13}
+            value={jd}
+            onChange={(e) => setJd(e.target.value)}
+            placeholder="Paste a job URL, full JD, or instructions like: evaluate this applied AI role and explain fit, risks, and next actions..."
+          />
+          <div className="button-row">
+            <button disabled={loading || jd.trim().length < 3} onClick={() => run(() => runCareerOps(mode, jd))}>
+              {loading ? <Loader2 className="spin" size={18} /> : <Play size={18} />}
+              Run fit review
+            </button>
+            <button className="secondary" disabled={loading} onClick={() => run(() => runCareerOps('', ''))}>
+              <MapPinned size={18} />
+              Show commands
+            </button>
+          </div>
+        </div>
+
+        <ResultPanel result={result} />
+      </section>
+    </>
+  );
+}
+
+type DiscoverPageProps = {
+  health: Health | undefined;
+  result: CommandResult | undefined;
+  loading: boolean;
+  company: string;
+  setCompany: (value: string) => void;
+  commands: CareerCommand[];
+  pipeline: PipelineItem[];
+  tracker: TrackerRow[];
+  loadPipeline: () => Promise<void>;
+  run: (action: () => Promise<CommandResult>) => Promise<void>;
+};
+
+function DiscoverPage({
+  health,
+  result,
+  loading,
+  company,
+  setCompany,
+  commands,
+  pipeline,
+  tracker,
+  loadPipeline,
+  run,
+}: DiscoverPageProps) {
+  return (
+    <>
+      <section className="focus-hero discover-hero">
+        <div className="focus-copy">
+          <span className="eyebrow"><Search size={16} /> Discover</span>
+          <h1>Find roles worth a second look.</h1>
+          <p>
+            Scan configured portals, preview matches, and move promising jobs into the inbox without turning search into noise.
+          </p>
+          <div className="api-mode-strip">
+            <span>portal scan</span>
+            <span>{pipeline.length} inbox</span>
+            <span>dry-run first</span>
+          </div>
+        </div>
+        <div className="focus-art discover-art" aria-label="Discover collage">
+          <div className="discover-map" />
+          <div className="discover-path one" />
+          <div className="discover-path two" />
+          <div className="discover-card">
+            <span>new role</span>
+            <strong>AI Ops</strong>
+            <small>matched portal</small>
+          </div>
+          <div className="discover-card alt">
+            <span>queue</span>
+            <strong>{pipeline.length}</strong>
+            <small>inbox items</small>
+          </div>
+          <div className="discover-teal" />
+          <div className="discover-coral" />
+          <div className="discover-dot" />
+        </div>
+      </section>
+
+      <StatusAndMetrics health={health} commands={commands} pipeline={pipeline} tracker={tracker} compact />
+
+      <section className="focus-layout">
+        <div className="focus-panel">
+          <div className="section-head">
+            <div>
+              <span className="kicker">Opportunity discovery</span>
+              <h2>Scan target portals and add relevant roles to your inbox.</h2>
+            </div>
+            <button className="icon-button" onClick={loadPipeline} aria-label="Refresh pipeline"><RefreshCw size={17} /></button>
+          </div>
+          <input value={company} onChange={(e) => setCompany(e.target.value)} placeholder="Optional company filter, e.g. OpenAI" />
+          <div className="button-row">
+            <button disabled={loading} onClick={() => run(() => post<CommandResult>('/api/scan', { dry_run: true, company: company || null }))}>
+              <Search size={18} />
+              Preview scan
+            </button>
+            <button className="secondary" disabled={loading} onClick={() => run(() => post<CommandResult>('/api/scan', { dry_run: false, company: company || null }))}>
+              <Send size={18} />
+              Save matches
+            </button>
+          </div>
+          <div className="discover-inbox">
+            <PipelineList items={pipeline} />
+          </div>
+        </div>
+
+        <ResultPanel result={result} />
       </section>
     </>
   );
