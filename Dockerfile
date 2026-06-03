@@ -21,8 +21,8 @@ WORKDIR /app
 COPY . /app/
 
 # ── Node.js deps + Playwright Chromium ───────────────────────────────────────
-# Must run AFTER COPY so npm reads the correct package-lock.json
-RUN npm ci --omit=dev
+# Must run AFTER COPY so npm reads package.json from the repo root
+RUN npm install --omit=dev
 RUN npx playwright install chromium --with-deps
 
 # ── Runtime dirs (gitignored, recreated fresh each build) ────────────────────
