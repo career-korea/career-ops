@@ -121,10 +121,40 @@ button.compact {
 }
 
 main {
+  --page-bg: url("/assets/bg-workspace.png");
+  position: relative;
   width: min(1480px, calc(100% - 32px));
   margin: 0 auto;
   padding: 18px 0 48px;
 }
+
+main::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -3;
+  pointer-events: none;
+  background-image: var(--page-bg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+main::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(243, 239, 230, .94) 0%, rgba(243, 239, 230, .76) 34%, rgba(243, 239, 230, .34) 100%),
+    radial-gradient(circle at 22% 16%, rgba(255, 255, 255, .68), transparent 32%);
+}
+
+main.page-workspace { --page-bg: url("/assets/bg-workspace.png"); }
+main.page-offer { --page-bg: url("/assets/bg-offer.png"); }
+main.page-discover { --page-bg: url("/assets/bg-discover.png"); }
+main.page-api { --page-bg: url("/assets/bg-api.png"); }
 
 .app-nav {
   position: sticky;
@@ -199,8 +229,8 @@ main {
   border: 1px solid var(--line);
   border-radius: 34px;
   background:
-    linear-gradient(115deg, rgba(255, 255, 255, .44), rgba(255, 255, 255, .10)),
-    var(--paper);
+    linear-gradient(115deg, rgba(251, 246, 235, .82), rgba(251, 246, 235, .48));
+  backdrop-filter: blur(10px);
   box-shadow: 0 34px 80px rgba(58, 45, 28, .14);
 }
 
@@ -529,8 +559,8 @@ h3 {
   border: 1px solid var(--line);
   border-radius: 34px;
   background:
-    linear-gradient(115deg, rgba(255, 255, 255, .52), rgba(255, 255, 255, .12)),
-    var(--paper);
+    linear-gradient(115deg, rgba(251, 246, 235, .84), rgba(251, 246, 235, .48));
+  backdrop-filter: blur(10px);
   box-shadow: 0 34px 80px rgba(58, 45, 28, .14);
 }
 
@@ -550,14 +580,14 @@ h3 {
   background:
     radial-gradient(circle at 70% 12%, rgba(255, 111, 97, .20), transparent 24%),
     radial-gradient(circle at 42% 62%, rgba(230, 182, 41, .16), transparent 22%),
-    var(--paper);
+    linear-gradient(115deg, rgba(251, 246, 235, .84), rgba(251, 246, 235, .48));
 }
 
 .discover-hero {
   background:
     radial-gradient(circle at 72% 16%, rgba(143, 199, 192, .24), transparent 24%),
     radial-gradient(circle at 46% 66%, rgba(255, 111, 97, .13), transparent 22%),
-    var(--paper);
+    linear-gradient(115deg, rgba(251, 246, 235, .84), rgba(251, 246, 235, .48));
 }
 
 .focus-copy {
