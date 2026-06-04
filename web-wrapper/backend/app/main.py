@@ -42,6 +42,7 @@ CAREER_OPS_ROUTE_MODES = {item["mode"] for item in CAREER_OPS_COMMANDS}
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
+    allow_origin_regex=settings.backend_cors_origin_regex or None,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -65,6 +66,23 @@ def require_user(request: Request):
 
 def optional_user(request: Request):
     return db.user_from_session(request.cookies.get(SESSION_COOKIE))
+
+
+def _is_secure_request(request: Request) -> bool:
+    proto = request.headers.get("x-forwarded-proto", request.url.scheme)
+    return proto == "https"
+
+
+def _cookie_options(request: Request) -> dict:
+    secure = settings.session_cookie_secure.lower()
+    samesite = settings.session_cookie_samesite.lower()
+    is_secure = _is_secure_request(request)
+    return {
+        "httponly": True,
+        "secure": secure == "true" if secure else is_secure,
+        "samesite": samesite if samesite else ("none" if is_secure else "lax"),
+        "max_age": 60 * 60 * 24 * 14,
+    }
 
 
 def setup_payload(row):
@@ -95,29 +113,33 @@ def sync_user_setup(user) -> dict[str, bool]:
 
 
 @app.post("/api/auth/register")
-def register(req: AuthRequest, response: Response):
+def register(req: AuthRequest, request: Request, response: Response):
     if db.find_user_by_email(req.email):
         raise HTTPException(status_code=400, detail="Email already registered")
     user = db.create_user(req.email, req.password)
     token = db.create_session(user["id"])
-    response.set_cookie(SESSION_COOKIE, token, httponly=True, samesite="lax", max_age=60 * 60 * 24 * 14)
+    response.set_cookie(SESSION_COOKIE, token, **_cookie_options(request))
     return {"user": public_user(user)}
 
 
 @app.post("/api/auth/login")
-def login(req: AuthRequest, response: Response):
+def login(req: AuthRequest, request: Request, response: Response):
     user = db.find_user_by_email(req.email)
     if not user or not db.verify_password(req.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid email or password")
     token = db.create_session(user["id"])
-    response.set_cookie(SESSION_COOKIE, token, httponly=True, samesite="lax", max_age=60 * 60 * 24 * 14)
+    response.set_cookie(SESSION_COOKIE, token, **_cookie_options(request))
     return {"user": public_user(user)}
 
 
 @app.post("/api/auth/logout")
 def logout(request: Request, response: Response):
     db.delete_session(request.cookies.get(SESSION_COOKIE) or "")
-    response.delete_cookie(SESSION_COOKIE)
+    response.delete_cookie(
+        SESSION_COOKIE,
+        secure=_cookie_options(request)["secure"],
+        samesite=_cookie_options(request)["samesite"],
+    )
     return {"ok": True}
 
 

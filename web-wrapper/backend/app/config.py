@@ -8,7 +8,10 @@ class Settings(BaseSettings):
     career_ops_root: str
     database_url: str = ""
     backend_cors_origins: str = "http://localhost:5173"
+    backend_cors_origin_regex: str = r"https://.*\.vercel\.app"
     command_timeout_seconds: int = 180
+    session_cookie_samesite: str = ""
+    session_cookie_secure: str = ""
 
     @property
     def root_path(self) -> Path:
