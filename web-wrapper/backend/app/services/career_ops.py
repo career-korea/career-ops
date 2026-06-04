@@ -3,8 +3,9 @@ import os
 import re
 import subprocess
 import tempfile
+from dataclasses import asdict, is_dataclass
 from pathlib import Path
-from typing import Iterable
+from typing import Any
 
 from app.config import settings
 from app.models import CommandResult, TrackerRow, PipelineItem
@@ -22,6 +23,37 @@ ALLOWED_SCRIPTS = {
 }
 
 MODE_PATTERN = re.compile(r"\| `([^`]+)` \| `([^`]+)` \|")
+URL_PATTERN = re.compile(r"https?://\S+", re.IGNORECASE)
+JD_KEYWORDS = (
+    "responsibilities",
+    "requirements",
+    "qualifications",
+    "about the role",
+    "we're looking for",
+    "what you'll do",
+    "job description",
+)
+SHARED_MODES = {
+    "auto-pipeline",
+    "oferta",
+    "ofertas",
+    "pdf",
+    "contacto",
+    "apply",
+    "pipeline",
+    "scan",
+    "batch",
+}
+STANDALONE_MODES = {
+    "tracker",
+    "deep",
+    "interview-prep",
+    "training",
+    "project",
+    "patterns",
+    "followup",
+}
+DELEGATED_MODES = {"scan", "apply", "pipeline"}
 
 
 def career_root() -> Path:
@@ -31,6 +63,36 @@ def career_root() -> Path:
     if not (root / "package.json").exists():
         raise FileNotFoundError(f"CAREER_OPS_ROOT is not a career-ops repo: {root}")
     return root
+
+
+def onboarding_status() -> dict[str, bool]:
+    root = career_root()
+    return {
+        "cv": (root / "cv.md").exists(),
+        "profile": (root / "config" / "profile.yml").exists(),
+        "mode_profile": (root / "modes" / "_profile.md").exists(),
+        "portals": (root / "portals.yml").exists(),
+    }
+
+
+def sync_setup_files(cv_md: str, profile_yml: str, mode_profile_md: str, portals_yml: str) -> dict[str, bool]:
+    root = career_root()
+    writes = [
+        (root / "cv.md", cv_md),
+        (root / "config" / "profile.yml", profile_yml),
+        (root / "modes" / "_profile.md", mode_profile_md),
+        (root / "portals.yml", portals_yml),
+    ]
+    for path, content in writes:
+        if content.strip():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(content, encoding="utf-8")
+    return {
+        "cv": bool(cv_md.strip()),
+        "profile": bool(profile_yml.strip()),
+        "mode_profile": bool(mode_profile_md.strip()),
+        "portals": bool(portals_yml.strip()),
+    }
 
 
 def run_command(command: list[str], timeout: int | None = None) -> CommandResult:
@@ -113,12 +175,260 @@ def list_modes() -> list[dict[str, str]]:
     if not skill.exists():
         skill = root / ".claude" / "skills" / "career-ops" / "SKILL.md"
     text = skill.read_text(encoding="utf-8") if skill.exists() else ""
-    modes = []
+    modes = [
+        {"input": "(empty / no args)", "mode": "discovery"},
+        {"input": "JD text or URL (no sub-command)", "mode": "auto-pipeline"},
+    ]
+    seen = {item["input"] for item in modes}
     for input_name, mode in MODE_PATTERN.findall(text):
-        if input_name in {"Input", "-------"}:
+        if input_name in {"Input", "-------"} or input_name in seen:
             continue
         modes.append({"input": input_name, "mode": mode})
+        seen.add(input_name)
     return modes
+
+
+def resolve_mode(raw_mode: str, invocation: str = "") -> str:
+    text = (raw_mode or "").strip()
+    known = {item["input"]: item["mode"] for item in list_modes()}
+    known.pop("(empty / no args)", None)
+    if not text and not invocation.strip():
+        return "discovery"
+    if text in known:
+        return known[text]
+    combined = f"{text}\n{invocation}".strip()
+    if URL_PATTERN.search(combined) or _looks_like_jd(combined):
+        return "auto-pipeline"
+    return "discovery"
+
+
+def _looks_like_jd(text: str) -> bool:
+    lower = text.lower()
+    if any(keyword in lower for keyword in JD_KEYWORDS):
+        return True
+    return len(text) > 1200 and ("role" in lower or "company" in lower)
+
+
+def _read_text(path: Path) -> str:
+    return path.read_text(encoding="utf-8", errors="replace")
+
+
+def _configured_modes_dir() -> Path:
+    root = career_root()
+    default = root / "modes"
+    korean_default = root / "modes" / "ko"
+    profile = root / "config" / "profile.yml"
+    if not profile.exists():
+        return korean_default if korean_default.exists() else default
+
+    text = _read_text(profile)
+    match = re.search(r"(?m)^\s*modes_dir:\s*[\"']?([^\"'\n#]+)", text)
+    if not match:
+        return korean_default if korean_default.exists() else default
+
+    raw = match.group(1).strip()
+    path = Path(raw)
+    if not path.is_absolute():
+        path = root / path
+    return path if path.exists() else default
+
+
+def _mode_file(mode: str) -> Path:
+    root = career_root()
+    modes_dir = _configured_modes_dir()
+    path = modes_dir / f"{mode}.md"
+    fallback = root / "modes" / f"{mode}.md"
+    if not path.exists() and fallback.exists():
+        path = fallback
+    elif not path.exists():
+        raise ValueError(f"Unsupported career-ops mode: {mode}")
+    return path
+
+
+def build_discovery_text() -> str:
+    return """career-ops -- Command Center
+
+Available commands:
+  /career-ops {JD}             AUTO-PIPELINE: evaluate + report + PDF + tracker
+  /career-ops pipeline         Process pending URLs from inbox
+  /career-ops oferta           Evaluation only A-G
+  /career-ops ofertas          Compare and rank multiple offers
+  /career-ops contacto         LinkedIn outreach
+  /career-ops deep             Deep company research
+  /career-ops interview-prep   Company-specific interview prep
+  /career-ops pdf              ATS-optimized CV PDF
+  /career-ops training         Evaluate course/cert
+  /career-ops project          Evaluate portfolio project idea
+  /career-ops tracker          Application status overview
+  /career-ops apply            Live application assistant
+  /career-ops scan             Scan portals for new offers
+  /career-ops batch            Batch process offers
+  /career-ops patterns         Analyze rejection patterns
+  /career-ops followup         Follow-up cadence tracker
+"""
+
+
+def build_agent_prompt(mode: str, invocation: str = "", no_save: bool = False) -> str:
+    if mode == "discovery":
+        return build_discovery_text()
+
+    root = career_root()
+    modes_dir = _configured_modes_dir()
+    sections: list[str] = []
+    if mode in SHARED_MODES:
+        shared = modes_dir / "_shared.md"
+        if not shared.exists():
+            shared = root / "modes" / "_shared.md"
+        sections.append("# Shared Instructions\n\n" + _read_text(shared))
+        profile = root / "modes" / "_profile.md"
+        if profile.exists():
+            sections.append("# User Profile Overrides\n\n" + _read_text(profile))
+    elif mode not in STANDALONE_MODES:
+        raise ValueError(f"Unsupported career-ops mode: {mode}")
+
+    sections.append(f"# Mode Instructions: {mode}\n\n" + _read_text(_mode_file(mode)))
+    sections.append("# Invocation Data\n\n" + (invocation.strip() or "(no additional input)"))
+    if no_save:
+        sections.append("# Runtime Constraint\n\nDo not save files or update trackers unless explicitly required to answer.")
+    sections.append(
+        "# Execution Contract\n\n"
+        "Follow the loaded career-ops mode instructions. Use the repository files as source of truth. "
+        "Never submit applications; stop at drafts or prepared artifacts for user review."
+    )
+    return "\n\n---\n\n".join(sections)
+
+
+def _message_to_dict(message: Any) -> dict[str, Any]:
+    if is_dataclass(message):
+        return asdict(message)
+    if hasattr(message, "__dict__"):
+        return dict(message.__dict__)
+    return {"repr": repr(message)}
+
+
+def _assistant_text(message: Any) -> str:
+    parts: list[str] = []
+    for block in getattr(message, "content", []) or []:
+        text = getattr(block, "text", None)
+        if text:
+            parts.append(text)
+    return "\n".join(parts)
+
+
+async def run_agent(
+    raw_mode: str = "",
+    invocation: str = "",
+    model: str | None = None,
+    max_turns: int = 20,
+    max_budget_usd: float | None = None,
+    no_save: bool = False,
+) -> dict[str, Any]:
+    try:
+        from claude_agent_sdk import (
+            AgentDefinition,
+            AssistantMessage,
+            ClaudeAgentOptions,
+            ResultMessage,
+            SystemMessage,
+            query,
+        )
+    except ImportError as exc:
+        raise RuntimeError(
+            "claude-agent-sdk is not installed. Run `pip install -r web-wrapper/backend/requirements.txt`."
+        ) from exc
+
+    root = career_root()
+    mode = resolve_mode(raw_mode, invocation)
+    prompt = build_agent_prompt(mode, invocation, no_save=no_save)
+    if mode == "discovery":
+        return {
+            "ok": True,
+            "command": ["career-ops", "discovery"],
+            "cwd": str(root),
+            "returncode": 0,
+            "stdout": prompt,
+            "stderr": "",
+            "mode": mode,
+            "session_id": None,
+            "messages": [],
+        }
+
+    allowed_tools = ["Read", "Glob", "Grep", "WebFetch", "WebSearch"]
+    disallowed_tools: list[str] = []
+    if no_save:
+        allowed_tools.extend(["Bash"])
+        disallowed_tools.extend(["Write", "Edit"])
+        permission_mode = None
+    else:
+        allowed_tools.extend(["Write", "Edit", "Bash"])
+        permission_mode = "acceptEdits"
+
+    agents = None
+    if mode in DELEGATED_MODES:
+        worker_prompt = (
+            "You are a focused career-ops worker. Execute the injected mode instructions and "
+            "return concise, evidence-backed results."
+        )
+        agents = {
+            "career-ops-worker": AgentDefinition(
+                description=f"career-ops {mode} worker",
+                prompt=worker_prompt,
+                tools=allowed_tools,
+            )
+        }
+        allowed_tools.append("Agent")
+        prompt = (
+            f"Delegate this {mode} run to the career-ops-worker agent with the full instructions below. "
+            "Return the worker result and any files changed.\n\n"
+            + prompt
+        )
+
+    options = ClaudeAgentOptions(
+        allowed_tools=allowed_tools,
+        permission_mode=permission_mode,
+        cwd=str(root),
+        model=model,
+        max_turns=max_turns,
+        max_budget_usd=max_budget_usd,
+        disallowed_tools=disallowed_tools,
+        agents=agents,
+    )
+
+    stdout_parts: list[str] = []
+    stderr_parts: list[str] = []
+    messages: list[dict[str, Any]] = []
+    session_id = None
+    returncode = 0
+
+    async for message in query(prompt=prompt, options=options):
+        messages.append(_message_to_dict(message))
+        if isinstance(message, SystemMessage) and getattr(message, "subtype", None) == "init":
+            session_id = getattr(message, "data", {}).get("session_id")
+        elif isinstance(message, AssistantMessage):
+            text = _assistant_text(message)
+            if text:
+                stdout_parts.append(text)
+        elif isinstance(message, ResultMessage):
+            result = getattr(message, "result", None)
+            if result:
+                stdout_parts.append(str(result))
+            subtype = getattr(message, "subtype", None)
+            if subtype and subtype not in {"success", "completion"}:
+                returncode = 1
+                stderr_parts.append(str(subtype))
+
+    return {
+        "ok": returncode == 0,
+        "command": ["claude-agent-sdk", "career-ops", mode],
+        "cwd": str(root),
+        "returncode": returncode,
+        "stdout": "\n\n".join(part for part in stdout_parts if part),
+        "stderr": "\n".join(stderr_parts),
+        "mode": mode,
+        "session_id": session_id,
+        "messages": messages,
+        "onboarding": onboarding_status(),
+    }
 
 
 def read_tracker() -> list[TrackerRow]:

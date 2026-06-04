@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file="../.env", env_file_encoding="utf-8", extra="ignore")
 
     career_ops_root: str
+    database_url: str = ""
     backend_cors_origins: str = "http://localhost:5173"
     command_timeout_seconds: int = 180
 
