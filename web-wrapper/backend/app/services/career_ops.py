@@ -75,6 +75,26 @@ def onboarding_status() -> dict[str, bool]:
     }
 
 
+def sync_setup_files(cv_md: str, profile_yml: str, mode_profile_md: str, portals_yml: str) -> dict[str, bool]:
+    root = career_root()
+    writes = [
+        (root / "cv.md", cv_md),
+        (root / "config" / "profile.yml", profile_yml),
+        (root / "modes" / "_profile.md", mode_profile_md),
+        (root / "portals.yml", portals_yml),
+    ]
+    for path, content in writes:
+        if content.strip():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(content, encoding="utf-8")
+    return {
+        "cv": bool(cv_md.strip()),
+        "profile": bool(profile_yml.strip()),
+        "mode_profile": bool(mode_profile_md.strip()),
+        "portals": bool(portals_yml.strip()),
+    }
+
+
 def run_command(command: list[str], timeout: int | None = None) -> CommandResult:
     root = career_root()
     env = os.environ.copy()
@@ -193,10 +213,34 @@ def _read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace")
 
 
+def _configured_modes_dir() -> Path:
+    root = career_root()
+    default = root / "modes"
+    korean_default = root / "modes" / "ko"
+    profile = root / "config" / "profile.yml"
+    if not profile.exists():
+        return korean_default if korean_default.exists() else default
+
+    text = _read_text(profile)
+    match = re.search(r"(?m)^\s*modes_dir:\s*[\"']?([^\"'\n#]+)", text)
+    if not match:
+        return korean_default if korean_default.exists() else default
+
+    raw = match.group(1).strip()
+    path = Path(raw)
+    if not path.is_absolute():
+        path = root / path
+    return path if path.exists() else default
+
+
 def _mode_file(mode: str) -> Path:
     root = career_root()
-    path = root / "modes" / f"{mode}.md"
-    if not path.exists():
+    modes_dir = _configured_modes_dir()
+    path = modes_dir / f"{mode}.md"
+    fallback = root / "modes" / f"{mode}.md"
+    if not path.exists() and fallback.exists():
+        path = fallback
+    elif not path.exists():
         raise ValueError(f"Unsupported career-ops mode: {mode}")
     return path
 
@@ -229,9 +273,13 @@ def build_agent_prompt(mode: str, invocation: str = "", no_save: bool = False) -
         return build_discovery_text()
 
     root = career_root()
+    modes_dir = _configured_modes_dir()
     sections: list[str] = []
     if mode in SHARED_MODES:
-        sections.append("# Shared Instructions\n\n" + _read_text(root / "modes" / "_shared.md"))
+        shared = modes_dir / "_shared.md"
+        if not shared.exists():
+            shared = root / "modes" / "_shared.md"
+        sections.append("# Shared Instructions\n\n" + _read_text(shared))
         profile = root / "modes" / "_profile.md"
         if profile.exists():
             sections.append("# User Profile Overrides\n\n" + _read_text(profile))

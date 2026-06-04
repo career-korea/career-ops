@@ -1,6 +1,6 @@
 import type React from 'react';
 
-export type Page = 'workspace' | 'offer' | 'discover' | 'api';
+export type Page = 'workspace' | 'offer' | 'discover' | 'api' | 'setup';
 
 export type Tab = 'evaluate' | 'scan' | 'pipeline' | 'tracker' | 'pdf';
 
@@ -39,6 +39,21 @@ export type Health = {
   career_ops_root?: string;
   onboarding?: Record<string, boolean>;
   error?: string;
+  user?: User | null;
+};
+
+export type User = {
+  id: number;
+  email: string;
+};
+
+export type SetupData = {
+  cv_md: string;
+  profile_yml: string;
+  mode_profile_md: string;
+  portals_yml: string;
+  updated_at?: string;
+  onboarding: Record<string, boolean>;
 };
 
 export type CareerCommand = {

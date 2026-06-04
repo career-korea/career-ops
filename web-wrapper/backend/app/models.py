@@ -2,6 +2,24 @@
 from pydantic import BaseModel, Field
 from typing import Optional, Any
 
+class AuthRequest(BaseModel):
+    email: str = Field(..., min_length=3)
+    password: str = Field(..., min_length=8)
+
+class UserResponse(BaseModel):
+    id: int
+    email: str
+
+class SetupRequest(BaseModel):
+    cv_md: str = ""
+    profile_yml: str = ""
+    mode_profile_md: str = ""
+    portals_yml: str = ""
+
+class SetupResponse(SetupRequest):
+    updated_at: str = ""
+    onboarding: dict[str, bool]
+
 class CommandResult(BaseModel):
     ok: bool
     command: list[str]
