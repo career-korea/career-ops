@@ -26,8 +26,8 @@ RUN npm install --omit=dev
 RUN npx playwright install chromium --with-deps
 
 # ── Runtime dirs (gitignored, recreated fresh each build) ────────────────────
-# Mount Railway volumes at /app/data, /app/config, /app/reports, /app/output
-# for persistence across redeploys.
+# These are the BASE repo's dirs (read-only template). Per-user data lives in
+# isolated workspaces under WORKSPACES_ROOT (see below).
 RUN mkdir -p \
     data \
     config \
@@ -38,7 +38,12 @@ RUN mkdir -p \
     batch/tracker-additions
 
 # ── Environment ───────────────────────────────────────────────────────────────
+# /app          = base repo (system layer: scripts, modes, templates, node_modules)
+# /data/ws/{id} = per-user isolated workspace (persistent). Mount a Railway
+#                 volume at /data so user data (cv, tracker, reports, PDFs)
+#                 survives redeploys and never mixes between accounts.
 ENV CAREER_OPS_ROOT=/app \
+    WORKSPACES_ROOT=/data/ws \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 

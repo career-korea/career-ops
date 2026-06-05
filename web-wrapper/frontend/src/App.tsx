@@ -51,6 +51,12 @@ export function App() {
   const [tracker, setTracker] = useState<TrackerRow[]>([]);
   const [pipeline, setPipeline] = useState<PipelineItem[]>([]);
   const [html, setHtml] = useState('<html><body><h1>Your Name</h1><p>Career-ready CV preview</p></body></html>');
+  const [notice, setNotice] = useState<{ message: string; tone: 'ok' | 'warn' } | null>(null);
+
+  function showNotice(message: string, tone: 'ok' | 'warn' = 'ok') {
+    setNotice({ message, tone });
+    window.setTimeout(() => setNotice(null), 4000);
+  }
 
   const trackerStats = useMemo(() => {
     const stats = new Map<string, number>();
@@ -128,6 +134,14 @@ export function App() {
       const saved = await put<SetupData>('/api/setup', setup);
       setSetup(saved);
       await refreshHealth();
+      const ob = saved.onboarding || {};
+      const done = ['cv', 'profile', 'mode_profile', 'portals'].filter((key) => ob[key]).length;
+      showNotice(
+        done === 4 ? '필요한 문서 4개를 모두 작성했습니다 ✓' : `저장 완료 — ${done}/4개 문서 작성됨`,
+        done === 4 ? 'ok' : 'warn',
+      );
+    } catch (e) {
+      showNotice(e instanceof Error ? `저장 실패: ${e.message}` : '저장에 실패했습니다', 'warn');
     } finally {
       setLoading(false);
     }
@@ -153,6 +167,7 @@ export function App() {
 
   return (
     <main className={`page-${page}`}>
+      {notice && <div className={cx('toast-notice', notice.tone)} role="status">{notice.message}</div>}
       <header className="app-nav">
         <div className="brand-mark" aria-label="career-ops brand">
           <BriefcaseBusiness size={17} />
@@ -165,7 +180,7 @@ export function App() {
           <button className={page === 'api' ? 'active' : ''} onClick={() => setPage('api')}><Layers3 size={16} />API 모드</button>
           <button className={page === 'setup' ? 'active' : ''} onClick={() => setPage('setup')}><Settings size={16} />로그인</button>
         </nav>
-        {/* {user ? (
+        {user ? (
           <button className="nav-status login-action" onClick={logout} aria-label="Logout">
             <LogOut size={15} />
             로그아웃
@@ -175,7 +190,7 @@ export function App() {
             <span className="connection offline" />
             로그인
           </button>
-        )} */}
+        )}
       </header>
 
       {page === 'workspace' && (
@@ -257,13 +272,13 @@ export function App() {
       {page === 'setup' && (
         user
           ? <SetupPage setup={setup} setSetup={setSetup} loading={loading} onSave={saveSetup} />
-          : <AuthPage onDone={bootstrap} health={health} />
+          : <AuthPage onDone={bootstrap} health={health} onNotice={showNotice} />
       )}
     </main>
   );
 }
 
-function AuthPage({ onDone, health }: { onDone: () => Promise<void>; health?: Health }) {
+function AuthPage({ onDone, health, onNotice }: { onDone: () => Promise<void>; health?: Health; onNotice: (message: string, tone?: 'ok' | 'warn') => void }) {
   const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -275,6 +290,7 @@ function AuthPage({ onDone, health }: { onDone: () => Promise<void>; health?: He
     setError('');
     try {
       await post(isRegister ? '/api/auth/register' : '/api/auth/login', { email, password });
+      onNotice(isRegister ? '가입이 완료되었습니다 ✓ 이제 문서를 작성해 보세요.' : '로그인되었습니다 ✓');
       await onDone();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
