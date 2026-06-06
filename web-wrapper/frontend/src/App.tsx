@@ -3,6 +3,7 @@ import {
   Activity,
   Braces,
   BriefcaseBusiness,
+  CreditCard,
   FileText,
   Layers3,
   Loader2,
@@ -19,12 +20,26 @@ import {
 import { get, post, put } from './api';
 import { careerCommands, modeOptions, tabs } from './constants';
 import { CommandGrid } from './components/CommandGrid';
+import { Footer } from './components/Footer';
 import { OnboardingStrip } from './components/OnboardingStrip';
 import { PipelineList } from './components/PipelineList';
 import { ResultPanel } from './components/ResultPanel';
 import { TrackerTable } from './components/TrackerTable';
 import { cx } from './components/cx';
+import { TermsPage } from './legal/TermsPage';
+import { PrivacyPage } from './legal/PrivacyPage';
+import { RefundPage } from './legal/RefundPage';
+import { PricingPage } from './legal/PricingPage';
 import type { CareerCommand, CommandResult, Health, Page, PipelineItem, SetupData, Tab, TrackerRow, User } from './types';
+
+// 해시 라우팅: 공개 페이지(약관·개인정보·환불·이용권)를 공유 가능한 URL로 노출하기 위함.
+// 결제 가맹 심사 시 심사관이 로그인 없이 해당 URL에 직접 접근할 수 있어야 한다.
+const PAGES: Page[] = ['workspace', 'offer', 'discover', 'api', 'setup', 'terms', 'privacy', 'refund', 'pricing'];
+
+function pageFromHash(): Page | null {
+  const raw = window.location.hash.replace(/^#\/?/, '');
+  return (PAGES as string[]).includes(raw) ? (raw as Page) : null;
+}
 
 const emptySetup: SetupData = {
   cv_md: '',
@@ -35,7 +50,7 @@ const emptySetup: SetupData = {
 };
 
 export function App() {
-  const [page, setPage] = useState<Page>('workspace');
+  const [page, setPage] = useState<Page>(() => pageFromHash() ?? 'workspace');
   const [tab, setTab] = useState<Tab>('evaluate');
   const [health, setHealth] = useState<Health>();
   const [user, setUser] = useState<User | null>(null);
@@ -51,6 +66,12 @@ export function App() {
   const [tracker, setTracker] = useState<TrackerRow[]>([]);
   const [pipeline, setPipeline] = useState<PipelineItem[]>([]);
   const [html, setHtml] = useState('<html><body><h1>Your Name</h1><p>Career-ready CV preview</p></body></html>');
+  const [notice, setNotice] = useState<{ message: string; tone: 'ok' | 'warn' } | null>(null);
+
+  function showNotice(message: string, tone: 'ok' | 'warn' = 'ok') {
+    setNotice({ message, tone });
+    window.setTimeout(() => setNotice(null), 4000);
+  }
 
   const trackerStats = useMemo(() => {
     const stats = new Map<string, number>();
@@ -66,6 +87,24 @@ export function App() {
   useEffect(() => {
     bootstrap();
   }, []);
+
+  // 브라우저 뒤로/앞으로, 직접 해시 입력에 반응해 페이지를 동기화한다.
+  useEffect(() => {
+    const apply = () => {
+      const next = pageFromHash();
+      if (next) setPage(next);
+    };
+    window.addEventListener('hashchange', apply);
+    return () => window.removeEventListener('hashchange', apply);
+  }, []);
+
+  // 페이지 전환 시 URL 해시를 갱신해 공유 가능한 링크를 유지한다.
+  useEffect(() => {
+    const target = `#/${page}`;
+    if (window.location.hash !== target) {
+      window.history.replaceState(null, '', target);
+    }
+  }, [page]);
 
   async function bootstrap() {
     const [me, healthData] = await Promise.all([
@@ -128,6 +167,14 @@ export function App() {
       const saved = await put<SetupData>('/api/setup', setup);
       setSetup(saved);
       await refreshHealth();
+      const ob = saved.onboarding || {};
+      const done = ['cv', 'profile', 'mode_profile', 'portals'].filter((key) => ob[key]).length;
+      showNotice(
+        done === 4 ? '필요한 문서 4개를 모두 작성했습니다 ✓' : `저장 완료 — ${done}/4개 문서 작성됨`,
+        done === 4 ? 'ok' : 'warn',
+      );
+    } catch (e) {
+      showNotice(e instanceof Error ? `저장 실패: ${e.message}` : '저장에 실패했습니다', 'warn');
     } finally {
       setLoading(false);
     }
@@ -153,6 +200,7 @@ export function App() {
 
   return (
     <main className={`page-${page}`}>
+      {notice && <div className={cx('toast-notice', notice.tone)} role="status">{notice.message}</div>}
       <header className="app-nav">
         <div className="brand-mark" aria-label="career-ops brand">
           <BriefcaseBusiness size={17} />
@@ -163,9 +211,10 @@ export function App() {
           <button className={page === 'offer' ? 'active' : ''} onClick={() => setPage('offer')}><Activity size={16} />적합도 분석</button>
           <button className={page === 'discover' ? 'active' : ''} onClick={() => setPage('discover')}><Search size={16} />공고 탐색</button>
           <button className={page === 'api' ? 'active' : ''} onClick={() => setPage('api')}><Layers3 size={16} />API 모드</button>
+          <button className={page === 'pricing' ? 'active' : ''} onClick={() => setPage('pricing')}><CreditCard size={16} />이용권</button>
           <button className={page === 'setup' ? 'active' : ''} onClick={() => setPage('setup')}><Settings size={16} />로그인</button>
         </nav>
-        {/* {user ? (
+        {user ? (
           <button className="nav-status login-action" onClick={logout} aria-label="Logout">
             <LogOut size={15} />
             로그아웃
@@ -175,7 +224,7 @@ export function App() {
             <span className="connection offline" />
             로그인
           </button>
-        )} */}
+        )}
       </header>
 
       {page === 'workspace' && (
@@ -257,13 +306,20 @@ export function App() {
       {page === 'setup' && (
         user
           ? <SetupPage setup={setup} setSetup={setSetup} loading={loading} onSave={saveSetup} />
-          : <AuthPage onDone={bootstrap} health={health} />
+          : <AuthPage onDone={bootstrap} health={health} onNotice={showNotice} />
       )}
+
+      {page === 'terms' && <TermsPage />}
+      {page === 'privacy' && <PrivacyPage />}
+      {page === 'refund' && <RefundPage />}
+      {page === 'pricing' && <PricingPage setPage={setPage} />}
+
+      <Footer setPage={setPage} />
     </main>
   );
 }
 
-function AuthPage({ onDone, health }: { onDone: () => Promise<void>; health?: Health }) {
+function AuthPage({ onDone, health, onNotice }: { onDone: () => Promise<void>; health?: Health; onNotice: (message: string, tone?: 'ok' | 'warn') => void }) {
   const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -275,6 +331,7 @@ function AuthPage({ onDone, health }: { onDone: () => Promise<void>; health?: He
     setError('');
     try {
       await post(isRegister ? '/api/auth/register' : '/api/auth/login', { email, password });
+      onNotice(isRegister ? '가입이 완료되었습니다 ✓ 이제 문서를 작성해 보세요.' : '로그인되었습니다 ✓');
       await onDone();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));

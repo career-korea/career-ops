@@ -1,6 +1,11 @@
 
+import re
+import time
+from collections import defaultdict, deque
+
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from app.config import settings
 from app import db
 from app.models import (
@@ -14,6 +19,7 @@ from app.models import (
     SetupRequest,
 )
 from app.services import career_ops
+from app import workspace
 
 app = FastAPI(title="career-ops Web API", version="0.1.0")
 SESSION_COOKIE = "career_ops_session"
@@ -47,6 +53,46 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+_origin_regex = re.compile(settings.backend_cors_origin_regex) if settings.backend_cors_origin_regex else None
+SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
+
+
+def _origin_allowed(origin: str) -> bool:
+    if origin in settings.cors_origins:
+        return True
+    return bool(_origin_regex and _origin_regex.fullmatch(origin))
+
+
+@app.middleware("http")
+async def csrf_origin_guard(request: Request, call_next):
+    # Session cookies are SameSite=None (cross-site Vercel→Railway), so a browser
+    # will attach them to forged cross-site requests. Reject state-changing
+    # requests whose Origin is not allowlisted. Absent Origin (non-browser /
+    # same-origin) is allowed; browsers always send Origin on cross-site writes.
+    if request.method not in SAFE_METHODS:
+        origin = request.headers.get("origin")
+        if origin and not _origin_allowed(origin):
+            return JSONResponse(status_code=403, content={"detail": "Cross-origin request rejected"})
+    return await call_next(request)
+
+
+# Lightweight in-memory brute-force guard for auth endpoints (per client IP).
+_AUTH_WINDOW_SECONDS = 300
+_AUTH_MAX_ATTEMPTS = 10
+_auth_hits: dict[str, deque] = defaultdict(deque)
+
+
+def auth_rate_limit(request: Request) -> None:
+    ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "unknown").split(",")[0].strip()
+    now = time.monotonic()
+    hits = _auth_hits[ip]
+    while hits and now - hits[0] > _AUTH_WINDOW_SECONDS:
+        hits.popleft()
+    if len(hits) >= _AUTH_MAX_ATTEMPTS:
+        raise HTTPException(status_code=429, detail="Too many attempts. Try again later.")
+    hits.append(now)
+
 
 @app.on_event("startup")
 def startup():
@@ -102,9 +148,20 @@ def setup_payload(row):
     }
 
 
+async def run_and_meter(user, coro) -> dict:
+    """Await an agent run and record its cost for usage metering / future billing."""
+    result = await coro
+    try:
+        db.record_usage(user["id"], result.get("mode", ""), result.get("cost_usd", 0.0), result.get("ok", False))
+    except Exception:
+        pass  # metering must never break the user-facing response
+    return result
+
+
 def sync_user_setup(user) -> dict[str, bool]:
     setup = db.get_setup(user["id"])
-    return career_ops.sync_setup_files(
+    return workspace.materialize_setup(
+        user["id"],
         setup["cv_md"],
         setup["profile_yml"],
         setup["mode_profile_md"],
@@ -114,9 +171,11 @@ def sync_user_setup(user) -> dict[str, bool]:
 
 @app.post("/api/auth/register")
 def register(req: AuthRequest, request: Request, response: Response):
+    auth_rate_limit(request)
     if db.find_user_by_email(req.email):
         raise HTTPException(status_code=400, detail="Email already registered")
     user = db.create_user(req.email, req.password)
+    workspace.provision_workspace(user["id"])
     token = db.create_session(user["id"])
     response.set_cookie(SESSION_COOKIE, token, **_cookie_options(request))
     return {"user": public_user(user)}
@@ -124,6 +183,7 @@ def register(req: AuthRequest, request: Request, response: Response):
 
 @app.post("/api/auth/login")
 def login(req: AuthRequest, request: Request, response: Response):
+    auth_rate_limit(request)
     user = db.find_user_by_email(req.email)
     if not user or not db.verify_password(req.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid email or password")
@@ -186,7 +246,7 @@ def career_ops_commands():
 def tracker(user=Depends(require_user)):
     try:
         sync_user_setup(user)
-        rows = career_ops.read_tracker()
+        rows = career_ops.read_tracker(user["id"])
         stats = {}
         for row in rows:
             stats[row.status or "Unknown"] = stats.get(row.status or "Unknown", 0) + 1
@@ -198,7 +258,7 @@ def tracker(user=Depends(require_user)):
 def pipeline(user=Depends(require_user)):
     try:
         sync_user_setup(user)
-        items = career_ops.read_pipeline()
+        items = career_ops.read_pipeline(user["id"])
         return {"items": items, "total": len(items)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -212,7 +272,7 @@ async def scan(req: ScanRequest, user=Depends(require_user)):
             f"verify={req.verify}",
             f"company={req.company or 'all'}",
         ]
-        return await career_ops.run_agent("scan", "\n".join(details))
+        return await run_and_meter(user, career_ops.run_agent(user["id"], "scan", "\n".join(details)))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -220,7 +280,7 @@ async def scan(req: ScanRequest, user=Depends(require_user)):
 async def evaluate(req: EvaluateRequest, user=Depends(require_user)):
     try:
         sync_user_setup(user)
-        return await career_ops.run_agent("", req.jd_text, model=req.model, no_save=req.no_save)
+        return await run_and_meter(user, career_ops.run_agent(user["id"], "", req.jd_text, model=req.model, no_save=req.no_save))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -228,14 +288,15 @@ async def evaluate(req: EvaluateRequest, user=Depends(require_user)):
 async def career_ops_agent(req: CareerOpsRequest, user=Depends(require_user)):
     try:
         sync_user_setup(user)
-        return await career_ops.run_agent(
+        return await run_and_meter(user, career_ops.run_agent(
+            user["id"],
             req.mode,
             req.input,
             model=req.model,
             max_turns=req.max_turns,
             max_budget_usd=req.max_budget_usd,
             no_save=req.no_save,
-        )
+        ))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -249,14 +310,15 @@ async def career_ops_mode(mode: str, req: CareerOpsInputRequest, user=Depends(re
     try:
         sync_user_setup(user)
         router_mode = "" if mode == "auto-pipeline" else mode
-        return await career_ops.run_agent(
+        return await run_and_meter(user, career_ops.run_agent(
+            user["id"],
             router_mode,
             req.input,
             model=req.model,
             max_turns=req.max_turns,
             max_budget_usd=req.max_budget_usd,
             no_save=req.no_save,
-        )
+        ))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -264,7 +326,7 @@ async def career_ops_mode(mode: str, req: CareerOpsInputRequest, user=Depends(re
 def pdf(req: PdfRequest, user=Depends(require_user)):
     try:
         sync_user_setup(user)
-        result, path = career_ops.generate_pdf(req.html, req.filename, req.format)
+        result, path = career_ops.generate_pdf(user["id"], req.html, req.filename, req.format)
         return {"result": result, "pdf_path": path}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -273,7 +335,7 @@ def pdf(req: PdfRequest, user=Depends(require_user)):
 def patterns(user=Depends(require_user)):
     try:
         sync_user_setup(user)
-        return career_ops.run_allowed_script("patterns", [])
+        return career_ops.run_allowed_script(user["id"], "patterns", [])
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -281,7 +343,7 @@ def patterns(user=Depends(require_user)):
 def script(req: ScriptRequest, user=Depends(require_user)):
     try:
         sync_user_setup(user)
-        return career_ops.run_allowed_script(req.script, req.args)
+        return career_ops.run_allowed_script(user["id"], req.script, req.args)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
