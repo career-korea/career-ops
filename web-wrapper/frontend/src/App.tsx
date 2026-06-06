@@ -17,7 +17,7 @@ import {
   Settings,
   Sparkles,
 } from 'lucide-react';
-import { get, post, put } from './api';
+import { ApiError, get, post, put } from './api';
 import { careerCommands, modeOptions, tabs } from './constants';
 import { CommandGrid } from './components/CommandGrid';
 import { Footer } from './components/Footer';
@@ -67,6 +67,7 @@ export function App() {
   const [pipeline, setPipeline] = useState<PipelineItem[]>([]);
   const [html, setHtml] = useState('<html><body><h1>Your Name</h1><p>Career-ready CV preview</p></body></html>');
   const [notice, setNotice] = useState<{ message: string; tone: 'ok' | 'warn' } | null>(null);
+  const [paywallOpen, setPaywallOpen] = useState(false);
 
   function showNotice(message: string, tone: 'ok' | 'warn' = 'ok') {
     setNotice({ message, tone });
@@ -149,12 +150,33 @@ export function App() {
   }
 
   async function run(action: () => Promise<CommandResult>) {
+    if (!user) {
+      showNotice('로그인이 필요합니다', 'warn');
+      setPage('setup');
+      return;
+    }
     setLoading(true);
     setResult(undefined);
     try {
       setResult(await action());
       await Promise.all([loadTracker(), loadPipeline(), refreshHealth()]);
     } catch (e: unknown) {
+      if (e instanceof ApiError) {
+        if (e.status === 401) {
+          showNotice('로그인이 필요합니다', 'warn');
+          setPage('setup');
+          return;
+        }
+        if (e.status === 402) {
+          const code = (e.detail as { code?: string } | null)?.code;
+          if (code === 'paid_quota_exceeded') {
+            showNotice('오늘 한도를 모두 사용했어요. 내일 다시 이용해 주세요.', 'warn');
+          } else {
+            setPaywallOpen(true);
+          }
+          return;
+        }
+      }
       setResult({ ok: false, returncode: -1, stdout: '', stderr: e instanceof Error ? e.message : String(e) });
     } finally {
       setLoading(false);
@@ -201,6 +223,20 @@ export function App() {
   return (
     <main className={`page-${page}`}>
       {notice && <div className={cx('toast-notice', notice.tone)} role="status">{notice.message}</div>}
+      {paywallOpen && (
+        <div className="paywall-backdrop" role="dialog" aria-modal="true" aria-labelledby="paywall-title" onClick={() => setPaywallOpen(false)}>
+          <div className="paywall-modal" onClick={(e) => e.stopPropagation()}>
+            <h3 id="paywall-title">오늘 무료 한도를 다 쓰셨어요</h3>
+            <p>무료 이용량을 모두 사용했어요. 계속하려면 이용권을 확인해 주세요.</p>
+            <div className="paywall-actions">
+              <button onClick={() => { setPaywallOpen(false); setPage('pricing'); }}>
+                <CreditCard size={16} /> 이용권 보기
+              </button>
+              <button className="secondary" onClick={() => setPaywallOpen(false)}>닫기</button>
+            </div>
+          </div>
+        </div>
+      )}
       <header className="app-nav">
         <div className="brand-mark" aria-label="career-ops brand">
           <BriefcaseBusiness size={17} />
