@@ -1,6 +1,20 @@
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Optional, Any
+
+# Friendly aliases the Claude CLI/SDK resolves to a concrete model. Pinned
+# "claude-*" IDs are also allowed for API power users. Anything else is rejected
+# so an arbitrary string can't be forwarded into a billed agent run.
+ALLOWED_MODEL_ALIASES = {"haiku", "sonnet", "opus"}
+
+
+def _validate_model(cls, v: Optional[str]) -> Optional[str]:
+    if v in (None, ""):
+        return None
+    if v in ALLOWED_MODEL_ALIASES or v.startswith("claude-"):
+        return v
+    allowed = ", ".join(sorted(ALLOWED_MODEL_ALIASES))
+    raise ValueError(f"Unsupported model: {v}. Allowed: {allowed} (or a claude-* id)")
 
 class AuthRequest(BaseModel):
     email: EmailStr
@@ -38,6 +52,8 @@ class EvaluateRequest(BaseModel):
     model: Optional[str] = None
     no_save: bool = False
 
+    _vm = field_validator("model")(_validate_model)
+
 class CareerOpsRequest(BaseModel):
     mode: str = ""
     input: str = ""
@@ -46,12 +62,16 @@ class CareerOpsRequest(BaseModel):
     max_budget_usd: Optional[float] = None
     no_save: bool = False
 
+    _vm = field_validator("model")(_validate_model)
+
 class CareerOpsInputRequest(BaseModel):
     input: str = ""
     model: Optional[str] = None
     max_turns: int = 20
     max_budget_usd: Optional[float] = None
     no_save: bool = False
+
+    _vm = field_validator("model")(_validate_model)
 
 class PdfRequest(BaseModel):
     html: str = Field(..., min_length=20)

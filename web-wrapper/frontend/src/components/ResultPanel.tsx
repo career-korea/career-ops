@@ -24,6 +24,12 @@ export function ResultPanel({ result }: { result?: CommandResult }) {
         {result.mode && <span className="mode-chip">{result.mode}</span>}
       </div>
       {result.command && <div className="command-line">{result.command.join(' ')}</div>}
+      {result.streaming && result.activity && (
+        <div className="result-activity" aria-live="polite">
+          <span className="activity-dot" aria-hidden="true" />
+          {result.activity}
+        </div>
+      )}
       {result.stdout && (
         <pre>
           {result.stdout}

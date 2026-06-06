@@ -9,23 +9,33 @@ export const tabs: TabConfig[] = [
   { id: 'pdf', label: 'CV PDF', icon: FileText },
 ];
 
-export const modeOptions = [
-  'auto',
-  'oferta',
-  'ofertas',
-  'contacto',
-  'deep',
-  'interview-prep',
-  'pdf',
-  'training',
-  'project',
-  'tracker',
-  'pipeline',
-  'apply',
-  'scan',
-  'batch',
-  'patterns',
-  'followup',
+// value = 백엔드 SDK가 해석하는 모델 별칭. '' = 서버 기본값.
+// haiku는 토큰/비용이 가장 저렴, opus는 품질 우선.
+export const modelOptions: { value: string; label: string }[] = [
+  { value: '', label: '기본 모델' },
+  { value: 'haiku', label: 'Haiku (빠르고 저렴)' },
+  { value: 'sonnet', label: 'Sonnet (균형)' },
+  { value: 'opus', label: 'Opus (최고 품질)' },
+];
+
+// value = 백엔드 모드 키(변경 금지), label = 화면 표시용 한국어.
+export const modeOptions: { value: string; label: string }[] = [
+  { value: 'auto', label: '자동 감지' },
+  { value: 'oferta', label: '채용공고 평가 (A-G)' },
+  { value: 'ofertas', label: '여러 공고 비교' },
+  { value: 'contacto', label: 'LinkedIn 아웃리치' },
+  { value: 'deep', label: '기업 심층 리서치' },
+  { value: 'interview-prep', label: '면접 준비' },
+  { value: 'pdf', label: 'CV PDF 생성' },
+  { value: 'training', label: '교육/자격증 평가' },
+  { value: 'project', label: '프로젝트 평가' },
+  { value: 'tracker', label: '지원 현황' },
+  { value: 'pipeline', label: '인박스 처리' },
+  { value: 'apply', label: '지원서 작성' },
+  { value: 'scan', label: '공고 스캔' },
+  { value: 'batch', label: '배치 평가' },
+  { value: 'patterns', label: '패턴 분석' },
+  { value: 'followup', label: '후속 연락' },
 ];
 
 export const careerCommands: CareerCommand[] = [

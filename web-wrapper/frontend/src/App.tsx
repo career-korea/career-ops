@@ -18,7 +18,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { ApiError, get, post, postStream, put } from './api';
-import { careerCommands, modeOptions, tabs } from './constants';
+import { careerCommands, modeOptions, modelOptions, tabs } from './constants';
 import { CommandGrid } from './components/CommandGrid';
 import { Footer } from './components/Footer';
 import { OnboardingStrip } from './components/OnboardingStrip';
@@ -59,6 +59,7 @@ export function App() {
   const [loading, setLoading] = useState(false);
   const [jd, setJd] = useState('');
   const [mode, setMode] = useState('auto');
+  const [model, setModel] = useState(''); // '' = 서버 기본 모델. 비용 절감 시 'haiku'.
   const [selectedApiMode, setSelectedApiMode] = useState('auto-pipeline');
   const [commandInput, setCommandInput] = useState('');
   const [commands, setCommands] = useState<CareerCommand[]>(careerCommands);
@@ -207,18 +208,27 @@ export function App() {
   // post-run refresh and error handling stay unchanged.
   async function streamCareerOps(resolvedMode: string, input: string): Promise<CommandResult> {
     let buffer = '';
+    let activity = '';
     let final: CommandResult | undefined;
-    await postStream('/api/career-ops/stream', { mode: resolvedMode, input }, (event) => {
+    const paint = () =>
+      setResult({
+        ok: true,
+        returncode: 0,
+        command: ['claude-agent-sdk', 'career-ops'],
+        stdout: buffer,
+        mode: resolvedMode || undefined,
+        streaming: true,
+        activity: activity || undefined,
+      });
+    await postStream('/api/career-ops/stream', { mode: resolvedMode, input, model: model || undefined }, (event) => {
       if (event.type === 'delta' && event.text) {
+        // 본문이 흐르기 시작하면 도구 활동 라인은 비운다.
         buffer += event.text;
-        setResult({
-          ok: true,
-          returncode: 0,
-          command: ['claude-agent-sdk', 'career-ops'],
-          stdout: buffer,
-          mode: resolvedMode || undefined,
-          streaming: true,
-        });
+        activity = '';
+        paint();
+      } else if (event.type === 'status' && event.text) {
+        activity = event.text;
+        paint();
       } else if (event.type === 'done' && event.result) {
         final = event.result as CommandResult;
       } else if (event.type === 'error') {
@@ -299,6 +309,8 @@ export function App() {
           setJd={setJd}
           mode={mode}
           setMode={setMode}
+          model={model}
+          setModel={setModel}
           commands={commands}
           pipeline={pipeline}
           tracker={tracker}
@@ -324,6 +336,8 @@ export function App() {
           setJd={setJd}
           mode={mode}
           setMode={setMode}
+          model={model}
+          setModel={setModel}
           commands={commands}
           pipeline={pipeline}
           tracker={tracker}
@@ -485,6 +499,8 @@ type WorkspacePageProps = {
   setJd: (value: string) => void;
   mode: string;
   setMode: (value: string) => void;
+  model: string;
+  setModel: (value: string) => void;
   commands: CareerCommand[];
   pipeline: PipelineItem[];
   tracker: TrackerRow[];
@@ -510,6 +526,8 @@ function WorkspacePage({
   setJd,
   mode,
   setMode,
+  model,
+  setModel,
   commands,
   pipeline,
   tracker,
@@ -571,9 +589,14 @@ function WorkspacePage({
               <>
                 <div className="section-head">
                   <div><span className="kicker">직무 인텔리전스</span><h2>채용 공고를 평가하거나 career-ops 모드를 실행하세요.</h2></div>
-                  <select value={mode} onChange={(e) => setMode(e.target.value)} aria-label="Career ops mode">
-                    {modeOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                  </select>
+                  <div className="head-controls">
+                    <select value={mode} onChange={(e) => setMode(e.target.value)} aria-label="Career ops mode">
+                      {modeOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                    </select>
+                    <select value={model} onChange={(e) => setModel(e.target.value)} aria-label="모델 선택">
+                      {modelOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                    </select>
+                  </div>
                 </div>
                 <textarea rows={13} value={jd} onChange={(e) => setJd(e.target.value)} placeholder="직무 URL, 전체 JD, 또는 지시사항을 붙여넣으세요." />
                 <div className="button-row">
@@ -636,6 +659,8 @@ type OfferFitPageProps = {
   setJd: (value: string) => void;
   mode: string;
   setMode: (value: string) => void;
+  model: string;
+  setModel: (value: string) => void;
   commands: CareerCommand[];
   pipeline: PipelineItem[];
   tracker: TrackerRow[];
@@ -643,7 +668,7 @@ type OfferFitPageProps = {
   runCareerOps: (selectedMode: string, input: string) => Promise<CommandResult>;
 };
 
-function OfferFitPage({ health, result, loading, jd, setJd, mode, setMode, commands, pipeline, tracker, run, runCareerOps }: OfferFitPageProps) {
+function OfferFitPage({ health, result, loading, jd, setJd, mode, setMode, model, setModel, commands, pipeline, tracker, run, runCareerOps }: OfferFitPageProps) {
   return (
     <>
       <section className="focus-hero offer-hero">
@@ -670,9 +695,14 @@ function OfferFitPage({ health, result, loading, jd, setJd, mode, setMode, comma
         <div className="focus-panel">
           <div className="section-head">
             <div><span className="kicker">직무 인텔리전스</span><h2>채용 공고를 평가하거나 career-ops 모드를 실행하세요.</h2></div>
-            <select value={mode} onChange={(e) => setMode(e.target.value)} aria-label="Career ops mode">
-              {modeOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-            </select>
+            <div className="head-controls">
+              <select value={mode} onChange={(e) => setMode(e.target.value)} aria-label="Career ops mode">
+                {modeOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+              </select>
+              <select value={model} onChange={(e) => setModel(e.target.value)} aria-label="모델 선택">
+                {modelOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+              </select>
+            </div>
           </div>
           <textarea rows={13} value={jd} onChange={(e) => setJd(e.target.value)} placeholder="직무 URL, 전체 JD, 또는 지시사항을 붙여넣으세요." />
           <div className="button-row">
