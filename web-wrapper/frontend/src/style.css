@@ -2252,3 +2252,35 @@ tr:last-child td { border-bottom: 0; }
   color: var(--muted);
   font-size: 12px;
 }
+
+/* 법적 페이지·이용권·푸터 모바일 보정 (전역 button{width:100%} 오버라이드 포함) */
+@media (max-width: 620px) {
+  .legal-page,
+  .pricing-page {
+    padding: 20px 16px;
+    border-radius: 14px;
+  }
+
+  .legal-body h2 { margin-top: 20px; }
+
+  .site-footer {
+    margin-top: 28px;
+    padding: 20px 16px;
+  }
+
+  /* 정책 링크/인라인 링크는 텍스트 버튼이므로 full-width로 늘어나지 않게 한다 */
+  .footer-links button,
+  .inline-link {
+    width: auto;
+  }
+
+  .footer-links {
+    gap: 8px 16px;
+  }
+
+  .footer-business {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-business dt { min-width: 72px; }
+}
