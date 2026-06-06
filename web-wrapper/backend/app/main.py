@@ -100,7 +100,7 @@ def startup():
 
 
 def public_user(row):
-    return {"id": row["id"], "email": row["email"]} if row else None
+    return {"id": row["id"], "email": row["email"], "plan": row.get("plan", "free")} if row else None
 
 
 def require_user(request: Request):
@@ -115,10 +115,17 @@ def optional_user(request: Request):
 
 
 def gate_agent(user=Depends(require_user)):
-    """Block LLM-cost endpoints once a user hits their daily budget (resets at UTC
-    midnight). The per-run ceiling (MAX_AGENT_BUDGET_USD) bounds overshoot."""
-    if db.usage_today_usd(user["id"]) >= settings.daily_budget_usd:
-        raise HTTPException(status_code=402, detail="오늘 사용 한도를 초과했습니다. 내일 다시 이용해 주세요.")
+    """Block LLM-cost endpoints once a user hits their plan's daily budget (resets
+    at UTC midnight). Free users are prompted to buy a pass; paid users wait for
+    the reset. The per-run ceiling (MAX_AGENT_BUDGET_USD) bounds overshoot."""
+    is_paid = user.get("plan") == "paid"
+    limit = settings.paid_daily_budget_usd if is_paid else settings.daily_budget_usd
+    if db.usage_today_usd(user["id"]) >= limit:
+        if is_paid:
+            detail = {"code": "paid_quota_exceeded", "message": "오늘 한도를 모두 사용했어요. 내일 다시 이용해 주세요."}
+        else:
+            detail = {"code": "free_quota_exceeded", "message": "오늘 무료 한도를 다 쓰셨어요. 이용권을 확인해 주세요."}
+        raise HTTPException(status_code=402, detail=detail)
     return user
 
 

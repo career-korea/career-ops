@@ -66,6 +66,11 @@ def init_db() -> None:
         conn.execute(
             "CREATE INDEX IF NOT EXISTS usage_events_user_idx ON usage_events (user_id, created_at)"
         )
+        # Billing tier. 'free' = daily_budget_usd, 'paid' = paid_daily_budget_usd.
+        # Flipped to 'paid' by the payment flow (Phase B). Idempotent add.
+        conn.execute(
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS plan TEXT NOT NULL DEFAULT 'free'"
+        )
 
 
 def hash_password(password: str, salt: str | None = None) -> str:
@@ -108,7 +113,7 @@ def find_user_by_email(email: str) -> Row | None:
 
 def find_user_by_id(user_id: int) -> Row | None:
     with connect() as conn:
-        return conn.execute("SELECT id, email, created_at FROM users WHERE id = %s", (user_id,)).fetchone()
+        return conn.execute("SELECT id, email, created_at, plan FROM users WHERE id = %s", (user_id,)).fetchone()
 
 
 def create_session(user_id: int) -> str:

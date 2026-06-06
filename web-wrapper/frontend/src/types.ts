@@ -45,6 +45,7 @@ export type Health = {
 export type User = {
   id: number;
   email: string;
+  plan?: string;
 };
 
 export type SetupData = {
