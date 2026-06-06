@@ -319,44 +319,37 @@ def _assistant_text(message: Any) -> str:
     return "\n".join(parts)
 
 
-async def run_agent(
-    user_id: int,
-    raw_mode: str = "",
-    invocation: str = "",
-    model: str | None = None,
-    max_turns: int = 20,
-    max_budget_usd: float | None = None,
-    no_save: bool = False,
-) -> dict[str, Any]:
+def _import_sdk():
     try:
-        from claude_agent_sdk import (
-            AgentDefinition,
-            AssistantMessage,
-            ClaudeAgentOptions,
-            ResultMessage,
-            SystemMessage,
-            query,
-        )
+        import claude_agent_sdk as sdk
     except ImportError as exc:
         raise RuntimeError(
             "claude-agent-sdk is not installed. Run `pip install -r web-wrapper/backend/requirements.txt`."
         ) from exc
+    return sdk
 
+
+def _agent_setup(
+    user_id: int,
+    raw_mode: str,
+    invocation: str,
+    model: str | None,
+    max_turns: int,
+    max_budget_usd: float | None,
+    no_save: bool,
+    partial: bool = False,
+):
+    """Build the agent run inputs shared by the buffered and streaming paths.
+
+    Returns (mode, root, prompt, options). For the discovery short-circuit (no
+    LLM call) options is None and prompt holds the static help text.
+    """
+    sdk = _import_sdk()
     root = career_root(user_id)
     mode = resolve_mode(raw_mode, invocation)
     prompt = build_agent_prompt(mode, root, invocation, no_save=no_save)
     if mode == "discovery":
-        return {
-            "ok": True,
-            "command": ["career-ops", "discovery"],
-            "cwd": str(root),
-            "returncode": 0,
-            "stdout": prompt,
-            "stderr": "",
-            "mode": mode,
-            "session_id": None,
-            "messages": [],
-        }
+        return mode, root, prompt, None
 
     # Clamp client-supplied limits to server ceilings (cost/abuse guardrail).
     max_turns = max(1, min(max_turns, MAX_AGENT_TURNS))
@@ -390,7 +383,7 @@ async def run_agent(
             "return concise, evidence-backed results."
         )
         agents = {
-            "career-ops-worker": AgentDefinition(
+            "career-ops-worker": sdk.AgentDefinition(
                 description=f"career-ops {mode} worker",
                 prompt=worker_prompt,
                 tools=allowed_tools,
@@ -403,7 +396,7 @@ async def run_agent(
             + prompt
         )
 
-    options = ClaudeAgentOptions(
+    options = sdk.ClaudeAgentOptions(
         allowed_tools=allowed_tools,
         permission_mode=permission_mode,
         cwd=str(root),
@@ -414,7 +407,40 @@ async def run_agent(
         agents=agents,
         mcp_servers=mcp_servers,
         hooks=hooks,
+        include_partial_messages=partial,
     )
+    return mode, root, prompt, options
+
+
+def _discovery_payload(root: Path, prompt: str, mode: str) -> dict[str, Any]:
+    return {
+        "ok": True,
+        "command": ["career-ops", "discovery"],
+        "cwd": str(root),
+        "returncode": 0,
+        "stdout": prompt,
+        "stderr": "",
+        "mode": mode,
+        "session_id": None,
+        "messages": [],
+    }
+
+
+async def run_agent(
+    user_id: int,
+    raw_mode: str = "",
+    invocation: str = "",
+    model: str | None = None,
+    max_turns: int = 20,
+    max_budget_usd: float | None = None,
+    no_save: bool = False,
+) -> dict[str, Any]:
+    sdk = _import_sdk()
+    mode, root, prompt, options = _agent_setup(
+        user_id, raw_mode, invocation, model, max_turns, max_budget_usd, no_save
+    )
+    if options is None:
+        return _discovery_payload(root, prompt, mode)
 
     stdout_parts: list[str] = []
     stderr_parts: list[str] = []
@@ -423,15 +449,15 @@ async def run_agent(
     returncode = 0
     cost_usd = 0.0
 
-    async for message in query(prompt=prompt, options=options):
+    async for message in sdk.query(prompt=prompt, options=options):
         messages.append(_message_to_dict(message))
-        if isinstance(message, SystemMessage) and getattr(message, "subtype", None) == "init":
+        if isinstance(message, sdk.SystemMessage) and getattr(message, "subtype", None) == "init":
             session_id = getattr(message, "data", {}).get("session_id")
-        elif isinstance(message, AssistantMessage):
+        elif isinstance(message, sdk.AssistantMessage):
             text = _assistant_text(message)
             if text:
                 stdout_parts.append(text)
-        elif isinstance(message, ResultMessage):
+        elif isinstance(message, sdk.ResultMessage):
             result = getattr(message, "result", None)
             if result:
                 stdout_parts.append(str(result))
@@ -455,6 +481,83 @@ async def run_agent(
         "messages": messages,
         "cost_usd": cost_usd,
         "onboarding": onboarding_status(user_id),
+    }
+
+
+async def stream_agent(
+    user_id: int,
+    raw_mode: str = "",
+    invocation: str = "",
+    model: str | None = None,
+    max_turns: int = 20,
+    max_budget_usd: float | None = None,
+    no_save: bool = False,
+):
+    """Token-by-token variant of run_agent.
+
+    Yields event dicts: {"type": "delta", "text": ...} as assistant text streams
+    in, and a final {"type": "done", "result": {...}} carrying the same payload
+    shape run_agent returns (minus the per-message dump). The SDK still emits the
+    full AssistantMessage/ResultMessage objects at the end of each turn, so the
+    authoritative stdout is rebuilt from those — the deltas are purely for live UX.
+    """
+    sdk = _import_sdk()
+    mode, root, prompt, options = _agent_setup(
+        user_id, raw_mode, invocation, model, max_turns, max_budget_usd, no_save, partial=True
+    )
+    if options is None:
+        yield {"type": "delta", "text": prompt}
+        yield {"type": "done", "result": _discovery_payload(root, prompt, mode)}
+        return
+
+    stdout_parts: list[str] = []
+    stderr_parts: list[str] = []
+    session_id = None
+    returncode = 0
+    cost_usd = 0.0
+
+    async for message in sdk.query(prompt=prompt, options=options):
+        if isinstance(message, sdk.StreamEvent):
+            event = message.event or {}
+            if event.get("type") == "content_block_delta":
+                delta = event.get("delta") or {}
+                if delta.get("type") == "text_delta":
+                    text = delta.get("text") or ""
+                    if text:
+                        yield {"type": "delta", "text": text}
+            continue
+        if isinstance(message, sdk.SystemMessage) and getattr(message, "subtype", None) == "init":
+            session_id = getattr(message, "data", {}).get("session_id")
+        elif isinstance(message, sdk.AssistantMessage):
+            text = _assistant_text(message)
+            if text:
+                stdout_parts.append(text)
+        elif isinstance(message, sdk.ResultMessage):
+            result = getattr(message, "result", None)
+            if result:
+                stdout_parts.append(str(result))
+            total_cost = getattr(message, "total_cost_usd", None)
+            if total_cost is not None:
+                cost_usd = float(total_cost)
+            subtype = getattr(message, "subtype", None)
+            if subtype and subtype not in {"success", "completion"}:
+                returncode = 1
+                stderr_parts.append(str(subtype))
+
+    yield {
+        "type": "done",
+        "result": {
+            "ok": returncode == 0,
+            "command": ["claude-agent-sdk", "career-ops", mode],
+            "cwd": str(root),
+            "returncode": returncode,
+            "stdout": "\n\n".join(part for part in stdout_parts if part),
+            "stderr": "\n".join(stderr_parts),
+            "mode": mode,
+            "session_id": session_id,
+            "cost_usd": cost_usd,
+            "onboarding": onboarding_status(user_id),
+        },
     }
 
 

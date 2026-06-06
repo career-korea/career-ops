@@ -13,6 +13,7 @@ export type CommandResult = {
   stderr?: string;
   mode?: string;
   onboarding?: Record<string, boolean>;
+  streaming?: boolean;
 };
 
 export type TrackerRow = {

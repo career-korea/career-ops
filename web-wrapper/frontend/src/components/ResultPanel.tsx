@@ -24,7 +24,12 @@ export function ResultPanel({ result }: { result?: CommandResult }) {
         {result.mode && <span className="mode-chip">{result.mode}</span>}
       </div>
       {result.command && <div className="command-line">{result.command.join(' ')}</div>}
-      {result.stdout && <pre>{result.stdout}</pre>}
+      {result.stdout && (
+        <pre>
+          {result.stdout}
+          {result.streaming && <span className="stream-cursor" aria-hidden="true" />}
+        </pre>
+      )}
       {result.stderr && <pre className="stderr">{result.stderr}</pre>}
     </aside>
   );

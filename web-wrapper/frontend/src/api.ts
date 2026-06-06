@@ -14,8 +14,7 @@ export class ApiError extends Error {
   }
 }
 
-async function handle<T>(res: Response): Promise<T> {
-  if (res.ok) return res.json() as Promise<T>;
+async function toApiError(res: Response): Promise<ApiError> {
   const text = await res.text();
   let detail: unknown = text;
   let message = text;
@@ -30,7 +29,57 @@ async function handle<T>(res: Response): Promise<T> {
   } catch {
     // non-JSON body; keep the raw text
   }
-  throw new ApiError(res.status, detail, message);
+  return new ApiError(res.status, detail, message);
+}
+
+async function handle<T>(res: Response): Promise<T> {
+  if (res.ok) return res.json() as Promise<T>;
+  throw await toApiError(res);
+}
+
+export type StreamEvent = {
+  type: 'delta' | 'done' | 'error';
+  text?: string;
+  result?: unknown;
+  message?: string;
+};
+
+// POST that consumes a Server-Sent Events stream. Pre-stream failures (401/402
+// from the auth/quota gates) arrive as a JSON error body, so we throw ApiError
+// the same way `handle` does — callers keep their existing status branching.
+export async function postStream(
+  path: string,
+  body: unknown,
+  onEvent: (event: StreamEvent) => void,
+): Promise<void> {
+  const res = await fetch(`${API}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    credentials: 'include',
+  });
+  if (!res.ok || !res.body) throw await toApiError(res);
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    let sep: number;
+    while ((sep = buffer.indexOf('\n\n')) !== -1) {
+      const frame = buffer.slice(0, sep);
+      buffer = buffer.slice(sep + 2);
+      const dataLine = frame.split('\n').find((line) => line.startsWith('data:'));
+      if (!dataLine) continue;
+      try {
+        onEvent(JSON.parse(dataLine.slice(5).trim()) as StreamEvent);
+      } catch {
+        // ignore malformed frame
+      }
+    }
+  }
 }
 
 export async function post<T>(path: string, body: unknown = {}): Promise<T> {

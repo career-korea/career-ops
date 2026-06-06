@@ -17,7 +17,7 @@ import {
   Settings,
   Sparkles,
 } from 'lucide-react';
-import { ApiError, get, post, put } from './api';
+import { ApiError, get, post, postStream, put } from './api';
 import { careerCommands, modeOptions, tabs } from './constants';
 import { CommandGrid } from './components/CommandGrid';
 import { Footer } from './components/Footer';
@@ -202,13 +202,38 @@ export function App() {
     }
   }
 
+  // Stream the agent run: paint each text delta into the result panel live (like
+  // ChatGPT/Claude), then resolve to the authoritative final result so run()'s
+  // post-run refresh and error handling stay unchanged.
+  async function streamCareerOps(resolvedMode: string, input: string): Promise<CommandResult> {
+    let buffer = '';
+    let final: CommandResult | undefined;
+    await postStream('/api/career-ops/stream', { mode: resolvedMode, input }, (event) => {
+      if (event.type === 'delta' && event.text) {
+        buffer += event.text;
+        setResult({
+          ok: true,
+          returncode: 0,
+          command: ['claude-agent-sdk', 'career-ops'],
+          stdout: buffer,
+          mode: resolvedMode || undefined,
+          streaming: true,
+        });
+      } else if (event.type === 'done' && event.result) {
+        final = event.result as CommandResult;
+      } else if (event.type === 'error') {
+        throw new Error(event.message || '스트림 처리 중 오류가 발생했습니다');
+      }
+    });
+    return final ?? { ok: true, returncode: 0, stdout: buffer };
+  }
+
   function runCareerOps(selectedMode: string, input: string) {
-    const resolvedMode = selectedMode === 'auto' ? '' : selectedMode;
-    return post<CommandResult>('/api/career-ops', { mode: resolvedMode, input });
+    return streamCareerOps(selectedMode === 'auto' ? '' : selectedMode, input);
   }
 
   function runCareerOpsMode(selectedMode: string, input: string) {
-    return post<CommandResult>(`/api/career-ops/${selectedMode}`, { input });
+    return streamCareerOps(selectedMode === 'auto-pipeline' ? '' : selectedMode, input);
   }
 
   async function logout() {
@@ -547,7 +572,7 @@ function WorkspacePage({
                 <div className="section-head">
                   <div><span className="kicker">직무 인텔리전스</span><h2>채용 공고를 평가하거나 career-ops 모드를 실행하세요.</h2></div>
                   <select value={mode} onChange={(e) => setMode(e.target.value)} aria-label="Career ops mode">
-                    {modeOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                    {modeOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                   </select>
                 </div>
                 <textarea rows={13} value={jd} onChange={(e) => setJd(e.target.value)} placeholder="직무 URL, 전체 JD, 또는 지시사항을 붙여넣으세요." />
@@ -646,7 +671,7 @@ function OfferFitPage({ health, result, loading, jd, setJd, mode, setMode, comma
           <div className="section-head">
             <div><span className="kicker">직무 인텔리전스</span><h2>채용 공고를 평가하거나 career-ops 모드를 실행하세요.</h2></div>
             <select value={mode} onChange={(e) => setMode(e.target.value)} aria-label="Career ops mode">
-              {modeOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+              {modeOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
             </select>
           </div>
           <textarea rows={13} value={jd} onChange={(e) => setJd(e.target.value)} placeholder="직무 URL, 전체 JD, 또는 지시사항을 붙여넣으세요." />
