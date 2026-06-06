@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     command_timeout_seconds: int = 180
     session_cookie_samesite: str = ""
     session_cookie_secure: str = ""
+    # Per-user daily LLM cost ceiling (USD). Agent endpoints are blocked once a
+    # user's same-day usage reaches this; resets at UTC midnight. Env-overridable.
+    daily_budget_usd: float = 2.0
 
     @property
     def root_path(self) -> Path:

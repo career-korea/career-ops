@@ -285,6 +285,15 @@ def build_agent_prompt(mode: str, root: Path, invocation: str = "", no_save: boo
     )
     if no_save:
         sections.append("# Runtime Constraint\n\nDo not save files or update trackers unless explicitly required to answer.")
+    else:
+        from app.services.agent_tools import script_key_list
+        sections.append(
+            "# Tooling\n\n"
+            "No shell is available. To run a repository script, use the `run_script` tool "
+            "(e.g. `node merge-tracker.mjs` becomes run_script(name=\"merge\", args=[])). "
+            "Allowed script keys: " + ", ".join(script_key_list()) + ". "
+            "All file access is restricted to this workspace; do not attempt paths outside it."
+        )
     sections.append(
         "# Execution Contract\n\n"
         "Follow the loaded career-ops mode instructions. Use the repository files as source of truth. "
@@ -354,15 +363,25 @@ async def run_agent(
     budget_ceiling = MAX_AGENT_BUDGET_USD
     max_budget_usd = min(max_budget_usd, budget_ceiling) if max_budget_usd else budget_ceiling
 
+    # Sandboxing: no raw shell. The agent runs repo scripts via the run_script MCP
+    # tool, and a PreToolUse hook jails file tools to this user's workspace so a
+    # prompt-injected run cannot read another user's files. See agent_tools.py.
+    from app.services.agent_tools import build_career_mcp_server, build_workspace_hooks
+
+    script_tool = "mcp__career__run_script"
     allowed_tools = ["Read", "Glob", "Grep", "WebFetch", "WebSearch"]
-    disallowed_tools: list[str] = []
+    disallowed_tools: list[str] = ["Bash"]
+    mcp_servers: dict = {}
     if no_save:
-        allowed_tools.extend(["Bash"])
+        # Read-only: no writes, no script execution.
         disallowed_tools.extend(["Write", "Edit"])
         permission_mode = None
     else:
-        allowed_tools.extend(["Write", "Edit", "Bash"])
+        allowed_tools.extend(["Write", "Edit", script_tool])
+        mcp_servers["career"] = build_career_mcp_server(root)
         permission_mode = "acceptEdits"
+
+    hooks = build_workspace_hooks(root)
 
     agents = None
     if mode in DELEGATED_MODES:
@@ -393,6 +412,8 @@ async def run_agent(
         max_budget_usd=max_budget_usd,
         disallowed_tools=disallowed_tools,
         agents=agents,
+        mcp_servers=mcp_servers,
+        hooks=hooks,
     )
 
     stdout_parts: list[str] = []

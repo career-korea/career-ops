@@ -160,6 +160,17 @@ def usage_total_usd(user_id: int) -> float:
     return float(row["total"]) if row else 0.0
 
 
+def usage_today_usd(user_id: int) -> float:
+    """Sum of a user's cost since UTC midnight (used for the daily budget gate)."""
+    with connect() as conn:
+        row = conn.execute(
+            "SELECT COALESCE(SUM(cost_usd), 0) AS total FROM usage_events "
+            "WHERE user_id = %s AND created_at >= date_trunc('day', now() AT TIME ZONE 'utc')",
+            (user_id,),
+        ).fetchone()
+    return float(row["total"]) if row else 0.0
+
+
 def get_setup(user_id: int) -> Row:
     now = datetime.now(timezone.utc)
     with connect() as conn:

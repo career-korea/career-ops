@@ -114,6 +114,14 @@ def optional_user(request: Request):
     return db.user_from_session(request.cookies.get(SESSION_COOKIE))
 
 
+def gate_agent(user=Depends(require_user)):
+    """Block LLM-cost endpoints once a user hits their daily budget (resets at UTC
+    midnight). The per-run ceiling (MAX_AGENT_BUDGET_USD) bounds overshoot."""
+    if db.usage_today_usd(user["id"]) >= settings.daily_budget_usd:
+        raise HTTPException(status_code=402, detail="오늘 사용 한도를 초과했습니다. 내일 다시 이용해 주세요.")
+    return user
+
+
 def _is_secure_request(request: Request) -> bool:
     proto = request.headers.get("x-forwarded-proto", request.url.scheme)
     return proto == "https"
@@ -264,7 +272,7 @@ def pipeline(user=Depends(require_user)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/scan")
-async def scan(req: ScanRequest, user=Depends(require_user)):
+async def scan(req: ScanRequest, user=Depends(gate_agent)):
     try:
         sync_user_setup(user)
         details = [
@@ -277,7 +285,7 @@ async def scan(req: ScanRequest, user=Depends(require_user)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/evaluate")
-async def evaluate(req: EvaluateRequest, user=Depends(require_user)):
+async def evaluate(req: EvaluateRequest, user=Depends(gate_agent)):
     try:
         sync_user_setup(user)
         return await run_and_meter(user, career_ops.run_agent(user["id"], "", req.jd_text, model=req.model, no_save=req.no_save))
@@ -285,7 +293,7 @@ async def evaluate(req: EvaluateRequest, user=Depends(require_user)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/career-ops")
-async def career_ops_agent(req: CareerOpsRequest, user=Depends(require_user)):
+async def career_ops_agent(req: CareerOpsRequest, user=Depends(gate_agent)):
     try:
         sync_user_setup(user)
         return await run_and_meter(user, career_ops.run_agent(
@@ -303,7 +311,7 @@ async def career_ops_agent(req: CareerOpsRequest, user=Depends(require_user)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/career-ops/{mode}")
-async def career_ops_mode(mode: str, req: CareerOpsInputRequest, user=Depends(require_user)):
+async def career_ops_mode(mode: str, req: CareerOpsInputRequest, user=Depends(gate_agent)):
     if mode not in CAREER_OPS_ROUTE_MODES:
         allowed = ", ".join(sorted(CAREER_OPS_ROUTE_MODES))
         raise HTTPException(status_code=400, detail=f"Unsupported career-ops mode: {mode}. Allowed: {allowed}")
