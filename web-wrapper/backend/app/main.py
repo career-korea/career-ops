@@ -1,11 +1,12 @@
 
+import json
 import re
 import time
 from collections import defaultdict, deque
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from app.config import settings
 from app import db
 from app.models import (
@@ -173,6 +174,34 @@ async def run_and_meter(user, coro) -> dict:
     return result
 
 
+# SSE headers: defeat proxy buffering so deltas reach the browser as they are
+# produced (Railway/nginx honor X-Accel-Buffering).
+_SSE_HEADERS = {"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
+
+
+async def stream_and_meter(user, agen):
+    """Relay agent stream events as SSE frames, metering the run on completion."""
+    final_result = None
+    try:
+        async for event in agen:
+            if event.get("type") == "done":
+                final_result = event.get("result")
+            yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
+    except Exception as e:  # surface failures to the client instead of a dead stream
+        yield f"data: {json.dumps({'type': 'error', 'message': str(e)}, ensure_ascii=False)}\n\n"
+    finally:
+        if final_result is not None:
+            try:
+                db.record_usage(
+                    user["id"],
+                    final_result.get("mode", ""),
+                    final_result.get("cost_usd", 0.0),
+                    final_result.get("ok", False),
+                )
+            except Exception:
+                pass  # metering must never break the user-facing response
+
+
 def sync_user_setup(user) -> dict[str, bool]:
     setup = db.get_setup(user["id"])
     return workspace.materialize_setup(
@@ -316,6 +345,26 @@ async def career_ops_agent(req: CareerOpsRequest, user=Depends(gate_agent)):
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/career-ops/stream")
+async def career_ops_stream(req: CareerOpsRequest, user=Depends(gate_agent)):
+    # Defined before /api/career-ops/{mode} so "stream" is not captured as a mode.
+    # The frontend passes the resolved mode in the body (auto-pipeline -> "").
+    sync_user_setup(user)
+    agen = career_ops.stream_agent(
+        user["id"],
+        req.mode,
+        req.input,
+        model=req.model,
+        max_turns=req.max_turns,
+        max_budget_usd=req.max_budget_usd,
+        no_save=req.no_save,
+    )
+    return StreamingResponse(
+        stream_and_meter(user, agen),
+        media_type="text/event-stream",
+        headers=_SSE_HEADERS,
+    )
 
 @app.post("/api/career-ops/{mode}")
 async def career_ops_mode(mode: str, req: CareerOpsInputRequest, user=Depends(gate_agent)):

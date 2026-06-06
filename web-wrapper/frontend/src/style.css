@@ -1646,6 +1646,25 @@ pre.stderr {
   color: var(--danger);
 }
 
+.stream-cursor {
+  display: inline-block;
+  width: 7px;
+  height: 1.05em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  background: currentColor;
+  opacity: .7;
+  animation: stream-blink 1s steps(2, start) infinite;
+}
+
+@keyframes stream-blink {
+  50% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stream-cursor { animation: none; }
+}
+
 .table-wrap {
   overflow: auto;
   border: 1px solid var(--line);
