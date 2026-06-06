@@ -1213,6 +1213,39 @@ h3 {
   background: var(--warning-soft);
 }
 
+.toast-notice {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  max-width: min(92vw, 460px);
+  padding: 12px 18px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 850;
+  text-align: center;
+  box-shadow: 0 12px 30px rgba(20, 30, 28, .16);
+  animation: toast-in .22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.toast-notice.ok {
+  color: #0c6d5c;
+  background: rgba(143, 199, 192, .96);
+  border: 1px solid rgba(12, 109, 92, .25);
+}
+
+.toast-notice.warn {
+  color: var(--warning);
+  background: var(--warning-soft);
+  border: 1px solid rgba(138, 95, 0, .28);
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translate(-50%, -10px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
 .product-shell {
   display: grid;
   grid-template-columns: 172px minmax(0, 1fr);
@@ -2018,4 +2051,204 @@ tr:last-child td { border-bottom: 0; }
   .folio-sheet.offset {
     right: 16%;
   }
+}
+
+/* ── 법적 페이지(약관·개인정보·환불) + 이용권 + 푸터 ───────────────── */
+.legal-page,
+.pricing-page {
+  width: min(880px, 100%);
+  margin: 0 auto;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--paper);
+}
+
+.legal-head {
+  padding-bottom: 18px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--line);
+}
+
+.legal-head h1 {
+  margin: 12px 0 6px;
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 800;
+  letter-spacing: -.02em;
+}
+
+.legal-head p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.legal-body h2 {
+  margin: 26px 0 10px;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.legal-body p,
+.legal-body li {
+  color: var(--ink-soft);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.legal-body ul {
+  margin: 0 0 6px;
+  padding-left: 20px;
+}
+
+.legal-body li { margin-bottom: 4px; }
+
+/* 이용권 카드 */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+  margin-top: 8px;
+}
+
+.pricing-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--paper-2);
+}
+
+.pricing-card.highlighted {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.pricing-badge {
+  position: absolute;
+  top: -11px;
+  right: 18px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.pricing-card h2 { margin: 0; font-size: 19px; font-weight: 800; }
+
+.pricing-amount {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.pricing-amount strong { font-size: 28px; font-weight: 800; }
+.pricing-amount small { color: var(--muted); font-size: 12px; }
+.pricing-desc { margin: 0; color: var(--ink-soft); font-size: 14px; }
+
+.pricing-features {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.pricing-features li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+
+.pricing-features svg { color: var(--teal); flex-shrink: 0; }
+.pricing-validity { margin: 0; color: var(--muted); font-size: 13px; }
+
+.pricing-buy { margin-top: auto; width: 100%; }
+.pricing-buy:disabled { opacity: .55; cursor: not-allowed; }
+
+.pricing-note {
+  margin-top: 22px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.inline-link {
+  display: inline;
+  min-height: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* 사업자 정보 푸터 */
+.site-footer {
+  margin-top: 40px;
+  padding: 26px 24px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--paper);
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.footer-links button {
+  min-height: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--ink-soft);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.footer-links button:hover { color: var(--accent); }
+
+.footer-business {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 6px 24px;
+  margin: 0;
+}
+
+.footer-business div {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.footer-business dt {
+  flex-shrink: 0;
+  min-width: 84px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.footer-business dd { margin: 0; color: var(--ink-soft); }
+.footer-business a { color: var(--accent); }
+
+.footer-copyright {
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: 12px;
 }
