@@ -20,6 +20,9 @@ class AuthRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8, max_length=200)
 
+class GoogleAuthRequest(BaseModel):
+    credential: str = Field(..., min_length=1)
+
 class UserResponse(BaseModel):
     id: int
     email: str

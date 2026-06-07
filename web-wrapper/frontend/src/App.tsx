@@ -25,6 +25,7 @@ import { ApiError, del, get, post, postStream, put } from './api';
 import { careerCommands, modeOptions, modelOptions, tabs } from './constants';
 import { CommandGrid } from './components/CommandGrid';
 import { Footer } from './components/Footer';
+import { GoogleButton } from './components/GoogleButton';
 import { OnboardingStrip } from './components/OnboardingStrip';
 import { PipelineList } from './components/PipelineList';
 import { ResultPage } from './components/ResultPage';
@@ -39,7 +40,7 @@ import type { CareerCommand, CommandResult, Health, Page, PipelineItem, RunDetai
 
 // 해시 라우팅: 공개 페이지(약관·개인정보·환불·이용권)를 공유 가능한 URL로 노출하기 위함.
 // 결제 가맹 심사 시 심사관이 로그인 없이 해당 URL에 직접 접근할 수 있어야 한다.
-const PAGES: Page[] = ['workspace', 'offer', 'discover', 'api', 'result', 'setup', 'account', 'terms', 'privacy', 'refund', 'pricing'];
+const PAGES: Page[] = ['workspace', 'offer', 'discover', 'api', 'result', 'setup', 'account', 'login', 'signup', 'terms', 'privacy', 'refund', 'pricing'];
 
 function pageFromHash(): Page | null {
   const raw = window.location.hash.replace(/^#\/?/, '');
@@ -199,7 +200,7 @@ export function App() {
   async function run(action: () => Promise<CommandResult>) {
     if (!user) {
       showNotice('로그인이 필요합니다', 'warn');
-      setPage('setup');
+      setPage('login');
       return;
     }
     // 실행 시작과 동시에 전용 결과 페이지로 전환해 스트리밍을 전체 너비로 본다.
@@ -219,7 +220,7 @@ export function App() {
       if (e instanceof ApiError) {
         if (e.status === 401) {
           showNotice('로그인이 필요합니다', 'warn');
-          setPage('setup');
+          setPage('login');
           return;
         }
         if (e.status === 402) {
@@ -401,10 +402,15 @@ export function App() {
             로그아웃
           </button>
         ) : (
-          <button className="nav-status login-action" onClick={() => setPage('setup')} aria-label="Login">
-            <span className="connection offline" />
-            로그인
-          </button>
+          <div className="auth-nav-actions">
+            <button className="nav-status login-action" onClick={() => setPage('login')} aria-label="Login">
+              <span className="connection offline" />
+              로그인
+            </button>
+            <button className="nav-status signup-action" onClick={() => setPage('signup')} aria-label="Sign up">
+              회원가입
+            </button>
+          </div>
         )}
       </header>
 
@@ -484,16 +490,28 @@ export function App() {
         <ResultPage result={result} loading={loading} selectedRun={selectedRun} onOpenHistory={() => setHistoryOpen(true)} />
       )}
 
+      {page === 'login' && (
+        user
+          ? <AccountPage user={user} health={health} setup={setup} onLogout={logout} setPage={setPage} />
+          : <AuthPage mode="login" onDone={bootstrap} health={health} onNotice={showNotice} setPage={setPage} />
+      )}
+
+      {page === 'signup' && (
+        user
+          ? <AccountPage user={user} health={health} setup={setup} onLogout={logout} setPage={setPage} />
+          : <AuthPage mode="signup" onDone={bootstrap} health={health} onNotice={showNotice} setPage={setPage} />
+      )}
+
       {page === 'setup' && (
         user
           ? <SetupPage setup={setup} setSetup={setSetup} loading={loading} onSave={saveSetup} />
-          : <AuthPage onDone={bootstrap} health={health} onNotice={showNotice} />
+          : <AuthPage mode="login" onDone={bootstrap} health={health} onNotice={showNotice} setPage={setPage} />
       )}
 
       {page === 'account' && (
         user
           ? <AccountPage user={user} health={health} setup={setup} onLogout={logout} setPage={setPage} />
-          : <AuthPage onDone={bootstrap} health={health} onNotice={showNotice} />
+          : <AuthPage mode="login" onDone={bootstrap} health={health} onNotice={showNotice} setPage={setPage} />
       )}
 
       {page === 'terms' && <TermsPage />}
@@ -560,8 +578,20 @@ function AccountPage({
   );
 }
 
-function AuthPage({ onDone, health, onNotice }: { onDone: () => Promise<void>; health?: Health; onNotice: (message: string, tone?: 'ok' | 'warn') => void }) {
-  const [isRegister, setIsRegister] = useState(false);
+function AuthPage({
+  mode,
+  onDone,
+  health,
+  onNotice,
+  setPage,
+}: {
+  mode: 'login' | 'signup';
+  onDone: () => Promise<void>;
+  health?: Health;
+  onNotice: (message: string, tone?: 'ok' | 'warn') => void;
+  setPage: (page: Page) => void;
+}) {
+  const isRegister = mode === 'signup';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -589,13 +619,20 @@ function AuthPage({ onDone, health, onNotice }: { onDone: () => Promise<void>; h
           <h1>개인 데이터를 저장하고 기존 `/career-ops` 모드를 실행하세요.</h1>
           <p>CV, 프로필, 모드 오버라이드, 포털 설정을 사용자별로 저장한 뒤 API가 실행 시 repo 파일로 동기화합니다.</p>
           <div className="api-mode-strip">
-            <span>로그인</span>
+            <span>{isRegister ? '회원가입' : '로그인'}</span>
             <span>사용자별 설정</span>
             <span>{health?.ok ? '백엔드 연결됨' : '백엔드 확인 필요'}</span>
           </div>
         </div>
         <div className="auth-panel">
           <h2>{isRegister ? '회원가입' : '로그인'}</h2>
+          <GoogleButton
+            text={isRegister ? 'signup_with' : 'signin_with'}
+            onDone={onDone}
+            onNotice={onNotice}
+            onError={setError}
+          />
+          <div className="auth-divider"><span>또는</span></div>
           <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" />
           <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="비밀번호 8자 이상" type="password" />
           {error && <div className="warn">{error}</div>}
@@ -603,7 +640,7 @@ function AuthPage({ onDone, health, onNotice }: { onDone: () => Promise<void>; h
             {loading ? <Loader2 className="spin" size={18} /> : <Play size={18} />}
             {isRegister ? '계정 만들기' : '로그인'}
           </button>
-          <button className="secondary" onClick={() => setIsRegister(!isRegister)}>
+          <button className="secondary" onClick={() => setPage(isRegister ? 'login' : 'signup')}>
             {isRegister ? '이미 계정이 있어요' : '새 계정 만들기'}
           </button>
         </div>

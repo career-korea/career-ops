@@ -11,6 +11,7 @@ from app.config import settings
 from app import db
 from app.models import (
     AuthRequest,
+    GoogleAuthRequest,
     CareerOpsInputRequest,
     CareerOpsRequest,
     EvaluateRequest,
@@ -283,6 +284,44 @@ def login(req: AuthRequest, request: Request, response: Response):
     user = db.find_user_by_email(req.email)
     if not user or not db.verify_password(req.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid email or password")
+    token = db.create_session(user["id"])
+    response.set_cookie(SESSION_COOKIE, token, **_cookie_options(request))
+    return {"user": public_user(user)}
+
+
+@app.post("/api/auth/google")
+def google_login(req: GoogleAuthRequest, request: Request, response: Response):
+    auth_rate_limit(request)
+    if not settings.google_oauth_client_id:
+        raise HTTPException(status_code=400, detail="Google login is not configured")
+    # Verify the ID token locally against Google's public keys: checks signature,
+    # expiry, issuer, and that the audience matches our Client ID. We never trust
+    # the client-supplied claims directly.
+    from google.auth.transport import requests as google_requests
+    from google.oauth2 import id_token
+
+    try:
+        claims = id_token.verify_oauth2_token(
+            req.credential, google_requests.Request(), settings.google_oauth_client_id
+        )
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid Google token")
+
+    google_id = claims.get("sub")
+    email = claims.get("email")
+    if not google_id or not email:
+        raise HTTPException(status_code=401, detail="Invalid Google token")
+
+    user = db.find_user_by_google_id(google_id)
+    if not user:
+        existing = db.find_user_by_email(email)
+        if existing:
+            db.link_google_id(existing["id"], google_id)
+            user = existing
+        else:
+            user = db.create_google_user(email, google_id)
+            workspace.provision_workspace(user["id"])
+
     token = db.create_session(user["id"])
     response.set_cookie(SESSION_COOKIE, token, **_cookie_options(request))
     return {"user": public_user(user)}
