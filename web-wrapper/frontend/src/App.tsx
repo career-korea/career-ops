@@ -3,6 +3,7 @@ import {
   Activity,
   Braces,
   BriefcaseBusiness,
+  CheckCircle2,
   CreditCard,
   FileText,
   Layers3,
@@ -616,13 +617,27 @@ function AuthPage({
       <section className="auth-shell">
         <div className="auth-copy">
           <span className="eyebrow"><BriefcaseBusiness size={16} /> career-ops</span>
-          <h1>개인 데이터를 저장하고 기존 `/career-ops` 모드를 실행하세요.</h1>
-          <p>CV, 프로필, 모드 오버라이드, 포털 설정을 사용자별로 저장한 뒤 API가 실행 시 repo 파일로 동기화합니다.</p>
-          <div className="api-mode-strip">
-            <span>{isRegister ? '회원가입' : '로그인'}</span>
-            <span>사용자별 설정</span>
-            <span>{health?.ok ? '백엔드 연결됨' : '백엔드 확인 필요'}</span>
-          </div>
+          {isRegister ? (
+            <>
+              <h1>career-ops 계정 만들기</h1>
+              <p>몇 초면 끝나요. 가입하면 개인 데이터를 저장하고 모든 `/career-ops` 모드를 바로 실행할 수 있습니다.</p>
+              <ul className="auth-benefits">
+                <li><CheckCircle2 size={18} /> 개인 CV·프로필·포털 설정 저장</li>
+                <li><CheckCircle2 size={18} /> 모드 실행 기록 보관 및 재열람</li>
+                <li><CheckCircle2 size={18} /> 공고별 맞춤 평가 리포트</li>
+              </ul>
+            </>
+          ) : (
+            <>
+              <h1>다시 오신 걸 환영합니다</h1>
+              <p>저장한 CV·프로필·설정 그대로, 로그인 후 바로 `/career-ops` 모드를 실행하세요.</p>
+              <div className="api-mode-strip">
+                <span>로그인</span>
+                <span>사용자별 설정</span>
+                <span>{health?.ok ? '백엔드 연결됨' : '백엔드 확인 필요'}</span>
+              </div>
+            </>
+          )}
         </div>
         <div className="auth-panel">
           <h2>{isRegister ? '회원가입' : '로그인'}</h2>
@@ -636,13 +651,15 @@ function AuthPage({
           <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" />
           <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="비밀번호 8자 이상" type="password" />
           {error && <div className="warn">{error}</div>}
-          <button disabled={loading || !email || password.length < 8} onClick={submit}>
+          <button className={cx(isRegister && 'auth-submit-signup')} disabled={loading || !email || password.length < 8} onClick={submit}>
             {loading ? <Loader2 className="spin" size={18} /> : <Play size={18} />}
             {isRegister ? '계정 만들기' : '로그인'}
           </button>
-          <button className="secondary" onClick={() => setPage(isRegister ? 'login' : 'signup')}>
-            {isRegister ? '이미 계정이 있어요' : '새 계정 만들기'}
-          </button>
+          {!isRegister && (
+            <button className="secondary" onClick={() => setPage('signup')}>
+              새 계정 만들기
+            </button>
+          )}
         </div>
       </section>
     </main>
