@@ -1238,6 +1238,36 @@ h3 {
   font-size: 1.45rem;
 }
 
+/* "Sign in with Google" wrapper — center the GIS-rendered iframe button. */
+.google-button {
+  display: flex;
+  justify-content: center;
+}
+
+/* "또는" separator between Google and email/password sign-in. */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: rgba(48, 43, 37, 0.55);
+  font-size: 0.85rem;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(48, 43, 37, 0.16);
+}
+
+/* Header login + signup pair (logged-out state). */
+.auth-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .account-page {
   width: min(980px, 100%);
   margin: 18px auto 0;

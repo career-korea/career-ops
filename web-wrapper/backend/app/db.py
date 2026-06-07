@@ -107,6 +107,10 @@ def init_db() -> None:
         conn.execute(
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS plan TEXT NOT NULL DEFAULT 'free'"
         )
+        # Google Identity sign-in. Google-only accounts have no password, so
+        # password_hash must allow NULL. google_id is the Google "sub" claim.
+        conn.execute("ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL")
+        conn.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id TEXT UNIQUE")
 
 
 def hash_password(password: str, salt: str | None = None) -> str:
@@ -115,7 +119,9 @@ def hash_password(password: str, salt: str | None = None) -> str:
     return f"pbkdf2_sha256${salt}${digest.hex()}"
 
 
-def verify_password(password: str, stored: str) -> bool:
+def verify_password(password: str, stored: str | None) -> bool:
+    if not stored:
+        return False  # Google-only account: no password set.
     try:
         _, salt, expected = stored.split("$", 2)
     except ValueError:
@@ -150,6 +156,38 @@ def find_user_by_email(email: str) -> Row | None:
 def find_user_by_id(user_id: int) -> Row | None:
     with connect() as conn:
         return conn.execute("SELECT id, email, created_at, plan FROM users WHERE id = %s", (user_id,)).fetchone()
+
+
+def find_user_by_google_id(google_id: str) -> Row | None:
+    with connect() as conn:
+        return conn.execute("SELECT * FROM users WHERE google_id = %s", (google_id,)).fetchone()
+
+
+def create_google_user(email: str, google_id: str) -> Row:
+    """Create a password-less account from a verified Google identity. Mirrors
+    create_user (also seeds the user_setup row)."""
+    now = datetime.now(timezone.utc)
+    with connect() as conn:
+        user = conn.execute(
+            """
+            INSERT INTO users (email, password_hash, google_id, created_at)
+            VALUES (%s, NULL, %s, %s)
+            RETURNING id, email, created_at
+            """,
+            (email.lower().strip(), google_id, now),
+        ).fetchone()
+        conn.execute(
+            "INSERT INTO user_setup (user_id, updated_at) VALUES (%s, %s)",
+            (user["id"], now),
+        )
+        return user
+
+
+def link_google_id(user_id: int, google_id: str) -> None:
+    """Attach a Google identity to an existing (email/password) account so the
+    same person signing in with Google lands on their existing workspace."""
+    with connect() as conn:
+        conn.execute("UPDATE users SET google_id = %s WHERE id = %s", (google_id, user_id))
 
 
 def create_session(user_id: int) -> str:

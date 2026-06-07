@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     command_timeout_seconds: int = 180
     session_cookie_samesite: str = ""
     session_cookie_secure: str = ""
+    # Google Identity (ID token) sign-in. Same Client ID as the frontend's
+    # VITE_GOOGLE_CLIENT_ID. Empty disables the /api/auth/google route.
+    google_oauth_client_id: str = ""
     # Per-user daily LLM cost ceiling (USD), by plan. Agent endpoints are blocked
     # once a user's same-day usage reaches their plan's limit; resets at UTC
     # midnight. Free users hitting the cap are prompted to buy a pass; paid users
