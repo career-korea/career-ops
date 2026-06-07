@@ -1,7 +1,6 @@
 name: Release Please
 on:
-  push:
-    branches: [main]
+  workflow_dispatch: # 수동 실행만 허용 (자동 비활성화)
 
 permissions:
   contents: write
