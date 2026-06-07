@@ -1,0 +1,5 @@
+{
+  "installCommand": "npm install --prefix web-wrapper/frontend",
+  "buildCommand": "npm run build --prefix web-wrapper/frontend",
+  "outputDirectory": "web-wrapper/frontend/dist"
+}

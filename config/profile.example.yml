@@ -3,20 +3,26 @@
 # This is the single source of truth for your personal data across all modes.
 
 candidate:
-  full_name: "Jane Smith"
-  email: "jane@example.com"
-  phone: "+1-555-0123"
-  location: "San Francisco, CA"
-  linkedin: "linkedin.com/in/janesmith"
-  portfolio_url: "https://janesmith.dev"
-  github: "github.com/janesmith"
-  twitter: "https://x.com/janesmith"
+  full_name: "Kim Jiwon"
+  email: "jiwon@example.com"
+  phone: "+82-10-0000-0000"
+  location: "Seoul, South Korea"
+  linkedin: "linkedin.com/in/jiwonkim"
+  portfolio_url: "https://jiwon.dev"
+  github: "github.com/jiwonkim"
+  twitter: ""
+
+language:
+  modes_dir: "modes/ko"
+  output_language: "match_jd"
+  default_market: "Korea + Global Remote"
 
 target_roles:
   # Your North Star roles — what you're optimizing for
   primary:
     - "Senior AI Engineer"
-    - "Staff ML Engineer"
+    - "AI Platform Engineer"
+    - "AI Solutions Architect"
   # Archetypes help the evaluation system score fit
   archetypes:
     - name: "AI/ML Engineer"
@@ -53,18 +59,18 @@ narrative:
   #   password: "demo-2026"
 
 compensation:
-  target_range: "$150K-200K"     # Your target total comp
-  currency: "USD"
-  minimum: "$120K"               # Walk-away number
-  location_flexibility: "Remote preferred, 1 week/month on-site possible"
+  target_range: "KRW 90M-130M"   # Your target total comp
+  currency: "KRW"
+  minimum: "KRW 75M"             # Walk-away number
+  location_flexibility: "Remote preferred; Seoul/Pangyo hybrid possible"
 
 location:
-  country: "United States"
-  city: "San Francisco"
-  timezone: "PST"
-  visa_status: "No sponsorship needed"
+  country: "South Korea"
+  city: "Seoul"
+  timezone: "Asia/Seoul"
+  visa_status: "Authorized to work in Korea"
   # For remote roles outside your country:
-  # onsite_availability: "1 week/month in any city"
+  # onsite_availability: "Occasional travel possible with notice"
 
 cv:
   output_format: "html" # "html" (default) or "latex"
