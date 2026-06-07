@@ -97,6 +97,11 @@ export async function get<T>(path: string): Promise<T> {
   return handle<T>(res);
 }
 
+export async function del<T>(path: string): Promise<T> {
+  const res = await fetch(`${API}${path}`, { method: 'DELETE', credentials: 'include' });
+  return handle<T>(res);
+}
+
 export async function put<T>(path: string, body: unknown = {}): Promise<T> {
   const res = await fetch(`${API}${path}`, {
     method: 'PUT',

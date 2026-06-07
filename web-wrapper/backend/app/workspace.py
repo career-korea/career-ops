@@ -14,6 +14,7 @@ materialized per user.
 
 import os
 import shutil
+from collections.abc import Mapping
 from pathlib import Path
 
 from app.config import settings
@@ -36,6 +37,13 @@ SKIP_ENTRIES = {
 SYMLINK_ENTRIES = {"node_modules"}
 
 PROVISION_MARKER = ".provisioned"
+
+# Agent-generated files that are DB-backed (restored before each run, snapshotted
+# after). Exact files + glob patterns, all relative to the workspace root.
+PERSIST_FILES = ["data/applications.md", "data/follow-ups.md"]
+PERSIST_GLOBS = ["reports/*.md", "interview-prep/*.md"]
+# Skip pathological blobs so a runaway file can't bloat the DB row.
+MAX_PERSIST_BYTES = 1_000_000
 
 
 def base_root() -> Path:
@@ -157,3 +165,60 @@ def materialize_setup(
         "mode_profile": bool(mode_profile_md.strip()),
         "portals": bool(portals_yml.strip()),
     }
+
+
+def _safe_workspace_target(ws: Path, rel_path: str) -> Path | None:
+    """Resolve a stored relative path to a file inside the workspace, rejecting
+    absolute paths, drive letters, and traversal that escapes the workspace."""
+    rel = (rel_path or "").strip().replace("\\", "/")
+    candidate = Path(rel)
+    if not rel or candidate.is_absolute() or candidate.drive:
+        return None
+    target = (ws / candidate).resolve()
+    ws_resolved = ws.resolve()
+    if target != ws_resolved and ws_resolved not in target.parents:
+        return None
+    return target
+
+
+def restore_files(user_id: int, items) -> None:
+    """Write DB-backed files (path, content) into the user's workspace so the agent
+    can read them. `items` is an iterable of mappings ({path, content}) or tuples."""
+    ws = provision_workspace(user_id)
+    for item in items:
+        if isinstance(item, Mapping):
+            rel_path, content = item.get("path"), item.get("content")
+        else:
+            rel_path, content = item
+        target = _safe_workspace_target(ws, rel_path)
+        if target is None:
+            continue
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content or "", encoding="utf-8")
+
+
+def snapshot_files(user_id: int) -> list[tuple[str, str]]:
+    """Read the tracked generated files from the workspace and return them as
+    (relative-posix-path, content) for DB persistence. Skips oversized blobs."""
+    ws = provision_workspace(user_id)
+    out: list[tuple[str, str]] = []
+    seen: set[str] = set()
+
+    def add(path: Path) -> None:
+        try:
+            if not path.is_file() or path.stat().st_size > MAX_PERSIST_BYTES:
+                return
+            rel = path.relative_to(ws).as_posix()
+        except (OSError, ValueError):
+            return
+        if rel in seen:
+            return
+        seen.add(rel)
+        out.append((rel, path.read_text(encoding="utf-8", errors="replace")))
+
+    for rel in PERSIST_FILES:
+        add(ws / rel)
+    for pattern in PERSIST_GLOBS:
+        for match in sorted(ws.glob(pattern)):
+            add(match)
+    return out
