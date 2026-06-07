@@ -25,6 +25,7 @@ import { Footer } from './components/Footer';
 import { OnboardingStrip } from './components/OnboardingStrip';
 import { PipelineList } from './components/PipelineList';
 import { ResultPage } from './components/ResultPage';
+import { HistorySidebar } from './components/HistorySidebar';
 import { TrackerTable } from './components/TrackerTable';
 import { cx } from './components/cx';
 import { TermsPage } from './legal/TermsPage';
@@ -61,6 +62,7 @@ export function App() {
   const [runs, setRuns] = useState<RunMeta[]>([]);
   const [activeRunId, setActiveRunId] = useState<number | null>(null);
   const [selectedRun, setSelectedRun] = useState<RunDetail | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [jd, setJd] = useState('');
   const [mode, setMode] = useState('auto');
@@ -171,6 +173,7 @@ export function App() {
       const detail = await get<RunDetail>(`/api/runs/${id}`);
       setSelectedRun(detail);
       setPage('result');
+      setHistoryOpen(false);
     } catch {
       showNotice('기록을 불러오지 못했습니다', 'warn');
     }
@@ -326,6 +329,19 @@ export function App() {
           </div>
         </div>
       )}
+      {historyOpen && (
+        <div className="history-backdrop" role="dialog" aria-modal="true" aria-label="실행 기록" onClick={() => setHistoryOpen(false)}>
+          <div className="history-drawer" onClick={(e) => e.stopPropagation()}>
+            <HistorySidebar
+              runs={runs}
+              activeId={activeRunId}
+              onSelect={selectRun}
+              onDelete={deleteRun}
+              onNew={() => { setSelectedRun(null); setActiveRunId(null); setHistoryOpen(false); setPage(resultOrigin); }}
+            />
+          </div>
+        </div>
+      )}
       <header className="app-nav">
         <div className="brand-mark" aria-label="career-ops brand">
           <BriefcaseBusiness size={17} />
@@ -336,7 +352,7 @@ export function App() {
           <button className={page === 'offer' ? 'active' : ''} onClick={() => setPage('offer')}><Activity size={16} />적합도 분석</button>
           <button className={page === 'discover' ? 'active' : ''} onClick={() => setPage('discover')}><Search size={16} />공고 탐색</button>
           <button className={page === 'api' ? 'active' : ''} onClick={() => setPage('api')}><Layers3 size={16} />API 모드</button>
-          <button className={page === 'result' ? 'active' : ''} onClick={() => setPage('result')}><History size={16} />기록</button>
+          <button className={historyOpen ? 'active' : ''} onClick={() => setHistoryOpen(true)}><History size={16} />기록</button>
           <button className={page === 'pricing' ? 'active' : ''} onClick={() => setPage('pricing')}><CreditCard size={16} />이용권</button>
           <button className={page === 'setup' ? 'active' : ''} onClick={() => setPage('setup')}><Settings size={16} />로그인</button>
         </nav>
@@ -426,16 +442,7 @@ export function App() {
       )}
 
       {page === 'result' && (
-        <ResultPage
-          result={result}
-          loading={loading}
-          runs={runs}
-          activeId={activeRunId}
-          selectedRun={selectedRun}
-          onSelectRun={selectRun}
-          onDeleteRun={deleteRun}
-          onNew={() => { setSelectedRun(null); setActiveRunId(null); setPage(resultOrigin); }}
-        />
+        <ResultPage result={result} loading={loading} selectedRun={selectedRun} onOpenHistory={() => setHistoryOpen(true)} />
       )}
 
       {page === 'setup' && (
