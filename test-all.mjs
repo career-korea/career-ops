@@ -175,8 +175,10 @@ for (const f of systemFiles) {
 }
 
 // Check user files are NOT tracked (gitignored)
+// modes/_profile.md is intentionally committed in this repo as a
+// Korean-market system template (not personal user data).
 const userFiles = [
-  'config/profile.yml', 'modes/_profile.md', 'portals.yml',
+  'config/profile.yml', 'portals.yml',
 ];
 for (const f of userFiles) {
   const tracked = run('git', ['ls-files', f]);
