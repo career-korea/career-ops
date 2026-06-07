@@ -1,5 +1,36 @@
 # Changelog
 
+## [1.9.0](https://github.com/career-korea/career-ops/compare/career-ops-v1.8.0...career-ops-v1.9.0) (2026-06-07)
+
+
+### Features
+
+* add Korean web auth and Postgres setup ([f4519ae](https://github.com/career-korea/career-ops/commit/f4519ae4eaad666ed83615d818a7ea48935c4431))
+* add payment-screening legal pages and business info for PG onboarding ([4a91728](https://github.com/career-korea/career-ops/commit/4a91728109237acc7b42c7cac9fbf9633d733588))
+* Korean UI, Docker deployment, background fix ([2481c80](https://github.com/career-korea/career-ops/commit/2481c803a72ff3548a08202380b9479c48fe5708))
+* Korean youth features - resume, fitting occupation, interview practice + dark theme ([96c4875](https://github.com/career-korea/career-ops/commit/96c48750a3f86d7abc1922a842f2a3342a4d24d3))
+* model selector + live tool-activity streaming for all agent modes ([5338b65](https://github.com/career-korea/career-ops/commit/5338b6560cab590feea2172aa3beb54638a4b243))
+* model selector + live tool-activity streaming for all agent modes ([cdc3d25](https://github.com/career-korea/career-ops/commit/cdc3d25fd4fc2a84d2488da85d6049f32dd14bb9))
+* paywall UX - login gate, free-quota payment prompt, plan-based limits ([73681d3](https://github.com/career-korea/career-ops/commit/73681d34f471e79fb593ebfae8c6ccb76c50738b))
+* per-user daily cost cap and agent workspace sandbox ([ae7e7b5](https://github.com/career-korea/career-ops/commit/ae7e7b5ad1257b84bf2355161120a4fbcd311c0c))
+* per-user workspace isolation + cost/auth hardening ([820fa12](https://github.com/career-korea/career-ops/commit/820fa12a12c65d6d077572c1911c08d006abbce5))
+* stream agent output token-by-token via claude-agent-sdk ([b5b9a26](https://github.com/career-korea/career-ops/commit/b5b9a26b15b50b60b7e7dc16ddd2a01940c6db85))
+* stream agent output token-by-token via claude-agent-sdk ([c301b2e](https://github.com/career-korea/career-ops/commit/c301b2ef962fe718a4292bc08c3c7b48aeb260e6))
+* 한국 시장 _profile.md 추가 ([2710c1f](https://github.com/career-korea/career-ops/commit/2710c1fbdba751e8323eb5ced20ce08646fa4bb1))
+* 한국 시장 _profile.md 추가 및 gitignore 제외 ([7c18437](https://github.com/career-korea/career-ops/commit/7c1843743c944899447e25bd9b9417588aeae14e))
+* 한국 취준생 특화 기능 3종 + 다크 테마 UI ([4c635fd](https://github.com/career-korea/career-ops/commit/4c635fd91d17d9f5364b587aefa2193689e95181))
+
+
+### Bug Fixes
+
+* allow Vercel CORS and secure auth cookies ([c996937](https://github.com/career-korea/career-ops/commit/c99693792b246f8b3f867424e5f9c17cbe3e4f27))
+* configure Vercel frontend build ([e7e35fa](https://github.com/career-korea/career-ops/commit/e7e35fad02720ecb02136729239143d0fc1913d2))
+* improve mobile responsive layout ([ac3fbf3](https://github.com/career-korea/career-ops/commit/ac3fbf33ff505ff90bee1c789e7d127655df5547))
+* mobile-responsive tweaks for legal pages, pricing, and footer ([b2ee440](https://github.com/career-korea/career-ops/commit/b2ee440ff99224a14e2f12b53e58f1d2ee8d9206))
+* remove Go/dashboard references from CI workflows ([712d4e5](https://github.com/career-korea/career-ops/commit/712d4e5f26ee28664e9b6004076b3ec2712142df))
+* remove Go/dashboard references from CI workflows ([8c3c252](https://github.com/career-korea/career-ops/commit/8c3c25274971e11e1970b7b54d29c985788b354e))
+* replace npm ci with npm install in Dockerfile ([#6](https://github.com/career-korea/career-ops/issues/6)) ([203004b](https://github.com/career-korea/career-ops/commit/203004b91d68638695eb2b75543cb450c2287891))
+
 ## [1.8.0](https://github.com/santifer/career-ops/compare/career-ops-v1.7.1...career-ops-v1.8.0) (2026-05-15)
 
 
