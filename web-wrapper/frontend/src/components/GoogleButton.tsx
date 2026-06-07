@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { post } from '../api';
 
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
@@ -20,11 +20,18 @@ interface GoogleButtonProps {
 // the same session cookie used by email/password auth. No redirect, no secret.
 export function GoogleButton({ text, onDone, onNotice, onError }: GoogleButtonProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const [status, setStatus] = useState<'loading' | 'ready' | 'unavailable'>(CLIENT_ID ? 'loading' : 'unavailable');
 
   useEffect(() => {
     if (!CLIENT_ID || !ref.current) return;
 
     let cancelled = false;
+    const timeout = window.setTimeout(() => {
+      if (!cancelled) {
+        cancelled = true;
+        setStatus('unavailable');
+      }
+    }, 3500);
 
     async function handleCredential(response: GoogleCredentialResponse) {
       try {
@@ -44,16 +51,33 @@ export function GoogleButton({ text, onDone, onNotice, onError }: GoogleButtonPr
         window.setTimeout(tryInit, 120);
         return;
       }
+      window.clearTimeout(timeout);
       gsi.initialize({ client_id: CLIENT_ID!, callback: handleCredential });
       gsi.renderButton(ref.current, { theme: 'outline', size: 'large', width: 320, text });
+      setStatus('ready');
     }
 
     tryInit();
     return () => {
       cancelled = true;
+      window.clearTimeout(timeout);
     };
   }, [text, onDone, onNotice, onError]);
 
-  if (!CLIENT_ID) return null;
-  return <div ref={ref} className="google-button" />;
+  const label = text === 'signup_with' ? 'Google로 회원가입' : 'Google로 로그인';
+
+  return (
+    <div className="google-button-shell">
+      <div ref={ref} className="google-button" aria-label={label} />
+      {status !== 'ready' && (
+        <button
+          type="button"
+          className="secondary google-fallback"
+          onClick={() => onError(CLIENT_ID ? 'Google 로그인 스크립트를 불러오지 못했습니다.' : 'Google OAuth Client ID가 설정되지 않았습니다.')}
+        >
+          {label}
+        </button>
+      )}
+    </div>
+  );
 }
