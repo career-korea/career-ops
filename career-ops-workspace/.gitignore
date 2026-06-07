@@ -1,0 +1,23 @@
+# Dependency Directories
+node_modules/
+.pnpm-store/
+
+# Build Outdirs
+dist/
+build/
+.cache/
+
+# Local Environment Variables
+.env
+.env.local
+.env.*.local
+
+# OS Metadata Files
+.DS_Store
+Thumbs.db
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*

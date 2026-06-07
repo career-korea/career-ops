@@ -1,0 +1,18 @@
+# Python Virtual Environments
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Poetry Cache & Artifacts
+.poetry/
+.pytest_cache/
+.mypy_cache/
+
+# Local Dev Filesystem Broker Queues
+src/broker_queue/
+
+# Sensitive Variables
+.env
+.env.*

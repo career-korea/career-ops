@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  # 1. 분산 비동기 메시지 브로커용 Redis 서비스
+  redis:
+    image: redis:7.2-alpine
+    container_name: career-ops-redis
+    restart: always
+    ports:
+      # 호스트의 루프백 IP로 포트를 묶어 외부 침입을 완벽 방어
+      - "127.0.0.1:6379:6379"
+    volumes:
+      # Named Volume을 이용해 Redis 메모리 데이터 영속 보관
+      - redis_data:/data
+    command: redis-server --appendonly yes --requirepass ""
+    networks:
+      - career-ops-network
+
+  # 2. Redis 실시간 큐 모니터링을 위한 Web GUI (RedisInsight)
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: career-ops-redisinsight
+    restart: always
+    ports:
+      # 호스트 브라우저에서 http://localhost:8001 로 접속하도록 설정
+      - "127.0.0.1:8001:5540"
+    volumes:
+      - redisinsight_data:/data
+    networks:
+      - career-ops-network
+    depends_on:
+      - redis
+
+volumes:
+  redis_data:
+    driver: local
+  redisinsight_data:
+    driver: local
+
+networks:
+  career-ops-network:
+    driver: bridge
