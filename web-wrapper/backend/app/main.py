@@ -164,13 +164,46 @@ def setup_payload(row):
     }
 
 
-async def run_and_meter(user, coro) -> dict:
-    """Await an agent run and record its cost for usage metering / future billing."""
+def _run_title(mode: str, input_text: str, stdout: str) -> str:
+    """Short label for the history sidebar. Prefer a report heading, else the first
+    line of the user's input, else the mode name. Capped at 80 chars."""
+    for pattern in (r"(?m)^#\s*Evaluation:\s*(.+)$", r"(?m)^#{1,3}\s+(.+)$"):
+        m = re.search(pattern, stdout or "")
+        if m:
+            return m.group(1).strip()[:80]
+    first = next((line.strip() for line in (input_text or "").splitlines() if line.strip()), "")
+    return (first or mode or "분석")[:80]
+
+
+def _record_run(user, result: dict, input_text: str) -> None:
+    """Persist a finished agent run into the history table. Skips discovery (static
+    help, no SDK call). Never raises into the user-facing response."""
+    mode = result.get("mode", "")
+    if mode == "discovery":
+        return
+    try:
+        db.create_run(
+            user["id"],
+            mode,
+            _run_title(mode, input_text, result.get("stdout", "")),
+            input_text,
+            result.get("stdout", ""),
+            result.get("ok", False),
+            result.get("cost_usd", 0.0),
+        )
+    except Exception:
+        pass  # history persistence must never break the user-facing response
+
+
+async def run_and_meter(user, coro, input_text: str = "") -> dict:
+    """Await an agent run, record its cost for usage metering, and persist it to the
+    history sidebar."""
     result = await coro
     try:
         db.record_usage(user["id"], result.get("mode", ""), result.get("cost_usd", 0.0), result.get("ok", False))
     except Exception:
         pass  # metering must never break the user-facing response
+    _record_run(user, result, input_text)
     return result
 
 
@@ -179,8 +212,8 @@ async def run_and_meter(user, coro) -> dict:
 _SSE_HEADERS = {"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
 
 
-async def stream_and_meter(user, agen):
-    """Relay agent stream events as SSE frames, metering the run on completion."""
+async def stream_and_meter(user, agen, input_text: str = ""):
+    """Relay agent stream events as SSE frames, metering and persisting the run on completion."""
     final_result = None
     try:
         async for event in agen:
@@ -200,6 +233,7 @@ async def stream_and_meter(user, agen):
                 )
             except Exception:
                 pass  # metering must never break the user-facing response
+            _record_run(user, final_result, input_text)
 
 
 def sync_user_setup(user) -> dict[str, bool]:
@@ -316,7 +350,11 @@ async def scan(req: ScanRequest, user=Depends(gate_agent)):
             f"verify={req.verify}",
             f"company={req.company or 'all'}",
         ]
-        return await run_and_meter(user, career_ops.run_agent(user["id"], "scan", "\n".join(details)))
+        return await run_and_meter(
+            user,
+            career_ops.run_agent(user["id"], "scan", "\n".join(details)),
+            input_text=f"스캔: {req.company}" if req.company else "포털 스캔",
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -324,7 +362,11 @@ async def scan(req: ScanRequest, user=Depends(gate_agent)):
 async def evaluate(req: EvaluateRequest, user=Depends(gate_agent)):
     try:
         sync_user_setup(user)
-        return await run_and_meter(user, career_ops.run_agent(user["id"], "", req.jd_text, model=req.model, no_save=req.no_save))
+        return await run_and_meter(
+            user,
+            career_ops.run_agent(user["id"], "", req.jd_text, model=req.model, no_save=req.no_save),
+            input_text=req.jd_text,
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -340,7 +382,7 @@ async def career_ops_agent(req: CareerOpsRequest, user=Depends(gate_agent)):
             max_turns=req.max_turns,
             max_budget_usd=req.max_budget_usd,
             no_save=req.no_save,
-        ))
+        ), input_text=req.input)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -361,7 +403,7 @@ async def career_ops_stream(req: CareerOpsRequest, user=Depends(gate_agent)):
         no_save=req.no_save,
     )
     return StreamingResponse(
-        stream_and_meter(user, agen),
+        stream_and_meter(user, agen, input_text=req.input),
         media_type="text/event-stream",
         headers=_SSE_HEADERS,
     )
@@ -382,9 +424,44 @@ async def career_ops_mode(mode: str, req: CareerOpsInputRequest, user=Depends(ga
             max_turns=req.max_turns,
             max_budget_usd=req.max_budget_usd,
             no_save=req.no_save,
-        ))
+        ), input_text=req.input)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/runs")
+def runs_list(user=Depends(require_user)):
+    rows = db.list_runs(user["id"])
+    return {"runs": [
+        {
+            "id": r["id"],
+            "mode": r["mode"],
+            "title": r["title"],
+            "ok": r["ok"],
+            "created_at": r["created_at"].isoformat() if r["created_at"] else "",
+        }
+        for r in rows
+    ]}
+
+@app.get("/api/runs/{run_id}")
+def runs_get(run_id: int, user=Depends(require_user)):
+    row = db.get_run(user["id"], run_id)
+    if not row:
+        raise HTTPException(status_code=404, detail="Run not found")
+    return {
+        "id": row["id"],
+        "mode": row["mode"],
+        "title": row["title"],
+        "input": row["input"],
+        "stdout": row["stdout"],
+        "ok": row["ok"],
+        "created_at": row["created_at"].isoformat() if row["created_at"] else "",
+    }
+
+@app.delete("/api/runs/{run_id}")
+def runs_delete(run_id: int, user=Depends(require_user)):
+    if not db.delete_run(user["id"], run_id):
+        raise HTTPException(status_code=404, detail="Run not found")
+    return {"ok": True}
 
 @app.post("/api/pdf")
 def pdf(req: PdfRequest, user=Depends(require_user)):

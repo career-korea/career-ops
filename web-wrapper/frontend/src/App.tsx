@@ -5,6 +5,7 @@ import {
   BriefcaseBusiness,
   CreditCard,
   FileText,
+  History,
   Layers3,
   Loader2,
   LogOut,
@@ -17,7 +18,7 @@ import {
   Settings,
   Sparkles,
 } from 'lucide-react';
-import { ApiError, get, post, postStream, put } from './api';
+import { ApiError, del, get, post, postStream, put } from './api';
 import { careerCommands, modeOptions, modelOptions, tabs } from './constants';
 import { CommandGrid } from './components/CommandGrid';
 import { Footer } from './components/Footer';
@@ -30,7 +31,7 @@ import { TermsPage } from './legal/TermsPage';
 import { PrivacyPage } from './legal/PrivacyPage';
 import { RefundPage } from './legal/RefundPage';
 import { PricingPage } from './legal/PricingPage';
-import type { CareerCommand, CommandResult, Health, Page, PipelineItem, SetupData, Tab, TrackerRow, User } from './types';
+import type { CareerCommand, CommandResult, Health, Page, PipelineItem, RunDetail, RunMeta, SetupData, Tab, TrackerRow, User } from './types';
 
 // 해시 라우팅: 공개 페이지(약관·개인정보·환불·이용권)를 공유 가능한 URL로 노출하기 위함.
 // 결제 가맹 심사 시 심사관이 로그인 없이 해당 URL에 직접 접근할 수 있어야 한다.
@@ -57,6 +58,9 @@ export function App() {
   const [user, setUser] = useState<User | null>(null);
   const [setup, setSetup] = useState<SetupData>(emptySetup);
   const [result, setResult] = useState<CommandResult>();
+  const [runs, setRuns] = useState<RunMeta[]>([]);
+  const [activeRunId, setActiveRunId] = useState<number | null>(null);
+  const [selectedRun, setSelectedRun] = useState<RunDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [jd, setJd] = useState('');
   const [mode, setMode] = useState('auto');
@@ -118,7 +122,7 @@ export function App() {
     setHealth(healthData);
     await loadCommands();
     if (me.user) {
-      await Promise.all([loadSetup(), loadTracker(true), loadPipeline(true)]);
+      await Promise.all([loadSetup(), loadTracker(true), loadPipeline(true), loadRuns(true)]);
     }
   }
 
@@ -151,6 +155,41 @@ export function App() {
     }
   }
 
+  async function loadRuns(authenticated = Boolean(user)) {
+    if (!authenticated) return;
+    try {
+      const data = await get<{ runs: RunMeta[] }>('/api/runs');
+      setRuns(data.runs);
+    } catch {
+      // history is non-critical; ignore load failures
+    }
+  }
+
+  async function selectRun(id: number) {
+    setActiveRunId(id);
+    try {
+      const detail = await get<RunDetail>(`/api/runs/${id}`);
+      setSelectedRun(detail);
+      setPage('result');
+    } catch {
+      showNotice('기록을 불러오지 못했습니다', 'warn');
+    }
+  }
+
+  async function deleteRun(id: number) {
+    try {
+      await del(`/api/runs/${id}`);
+    } catch {
+      showNotice('삭제에 실패했습니다', 'warn');
+      return;
+    }
+    setRuns((prev) => prev.filter((r) => r.id !== id));
+    if (activeRunId === id) {
+      setActiveRunId(null);
+      setSelectedRun(null);
+    }
+  }
+
   async function run(action: () => Promise<CommandResult>) {
     if (!user) {
       showNotice('로그인이 필요합니다', 'warn');
@@ -162,11 +201,14 @@ export function App() {
     const origin = page === 'result' ? resultOrigin : page;
     setResultOrigin(origin);
     setPage('result');
+    // 새 실행은 라이브 결과를 보여주므로 선택된 과거 기록은 해제한다.
+    setSelectedRun(null);
+    setActiveRunId(null);
     setLoading(true);
     setResult(undefined);
     try {
       setResult(await action());
-      await Promise.all([loadTracker(), loadPipeline(), refreshHealth()]);
+      await Promise.all([loadTracker(), loadPipeline(), refreshHealth(), loadRuns()]);
     } catch (e: unknown) {
       if (e instanceof ApiError) {
         if (e.status === 401) {
@@ -260,6 +302,9 @@ export function App() {
     setUser(null);
     setSetup(emptySetup);
     setResult(undefined);
+    setRuns([]);
+    setSelectedRun(null);
+    setActiveRunId(null);
     setPage('workspace');
     await refreshHealth();
   }
@@ -291,6 +336,7 @@ export function App() {
           <button className={page === 'offer' ? 'active' : ''} onClick={() => setPage('offer')}><Activity size={16} />적합도 분석</button>
           <button className={page === 'discover' ? 'active' : ''} onClick={() => setPage('discover')}><Search size={16} />공고 탐색</button>
           <button className={page === 'api' ? 'active' : ''} onClick={() => setPage('api')}><Layers3 size={16} />API 모드</button>
+          <button className={page === 'result' ? 'active' : ''} onClick={() => setPage('result')}><History size={16} />기록</button>
           <button className={page === 'pricing' ? 'active' : ''} onClick={() => setPage('pricing')}><CreditCard size={16} />이용권</button>
           <button className={page === 'setup' ? 'active' : ''} onClick={() => setPage('setup')}><Settings size={16} />로그인</button>
         </nav>
@@ -380,7 +426,16 @@ export function App() {
       )}
 
       {page === 'result' && (
-        <ResultPage result={result} loading={loading} onBack={() => setPage(resultOrigin)} />
+        <ResultPage
+          result={result}
+          loading={loading}
+          runs={runs}
+          activeId={activeRunId}
+          selectedRun={selectedRun}
+          onSelectRun={selectRun}
+          onDeleteRun={deleteRun}
+          onNew={() => { setSelectedRun(null); setActiveRunId(null); setPage(resultOrigin); }}
+        />
       )}
 
       {page === 'setup' && (

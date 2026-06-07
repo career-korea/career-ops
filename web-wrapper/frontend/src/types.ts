@@ -17,6 +17,19 @@ export type CommandResult = {
   activity?: string; // 스트리밍 중 현재 도구 활동(예: "🔍 웹 검색 중…"). done 시 비움.
 };
 
+export type RunMeta = {
+  id: number;
+  mode: string;
+  title: string;
+  ok: boolean;
+  created_at: string;
+};
+
+export type RunDetail = RunMeta & {
+  input: string;
+  stdout: string;
+};
+
 export type TrackerRow = {
   index: string;
   date: string;
