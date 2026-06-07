@@ -1,11 +1,8 @@
-import { ClipboardList, FileText, MessageSquare, PenLine, Search, Sparkles, Table2, UserSearch } from 'lucide-react';
+import { ClipboardList, FileText, Search, Sparkles, Table2 } from 'lucide-react';
 import type { CareerCommand, TabConfig } from './types';
 
 export const tabs: TabConfig[] = [
-  { id: 'jasoseo', label: '자소서 작성', icon: PenLine },
-  { id: 'fit', label: '직무 추천', icon: UserSearch },
-  { id: 'interview', label: '면접 연습', icon: MessageSquare },
-  { id: 'evaluate', label: '공고 평가', icon: Sparkles },
+  { id: 'evaluate', label: '적합도 분석', icon: Sparkles },
   { id: 'scan', label: '공고 탐색', icon: Search },
   { id: 'pipeline', label: '인박스', icon: ClipboardList },
   { id: 'tracker', label: '트래커', icon: Table2 },
