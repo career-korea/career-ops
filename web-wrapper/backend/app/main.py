@@ -204,6 +204,7 @@ async def run_and_meter(user, coro, input_text: str = "") -> dict:
     except Exception:
         pass  # metering must never break the user-facing response
     _record_run(user, result, input_text)
+    persist_user_files(user)
     return result
 
 
@@ -234,17 +235,34 @@ async def stream_and_meter(user, agen, input_text: str = ""):
             except Exception:
                 pass  # metering must never break the user-facing response
             _record_run(user, final_result, input_text)
+            persist_user_files(user)
 
 
 def sync_user_setup(user) -> dict[str, bool]:
     setup = db.get_setup(user["id"])
-    return workspace.materialize_setup(
+    onboarding = workspace.materialize_setup(
         user["id"],
         setup["cv_md"],
         setup["profile_yml"],
         setup["mode_profile_md"],
         setup["portals_yml"],
     )
+    # Restore DB-backed generated files (tracker, follow-ups, reports, interview prep)
+    # so the agent reads its prior context even on a fresh/redeployed container.
+    try:
+        workspace.restore_files(user["id"], db.list_user_files(user["id"]))
+    except Exception:
+        pass  # restore is best-effort; never block the run on it
+    return onboarding
+
+
+def persist_user_files(user) -> None:
+    """Snapshot the agent-generated workspace files into the DB after a run. Never
+    raises into the user-facing response."""
+    try:
+        db.upsert_user_files(user["id"], workspace.snapshot_files(user["id"]))
+    except Exception:
+        pass
 
 
 @app.post("/api/auth/register")

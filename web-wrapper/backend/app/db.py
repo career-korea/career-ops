@@ -87,6 +87,21 @@ def init_db() -> None:
         conn.execute(
             "CREATE INDEX IF NOT EXISTS runs_user_idx ON runs (user_id, created_at DESC)"
         )
+        # DB backup of agent-generated workspace files (tracker, follow-ups, reports,
+        # interview prep). The agent reads/writes these as files in its workspace;
+        # we materialize them from here before each run and snapshot them back after,
+        # so they survive container redeploys even without a persistent volume.
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS user_files (
+                user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                path TEXT NOT NULL,
+                content TEXT NOT NULL DEFAULT '',
+                updated_at TIMESTAMPTZ NOT NULL,
+                PRIMARY KEY (user_id, path)
+            )
+            """
+        )
         # Billing tier. 'free' = daily_budget_usd, 'paid' = paid_daily_budget_usd.
         # Flipped to 'paid' by the payment flow (Phase B). Idempotent add.
         conn.execute(
@@ -217,6 +232,34 @@ def delete_run(user_id: int, run_id: int) -> bool:
             (run_id, user_id),
         ).fetchone()
     return row is not None
+
+
+def list_user_files(user_id: int) -> list[Row]:
+    """All DB-backed workspace files for a user — used to restore the workspace
+    before an agent run."""
+    with connect() as conn:
+        return conn.execute(
+            "SELECT path, content FROM user_files WHERE user_id = %s",
+            (user_id,),
+        ).fetchall()
+
+
+def upsert_user_files(user_id: int, items: list[tuple[str, str]]) -> None:
+    """Snapshot workspace files into the DB after an agent run. Upsert-only."""
+    if not items:
+        return
+    now = datetime.now(timezone.utc)
+    with connect() as conn:
+        with conn.cursor() as cur:
+            cur.executemany(
+                """
+                INSERT INTO user_files (user_id, path, content, updated_at)
+                VALUES (%s, %s, %s, %s)
+                ON CONFLICT (user_id, path) DO UPDATE
+                SET content = EXCLUDED.content, updated_at = EXCLUDED.updated_at
+                """,
+                [(user_id, path, content, now) for path, content in items],
+            )
 
 
 def usage_total_usd(user_id: int) -> float:
