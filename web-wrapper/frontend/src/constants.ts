@@ -9,8 +9,6 @@ export const tabs: TabConfig[] = [
   { id: 'pdf', label: 'CV PDF', icon: FileText },
 ];
 
-// value = 백엔드 SDK가 해석하는 모델 별칭. '' = 서버 기본값.
-// haiku는 토큰/비용이 가장 저렴, opus는 품질 우선.
 export const modelOptions: { value: string; label: string }[] = [
   { value: '', label: '기본 모델' },
   { value: 'haiku', label: 'Haiku (빠르고 저렴)' },
@@ -18,7 +16,6 @@ export const modelOptions: { value: string; label: string }[] = [
   { value: 'opus', label: 'Opus (최고 품질)' },
 ];
 
-// value = 백엔드 모드 키(변경 금지), label = 화면 표시용 한국어.
 export const modeOptions: { value: string; label: string }[] = [
   { value: 'auto', label: '자동 감지' },
   { value: 'oferta', label: '채용공고 평가 (A-G)' },

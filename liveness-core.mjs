@@ -14,14 +14,6 @@ const HARD_EXPIRED_PATTERNS = [
   /closed on (?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*\s+\d{1,2}/i,
   /diese stelle (ist )?(nicht mehr|bereits) besetzt/i,
   /offre (expirée|n'est plus disponible)/i,
-  /마감된?\s*채용\s*공고/i,
-  /채용이\s*마감/i,
-  /모집이\s*마감/i,
-  /지원\s*기간이\s*종료/i,
-  /지원기간이\s*종료/i,
-  /접수가\s*종료/i,
-  /공고가\s*종료/i,
-  /이미\s*마감된?\s*공고/i,
 ];
 
 const LISTING_PAGE_PATTERNS = [
@@ -42,11 +34,6 @@ const APPLY_PATTERNS = [
   /easy apply/i,
   /start application/i,
   /ich bewerbe mich/i,
-  /지원하기/i,
-  /입사지원/i,
-  /간편지원/i,
-  /지원서\s*작성/i,
-  /채용\s*지원/i,
 ];
 
 const MIN_CONTENT_CHARS = 300;
