@@ -9,8 +9,6 @@ import {
   Loader2,
   LogOut,
   MapPinned,
-  MessageSquare,
-  PenLine,
   Play,
   RefreshCw,
   Save,
@@ -18,7 +16,6 @@ import {
   Send,
   Settings,
   Sparkles,
-  UserSearch,
 } from 'lucide-react';
 import { ApiError, get, post, postStream, put } from './api';
 import { careerCommands, modeOptions, modelOptions, tabs } from './constants';
@@ -579,19 +576,8 @@ function WorkspacePage({
       <StatusAndMetrics health={health} commands={commands} pipeline={pipeline} tracker={tracker} />
 
       <section className="product-shell">
-        <nav className="tabs scrollable" aria-label="Workspace navigation">
-          <div className="tab-group-label">신규 기능</div>
-          {tabs.slice(0, 3).map((item) => {
-            const Icon = item.icon;
-            return (
-              <button key={item.id} onClick={() => setTab(item.id)} className={tab === item.id ? 'active' : ''}>
-                <Icon size={16} />{item.label}<span className="tab-badge">NEW</span>
-              </button>
-            );
-          })}
-          <div className="tab-divider" />
-          <div className="tab-group-label">파이프라인</div>
-          {tabs.slice(3).map((item) => {
+        <nav className="tabs" aria-label="Workspace navigation">
+          {tabs.map((item) => {
             const Icon = item.icon;
             return <button key={item.id} onClick={() => setTab(item.id)} className={tab === item.id ? 'active' : ''}><Icon size={16} />{item.label}</button>;
           })}
@@ -655,18 +641,6 @@ function WorkspacePage({
                 <textarea rows={13} value={html} onChange={(e) => setHtml(e.target.value)} />
                 <button disabled={loading} onClick={() => run(() => post<CommandResult>('/api/pdf', { html, filename: 'career-ops-cv', format: 'a4' }))}><FileText size={18} />PDF 생성</button>
               </>
-            )}
-
-            {tab === 'jasoseo' && (
-              <JasoseoTab loading={loading} run={run} runCareerOps={runCareerOps} />
-            )}
-
-            {tab === 'fit' && (
-              <FitTab loading={loading} run={run} runCareerOps={runCareerOps} />
-            )}
-
-            {tab === 'interview' && (
-              <InterviewTab loading={loading} run={run} runCareerOps={runCareerOps} />
             )}
           </div>
 
@@ -883,121 +857,6 @@ type StatusAndMetricsProps = {
   tracker: TrackerRow[];
   compact?: boolean;
 };
-
-type NewTabProps = {
-  loading: boolean;
-  run: (action: () => Promise<CommandResult>) => Promise<void>;
-  runCareerOps: (mode: string, input: string) => Promise<CommandResult>;
-};
-
-function JasoseoTab({ loading, run, runCareerOps }: NewTabProps) {
-  const [company, setCompany] = useState('');
-  const [role, setRole] = useState('');
-  const [jdUrl, setJdUrl] = useState('');
-  const [charLimit, setCharLimit] = useState('500');
-  const input = `회사: ${company}\n직무: ${role}\n공고URL: ${jdUrl}\n글자수 제한: ${charLimit}자`;
-  return (
-    <>
-      <div className="feature-hero">
-        <div className="feature-hero-icon">✍️</div>
-        <div className="feature-hero-copy">
-          <div className="feature-hero-badge">AI 자소서</div>
-          <h3>자기소개서 4개 항목 자동 생성</h3>
-          <p>공고를 분석해 성장과정·지원동기·직무역량·장단점을 STAR 구조로 작성합니다. 내 CV의 실제 수치를 직접 인용해 설득력을 높입니다.</p>
-        </div>
-      </div>
-      <div className="form-grid">
-        <label>지원 회사 <input value={company} onChange={e => setCompany(e.target.value)} placeholder="예: 카카오" /></label>
-        <label>지원 직무 <input value={role} onChange={e => setRole(e.target.value)} placeholder="예: 서버 개발자" /></label>
-        <label>공고 URL <small style={{fontWeight:400, color:'var(--muted)'}}>선택</small><input value={jdUrl} onChange={e => setJdUrl(e.target.value)} placeholder="https://..." /></label>
-        <label>항목당 글자수 <input type="number" value={charLimit} onChange={e => setCharLimit(e.target.value)} placeholder="500" /></label>
-      </div>
-      <div className="button-row">
-        <button disabled={loading || !company || !role} onClick={() => run(() => runCareerOps('jasoseo', input))}>
-          {loading ? <Loader2 className="spin" size={18} /> : <PenLine size={18} />} 자소서 생성
-        </button>
-      </div>
-    </>
-  );
-}
-
-function FitTab({ loading, run, runCareerOps }: NewTabProps) {
-  const [major, setMajor] = useState('');
-  const [toeic, setToeic] = useState('');
-  const [certs, setCerts] = useState('');
-  const [experience, setExperience] = useState('');
-  const [interest, setInterest] = useState('');
-  const input = `전공: ${major}\n어학: ${toeic}\n자격증: ${certs}\n경험: ${experience}\n관심분야: ${interest}`;
-  return (
-    <>
-      <div className="feature-hero">
-        <div className="feature-hero-icon">🔍</div>
-        <div className="feature-hero-copy">
-          <div className="feature-hero-badge">직무 매칭</div>
-          <h3>내 스펙에 맞는 직무 추천</h3>
-          <p>이력서가 없어도 됩니다. 전공·어학·경험을 입력하면 적합 직무 3가지와 실제 공고, 30일 액션 플랜을 제시합니다.</p>
-        </div>
-      </div>
-      <div className="form-grid">
-        <label>전공 / 학력 <input value={major} onChange={e => setMajor(e.target.value)} placeholder="예: 컴퓨터공학 / 경영학" /></label>
-        <label>어학 점수 <small style={{fontWeight:400, color:'var(--muted)'}}>선택</small><input value={toeic} onChange={e => setToeic(e.target.value)} placeholder="예: 토익 820, OPIc IM2" /></label>
-        <label>자격증 <small style={{fontWeight:400, color:'var(--muted)'}}>선택</small><input value={certs} onChange={e => setCerts(e.target.value)} placeholder="예: 정보처리기사, ADsP" /></label>
-        <label>경험 <small style={{fontWeight:400, color:'var(--muted)'}}>인턴·프로젝트·동아리</small><input value={experience} onChange={e => setExperience(e.target.value)} placeholder="예: Django 쇼핑몰 프로젝트 3개월" /></label>
-        <label className="full-width">관심 분야 <input value={interest} onChange={e => setInterest(e.target.value)} placeholder="예: AI 개발, 서비스 기획, 데이터 분석" /></label>
-      </div>
-      <div className="button-row">
-        <button disabled={loading || !major} onClick={() => run(() => runCareerOps('fit', input))}>
-          {loading ? <Loader2 className="spin" size={18} /> : <UserSearch size={18} />} 직무 추천 받기
-        </button>
-      </div>
-    </>
-  );
-}
-
-function InterviewTab({ loading, run, runCareerOps }: NewTabProps) {
-  const [company, setCompany] = useState('');
-  const [role, setRole] = useState('');
-  const [type, setType] = useState('both');
-  const [level, setLevel] = useState('practice');
-  const input = `회사: ${company}\n직무: ${role}\n면접유형: ${type === 'both' ? '인성+직무' : type === 'personality' ? '인성' : '직무'}\n난이도: ${level === 'practice' ? '연습(친절한 피드백)' : '실전(압박 포함)'}`;
-  return (
-    <>
-      <div className="feature-hero">
-        <div className="feature-hero-icon">🎤</div>
-        <div className="feature-hero-copy">
-          <div className="feature-hero-badge">면접 연습</div>
-          <h3>AI 면접관과 실전 모의 면접</h3>
-          <p>인성·직무 질문 10~15개를 실제 면접처럼 진행합니다. 답변마다 즉시 피드백, 마지막에 종합 점수와 합격 가능성 판단.</p>
-        </div>
-      </div>
-      <div className="form-grid">
-        <label>지원 회사 <input value={company} onChange={e => setCompany(e.target.value)} placeholder="예: 삼성SDS" /></label>
-        <label>지원 직무 <input value={role} onChange={e => setRole(e.target.value)} placeholder="예: AI 엔지니어" /></label>
-        <label>면접 유형
-          <select value={type} onChange={e => setType(e.target.value)}>
-            <option value="both">인성 + 직무 (권장)</option>
-            <option value="personality">인성 면접만</option>
-            <option value="technical">직무 면접만</option>
-          </select>
-        </label>
-        <label>난이도
-          <select value={level} onChange={e => setLevel(e.target.value)}>
-            <option value="practice">연습 모드 — 친절한 피드백</option>
-            <option value="real">실전 모드 — 압박 포함</option>
-          </select>
-        </label>
-      </div>
-      <div className="hint-text">
-        <strong>진행 방식:</strong> AI 면접관이 질문 → 내가 답변 → 즉시 피드백 → 다음 질문 순으로 진행됩니다. 실전 모드는 꼬리질문과 압박 질문이 포함됩니다.
-      </div>
-      <div className="button-row">
-        <button disabled={loading || !company || !role} onClick={() => run(() => runCareerOps('interview-sim', input))}>
-          {loading ? <Loader2 className="spin" size={18} /> : <MessageSquare size={18} />} 면접 시작
-        </button>
-      </div>
-    </>
-  );
-}
 
 function StatusAndMetrics({ health, commands, pipeline, tracker, compact = false }: StatusAndMetricsProps) {
   return (
