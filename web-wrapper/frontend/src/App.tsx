@@ -23,7 +23,7 @@ import { CommandGrid } from './components/CommandGrid';
 import { Footer } from './components/Footer';
 import { OnboardingStrip } from './components/OnboardingStrip';
 import { PipelineList } from './components/PipelineList';
-import { ResultPanel } from './components/ResultPanel';
+import { ResultPage } from './components/ResultPage';
 import { TrackerTable } from './components/TrackerTable';
 import { cx } from './components/cx';
 import { TermsPage } from './legal/TermsPage';
@@ -34,7 +34,7 @@ import type { CareerCommand, CommandResult, Health, Page, PipelineItem, SetupDat
 
 // 해시 라우팅: 공개 페이지(약관·개인정보·환불·이용권)를 공유 가능한 URL로 노출하기 위함.
 // 결제 가맹 심사 시 심사관이 로그인 없이 해당 URL에 직접 접근할 수 있어야 한다.
-const PAGES: Page[] = ['workspace', 'offer', 'discover', 'api', 'setup', 'terms', 'privacy', 'refund', 'pricing'];
+const PAGES: Page[] = ['workspace', 'offer', 'discover', 'api', 'result', 'setup', 'terms', 'privacy', 'refund', 'pricing'];
 
 function pageFromHash(): Page | null {
   const raw = window.location.hash.replace(/^#\/?/, '');
@@ -51,6 +51,7 @@ const emptySetup: SetupData = {
 
 export function App() {
   const [page, setPage] = useState<Page>(() => pageFromHash() ?? 'workspace');
+  const [resultOrigin, setResultOrigin] = useState<Page>('workspace');
   const [tab, setTab] = useState<Tab>('evaluate');
   const [health, setHealth] = useState<Health>();
   const [user, setUser] = useState<User | null>(null);
@@ -156,6 +157,11 @@ export function App() {
       setPage('setup');
       return;
     }
+    // 실행 시작과 동시에 전용 결과 페이지로 전환해 스트리밍을 전체 너비로 본다.
+    // 뒤로가기로 돌아갈 출발 페이지를 기억한다(결과 페이지에서 재실행은 없음).
+    const origin = page === 'result' ? resultOrigin : page;
+    setResultOrigin(origin);
+    setPage('result');
     setLoading(true);
     setResult(undefined);
     try {
@@ -169,6 +175,9 @@ export function App() {
           return;
         }
         if (e.status === 402) {
+          // 한도/결제 안내는 모달·토스트로 처리하므로 빈 결과 페이지에 머무르지 않게
+          // 출발 페이지로 되돌린다.
+          setPage(origin);
           const code = (e.detail as { code?: string } | null)?.code;
           if (code === 'paid_quota_exceeded') {
             showNotice('오늘 한도를 모두 사용했어요. 내일 다시 이용해 주세요.', 'warn');
@@ -302,9 +311,7 @@ export function App() {
         <WorkspacePage
           tab={tab}
           setTab={setTab}
-          health={health}
-          result={result}
-          loading={loading}
+          health={health}          loading={loading}
           jd={jd}
           setJd={setJd}
           mode={mode}
@@ -329,9 +336,7 @@ export function App() {
 
       {page === 'offer' && (
         <OfferFitPage
-          health={health}
-          result={result}
-          loading={loading}
+          health={health}          loading={loading}
           jd={jd}
           setJd={setJd}
           mode={mode}
@@ -348,9 +353,7 @@ export function App() {
 
       {page === 'discover' && (
         <DiscoverPage
-          health={health}
-          result={result}
-          loading={loading}
+          health={health}          loading={loading}
           company={company}
           setCompany={setCompany}
           commands={commands}
@@ -363,9 +366,7 @@ export function App() {
 
       {page === 'api' && (
         <ApiModesPage
-          health={health}
-          result={result}
-          loading={loading}
+          health={health}          loading={loading}
           commands={commands}
           selectedApiMode={selectedApiMode}
           setSelectedApiMode={setSelectedApiMode}
@@ -376,6 +377,10 @@ export function App() {
           runCareerOpsMode={runCareerOpsMode}
           loadCommands={loadCommands}
         />
+      )}
+
+      {page === 'result' && (
+        <ResultPage result={result} loading={loading} onBack={() => setPage(resultOrigin)} />
       )}
 
       {page === 'setup' && (
@@ -493,7 +498,6 @@ type WorkspacePageProps = {
   tab: Tab;
   setTab: (tab: Tab) => void;
   health: Health | undefined;
-  result: CommandResult | undefined;
   loading: boolean;
   jd: string;
   setJd: (value: string) => void;
@@ -520,7 +524,6 @@ function WorkspacePage({
   tab,
   setTab,
   health,
-  result,
   loading,
   jd,
   setJd,
@@ -643,8 +646,6 @@ function WorkspacePage({
               </>
             )}
           </div>
-
-          <ResultPanel result={result} />
         </section>
       </section>
     </>
@@ -653,7 +654,6 @@ function WorkspacePage({
 
 type OfferFitPageProps = {
   health: Health | undefined;
-  result: CommandResult | undefined;
   loading: boolean;
   jd: string;
   setJd: (value: string) => void;
@@ -668,7 +668,7 @@ type OfferFitPageProps = {
   runCareerOps: (selectedMode: string, input: string) => Promise<CommandResult>;
 };
 
-function OfferFitPage({ health, result, loading, jd, setJd, mode, setMode, model, setModel, commands, pipeline, tracker, run, runCareerOps }: OfferFitPageProps) {
+function OfferFitPage({ health, loading, jd, setJd, mode, setMode, model, setModel, commands, pipeline, tracker, run, runCareerOps }: OfferFitPageProps) {
   return (
     <>
       <section className="focus-hero offer-hero">
@@ -710,7 +710,6 @@ function OfferFitPage({ health, result, loading, jd, setJd, mode, setMode, model
             <button className="secondary" disabled={loading} onClick={() => run(() => runCareerOps('', ''))}><MapPinned size={18} />명령어 보기</button>
           </div>
         </div>
-        <ResultPanel result={result} />
       </section>
     </>
   );
@@ -718,7 +717,6 @@ function OfferFitPage({ health, result, loading, jd, setJd, mode, setMode, model
 
 type DiscoverPageProps = {
   health: Health | undefined;
-  result: CommandResult | undefined;
   loading: boolean;
   company: string;
   setCompany: (value: string) => void;
@@ -729,7 +727,7 @@ type DiscoverPageProps = {
   run: (action: () => Promise<CommandResult>) => Promise<void>;
 };
 
-function DiscoverPage({ health, result, loading, company, setCompany, commands, pipeline, tracker, loadPipeline, run }: DiscoverPageProps) {
+function DiscoverPage({ health, loading, company, setCompany, commands, pipeline, tracker, loadPipeline, run }: DiscoverPageProps) {
   return (
     <>
       <section className="focus-hero discover-hero">
@@ -766,7 +764,6 @@ function DiscoverPage({ health, result, loading, company, setCompany, commands, 
           </div>
           <div className="discover-inbox"><PipelineList items={pipeline} /></div>
         </div>
-        <ResultPanel result={result} />
       </section>
     </>
   );
@@ -774,7 +771,6 @@ function DiscoverPage({ health, result, loading, company, setCompany, commands, 
 
 type ApiModesPageProps = {
   health: Health | undefined;
-  result: CommandResult | undefined;
   loading: boolean;
   commands: CareerCommand[];
   selectedApiMode: string;
@@ -787,7 +783,7 @@ type ApiModesPageProps = {
   loadCommands: () => Promise<void>;
 };
 
-function ApiModesPage({ health, result, loading, commands, selectedApiMode, setSelectedApiMode, selectedCommand, commandInput, setCommandInput, run, runCareerOpsMode, loadCommands }: ApiModesPageProps) {
+function ApiModesPage({ health, loading, commands, selectedApiMode, setSelectedApiMode, selectedCommand, commandInput, setCommandInput, run, runCareerOpsMode, loadCommands }: ApiModesPageProps) {
   return (
     <>
       <section className="api-hero">
@@ -839,7 +835,6 @@ function ApiModesPage({ health, result, loading, commands, selectedApiMode, setS
           </div>
           <textarea rows={9} value={commandInput} onChange={(e) => setCommandInput(e.target.value)} placeholder="선택된 모드의 입력값" />
         </div>
-        <ResultPanel result={result} />
       </section>
 
       <section className="command-catalog">
