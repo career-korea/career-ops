@@ -38,7 +38,7 @@ async function handle<T>(res: Response): Promise<T> {
 }
 
 export type StreamEvent = {
-  type: 'delta' | 'done' | 'error';
+  type: 'delta' | 'status' | 'done' | 'error';
   text?: string;
   result?: unknown;
   message?: string;

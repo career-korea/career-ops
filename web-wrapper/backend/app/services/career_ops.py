@@ -484,6 +484,26 @@ async def run_agent(
     }
 
 
+# Human-friendly Korean labels for the tools the agent uses. Surfaced as live
+# `status` events during long tool phases (web research, file reads) so every
+# mode shows continuous progress instead of a blank panel until the report lands.
+_TOOL_LABELS = {
+    "WebSearch": "🔍 웹 검색 중…",
+    "WebFetch": "🌐 페이지 읽는 중…",
+    "Read": "📄 파일 읽는 중…",
+    "Glob": "🔎 파일 탐색 중…",
+    "Grep": "🔎 파일 탐색 중…",
+    "Write": "📝 파일 작성 중…",
+    "Edit": "✏️ 파일 수정 중…",
+    "Agent": "🤝 워커에게 위임 중…",
+    "mcp__career__run_script": "⚙️ 스크립트 실행 중…",
+}
+
+
+def _tool_label(name: str) -> str:
+    return _TOOL_LABELS.get(name, f"🔧 {name} 실행 중…")
+
+
 async def stream_agent(
     user_id: int,
     raw_mode: str = "",
@@ -519,12 +539,17 @@ async def stream_agent(
     async for message in sdk.query(prompt=prompt, options=options):
         if isinstance(message, sdk.StreamEvent):
             event = message.event or {}
-            if event.get("type") == "content_block_delta":
+            etype = event.get("type")
+            if etype == "content_block_delta":
                 delta = event.get("delta") or {}
                 if delta.get("type") == "text_delta":
                     text = delta.get("text") or ""
                     if text:
                         yield {"type": "delta", "text": text}
+            elif etype == "content_block_start":
+                block = event.get("content_block") or {}
+                if block.get("type") == "tool_use":
+                    yield {"type": "status", "text": _tool_label(block.get("name") or "tool")}
             continue
         if isinstance(message, sdk.SystemMessage) and getattr(message, "subtype", None) == "init":
             session_id = getattr(message, "data", {}).get("session_id")

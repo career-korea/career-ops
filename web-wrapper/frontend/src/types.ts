@@ -14,6 +14,7 @@ export type CommandResult = {
   mode?: string;
   onboarding?: Record<string, boolean>;
   streaming?: boolean;
+  activity?: string; // 스트리밍 중 현재 도구 활동(예: "🔍 웹 검색 중…"). done 시 비움.
 };
 
 export type TrackerRow = {
