@@ -1268,9 +1268,24 @@ button.auth-submit-signup {
 }
 
 /* "Sign in with Google" wrapper — center the GIS-rendered iframe button. */
+.google-button-shell {
+  display: grid;
+  justify-content: center;
+}
+
+.google-button-shell > * {
+  grid-area: 1 / 1;
+}
+
 .google-button {
   display: flex;
   justify-content: center;
+}
+
+.google-fallback {
+  width: 320px;
+  max-width: 100%;
+  margin: 0 auto;
 }
 
 /* "또는" separator between Google and email/password sign-in. */
