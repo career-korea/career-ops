@@ -97,7 +97,8 @@ def auth_rate_limit(request: Request) -> None:
 
 @app.on_event("startup")
 def startup():
-    db.init_db()
+    if settings.database_url:
+        db.init_db()
 
 
 def public_user(row):

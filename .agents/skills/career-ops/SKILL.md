@@ -33,6 +33,9 @@ Determine the mode from `$mode`:
 | `patterns` | `patterns` |
 | `followup` | `followup` |
 | `update` | `update` |
+| `jasoseo` | `jasoseo` |
+| `fit` | `fit` |
+| `interview-sim` | `interview-sim` |
 
 **Auto-pipeline detection:** If `$mode` is not a known sub-command AND contains JD text (keywords: "responsibilities", "requirements", "qualifications", "about the role", "we're looking for", company name + role) or a URL to a JD, execute `auto-pipeline`.
 
@@ -84,7 +87,7 @@ Applies to: `auto-pipeline`, `oferta`, `ofertas`, `pdf`, `contacto`, `apply`, `p
 ### Standalone modes (only their mode file):
 Read `modes/{mode}.md`
 
-Applies to: `tracker`, `deep`, `interview-prep`, `training`, `project`, `patterns`, `followup`
+Applies to: `tracker`, `deep`, `interview-prep`, `training`, `project`, `patterns`, `followup`, `jasoseo`, `fit`, `interview-sim`
 
 ### Modes delegated to subagent:
 For `scan`, `apply` (with Playwright), and `pipeline` (3+ URLs): launch as Agent with the content of `_shared.md` + `modes/{mode}.md` injected into the subagent prompt.

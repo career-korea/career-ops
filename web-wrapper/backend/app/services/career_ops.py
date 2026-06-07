@@ -53,6 +53,9 @@ STANDALONE_MODES = {
     "project",
     "patterns",
     "followup",
+    "jasoseo",
+    "fit",
+    "interview-sim",
 }
 DELEGATED_MODES = {"scan", "apply", "pipeline"}
 
@@ -188,6 +191,9 @@ def resolve_mode(raw_mode: str, invocation: str = "") -> str:
         return "discovery"
     if text in known:
         return known[text]
+    # Allow directly passing a registered mode key not listed in SKILL.md
+    if text in STANDALONE_MODES or text in SHARED_MODES:
+        return text
     combined = f"{text}\n{invocation}".strip()
     if URL_PATTERN.search(combined) or _looks_like_jd(combined):
         return "auto-pipeline"
