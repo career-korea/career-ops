@@ -5,11 +5,12 @@ import {
   BriefcaseBusiness,
   CreditCard,
   FileText,
-  History,
   Layers3,
   Loader2,
   LogOut,
   MapPinned,
+  MessageCircle,
+  PanelLeft,
   Play,
   RefreshCw,
   Save,
@@ -17,6 +18,8 @@ import {
   Send,
   Settings,
   Sparkles,
+  SquarePen,
+  UserCircle,
 } from 'lucide-react';
 import { ApiError, del, get, post, postStream, put } from './api';
 import { careerCommands, modeOptions, modelOptions, tabs } from './constants';
@@ -36,7 +39,7 @@ import type { CareerCommand, CommandResult, Health, Page, PipelineItem, RunDetai
 
 // 해시 라우팅: 공개 페이지(약관·개인정보·환불·이용권)를 공유 가능한 URL로 노출하기 위함.
 // 결제 가맹 심사 시 심사관이 로그인 없이 해당 URL에 직접 접근할 수 있어야 한다.
-const PAGES: Page[] = ['workspace', 'offer', 'discover', 'api', 'result', 'setup', 'terms', 'privacy', 'refund', 'pricing'];
+const PAGES: Page[] = ['workspace', 'offer', 'discover', 'api', 'result', 'setup', 'account', 'terms', 'privacy', 'refund', 'pricing'];
 
 function pageFromHash(): Page | null {
   const raw = window.location.hash.replace(/^#\/?/, '');
@@ -329,17 +332,54 @@ export function App() {
           </div>
         </div>
       )}
+      <aside className="side-rail" aria-label="Quick actions">
+        <button
+          className={cx('rail-button', historyOpen && 'active')}
+          onClick={() => setHistoryOpen((open) => !open)}
+          aria-label={historyOpen ? '기록 닫기' : '기록 열기'}
+          aria-expanded={historyOpen}
+          title="기록 열기"
+        >
+          <PanelLeft size={20} />
+          <span>기록 열기</span>
+        </button>
+        <button
+          className="rail-button"
+          onClick={() => { setSelectedRun(null); setActiveRunId(null); setPage('workspace'); }}
+          aria-label="새 분석"
+          title="새 분석"
+        >
+          <SquarePen size={20} />
+        </button>
+        <button className="rail-button" onClick={() => setPage('discover')} aria-label="공고 탐색" title="공고 탐색">
+          <Search size={20} />
+        </button>
+        <button
+          className="rail-button"
+          onClick={() => { setHistoryOpen(true); void loadRuns(); }}
+          aria-label="실행 기록"
+          title="실행 기록"
+        >
+          <MessageCircle size={20} />
+        </button>
+        <button
+          className={cx('rail-avatar', page === 'account' && 'active')}
+          onClick={() => setPage('account')}
+          aria-label="계정 페이지"
+          title="계정"
+        >
+          {user?.email?.slice(0, 2).toUpperCase() || 'JL'}
+        </button>
+      </aside>
       {historyOpen && (
-        <div className="history-backdrop" role="dialog" aria-modal="true" aria-label="실행 기록" onClick={() => setHistoryOpen(false)}>
-          <div className="history-drawer" onClick={(e) => e.stopPropagation()}>
-            <HistorySidebar
-              runs={runs}
-              activeId={activeRunId}
-              onSelect={selectRun}
-              onDelete={deleteRun}
-              onNew={() => { setSelectedRun(null); setActiveRunId(null); setHistoryOpen(false); setPage(resultOrigin); }}
-            />
-          </div>
+        <div className="history-drawer" role="dialog" aria-modal="false" aria-label="실행 기록">
+          <HistorySidebar
+            runs={runs}
+            activeId={activeRunId}
+            onSelect={selectRun}
+            onDelete={deleteRun}
+            onNew={() => { setSelectedRun(null); setActiveRunId(null); setHistoryOpen(false); setPage(resultOrigin); }}
+          />
         </div>
       )}
       <header className="app-nav">
@@ -352,9 +392,8 @@ export function App() {
           <button className={page === 'offer' ? 'active' : ''} onClick={() => setPage('offer')}><Activity size={16} />적합도 분석</button>
           <button className={page === 'discover' ? 'active' : ''} onClick={() => setPage('discover')}><Search size={16} />공고 탐색</button>
           <button className={page === 'api' ? 'active' : ''} onClick={() => setPage('api')}><Layers3 size={16} />API 모드</button>
-          <button className={historyOpen ? 'active' : ''} onClick={() => setHistoryOpen(true)}><History size={16} />기록</button>
           <button className={page === 'pricing' ? 'active' : ''} onClick={() => setPage('pricing')}><CreditCard size={16} />이용권</button>
-          <button className={page === 'setup' ? 'active' : ''} onClick={() => setPage('setup')}><Settings size={16} />로그인</button>
+          <button className={page === 'setup' ? 'active' : ''} onClick={() => setPage('setup')}><Settings size={16} />설정</button>
         </nav>
         {user ? (
           <button className="nav-status login-action" onClick={logout} aria-label="Logout">
@@ -451,6 +490,12 @@ export function App() {
           : <AuthPage onDone={bootstrap} health={health} onNotice={showNotice} />
       )}
 
+      {page === 'account' && (
+        user
+          ? <AccountPage user={user} health={health} setup={setup} onLogout={logout} setPage={setPage} />
+          : <AuthPage onDone={bootstrap} health={health} onNotice={showNotice} />
+      )}
+
       {page === 'terms' && <TermsPage />}
       {page === 'privacy' && <PrivacyPage />}
       {page === 'refund' && <RefundPage />}
@@ -458,6 +503,60 @@ export function App() {
 
       <Footer setPage={setPage} />
     </main>
+  );
+}
+
+function AccountPage({
+  user,
+  health,
+  setup,
+  onLogout,
+  setPage,
+}: {
+  user: User;
+  health: Health | undefined;
+  setup: SetupData;
+  onLogout: () => Promise<void>;
+  setPage: (page: Page) => void;
+}) {
+  const done = ['cv', 'profile', 'mode_profile', 'portals'].filter((key) => setup.onboarding?.[key]).length;
+
+  return (
+    <section className="account-page">
+      <div className="account-hero">
+        <div className="account-avatar" aria-hidden="true">
+          {user.email.slice(0, 2).toUpperCase()}
+        </div>
+        <div>
+          <span className="eyebrow"><UserCircle size={16} /> 계정</span>
+          <h1>{user.email}</h1>
+          <p>career-ops 실행 기록, 개인 문서, 이용권 상태를 이 계정 기준으로 관리합니다.</p>
+        </div>
+      </div>
+
+      <div className="account-grid">
+        <div className="account-card">
+          <span>플랜</span>
+          <strong>{user.plan || 'Free'}</strong>
+          <button className="secondary" onClick={() => setPage('pricing')}><CreditCard size={17} /> 이용권 보기</button>
+        </div>
+        <div className="account-card">
+          <span>문서 설정</span>
+          <strong>{done}/4</strong>
+          <button className="secondary" onClick={() => setPage('setup')}><Settings size={17} /> 문서 편집</button>
+        </div>
+        <div className="account-card">
+          <span>백엔드</span>
+          <strong>{health?.ok ? '온라인' : '오프라인'}</strong>
+          <small>{health?.career_ops_root || health?.error || '상태를 확인하는 중입니다.'}</small>
+        </div>
+      </div>
+
+      <div className="account-actions">
+        <button onClick={() => setPage('workspace')}><Sparkles size={17} /> 워크스페이스로</button>
+        <button className="secondary" onClick={onLogout}><LogOut size={17} /> 로그아웃</button>
+      </div>
+    </section>
   );
 }
 
