@@ -1,89 +1,147 @@
-# 모드: latex — 한국형 이력서 PDF 생성
+# 모드: latex — LaTeX/Overleaf CV 내보내기
 
-한국 취업 시장에 맞는 이력서 PDF를 생성한다. 한국은 ATS(지원자 추적 시스템)보다 **사람이 직접 읽는 PDF 가독성**이 우선이다.
+맞춤형 ATS 최적화 CV를 `.tex` 파일로 내보내고 `tectonic` 또는 `pdflatex`로 PDF로 컴파일한다.
 
----
+## 파이프라인
 
-## 한국 이력서 특성
+1. `cv.md`를 단일 진실 소스로 읽기
+2. `config/profile.yml`에서 후보자 신원과 연락처 정보 읽기
+3. 컨텍스트에 JD가 없으면 사용자에게 요청 (텍스트 또는 URL)
+4. JD에서 키워드 15~20개 추출
+5. JD 언어 감지 → CV 언어 (EN 기본)
+6. 역할 아키타입 감지 → 프레이밍 조정
+7. JD 키워드를 주입해 Professional Summary 재작성 (`pdf` 모드와 동일 규칙 — 없는 역량 절대 지어내지 않음)
+8. 공고에 가장 관련 있는 프로젝트 상위 3~4개 선택
+9. JD 관련성 순으로 경력 불릿 재정렬
+10. 기존 성과에 키워드를 자연스럽게 주입
+11. `templates/cv-template.tex`로 `.tex` 파일 생성
+12. `output/cv-{candidate}-{company}-{YYYY-MM-DD}.tex`에 작성
+13. 실행: `node generate-latex.mjs output/cv-{candidate}-{company}-{YYYY-MM-DD}.tex output/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf`
+14. 보고: .tex 경로, .pdf 경로, 파일 크기, 섹션 수, 키워드 커버리지 %
 
-> **미국식 이력서와 다르다.**
-> 한국 대기업 공채는 대부분 **입사지원서(지원서 양식 직접 작성)** 형태이고, 자유 양식 이력서는 스타트업·외국계·수시채용 위주다.
+**필요 조건:** PATH에 `tectonic`(우선 — `brew install tectonic`, 패키지 자동 다운로드) 또는 `pdflatex`(MiKTeX / TeX Live).
 
-| 구분 | 대기업 공채 | 스타트업·외국계·수시채용 |
-|------|-----------|---------------------|
-| 제출 방식 | 채용 사이트 입력 양식 | PDF 이력서 + 포트폴리오 |
-| ATS 통과 여부 | 중요하지 않음 (양식에 직접 입력) | 간혹 있지만 사람 검토가 주 |
-| 디자인 | 표준 양식 사용 | 깔끔하고 읽기 쉬운 것 선호 |
-| 사진 | 대기업은 블라인드 채용으로 불필요해지는 추세 | 회사별 상이 |
+## 템플릿 플레이스홀더
 
----
+`templates/cv-template.tex` 템플릿은 `{{PLACEHOLDER}}` 문법을 사용한다:
 
-## 한국 이력서 구성 요소
+| 플레이스홀더 | 소스 |
+|-------------|--------|
+| `{{NAME}}` | `profile.yml → candidate.full_name` |
+| `{{CONTACT_LINE}}` | 전화 / 도시, 주 / 비자 상태 — profile.yml에서 구성 |
+| `{{EMAIL_URL}}` | `mailto:` URL용 원본 이메일 — LaTeX 이스케이프 금지 (profile.yml에서) |
+| `{{EMAIL_DISPLAY}}` | 표시용 이스케이프된 이메일 — `_` 같은 LaTeX 특수문자는 이스케이프, 예: `first\_name@example.com` |
+| `{{LINKEDIN_URL}}` | `\href{}`용 스킴 포함 전체 URL: 예 `https://linkedin.com/in/username`. `profile.yml`이 스킴 없는 host+path만 저장하면 치환 전 `https://` 추가 |
+| `{{LINKEDIN_DISPLAY}}` | 표시 텍스트만 (스킴 없음): `linkedin.com/in/username` |
+| `{{GITHUB_URL}}` | `\href{}`용 스킴 포함 전체 URL: 예 `https://github.com/username`. 스킴 없는 host+path만 저장 시 `https://` 추가 |
+| `{{GITHUB_DISPLAY}}` | 표시 텍스트만 (스킴 없음): `github.com/username` |
+| `{{EDUCATION}}` | cv.md Education 섹션의 LaTeX `\resumeSubheading` 블록 |
+| `{{EXPERIENCE}}` | LaTeX `\resumeSubheading` + `\resumeItem` 블록 — 재정렬된 불릿 |
+| `{{PROJECTS}}` | LaTeX `\resumeProjectHeading` + `\resumeItem` 블록 — 선택된 상위 3~4개 |
+| `{{SKILLS}}` | cv.md Technical Skills의 LaTeX `\textbf{Category}{: items}` 라인 |
 
-### 필수 항목
-- **인적사항**: 이름, 연락처, 이메일, GitHub/포트폴리오 URL
-- **학력**: 학교명, 전공, 학점(GPA), 졸업 연월 또는 졸업 예정
-- **경력/인턴**: 회사명, 직무, 기간, 주요 업무·성과 (STAR 구조)
-- **프로젝트**: 프로젝트명, 역할, 기술 스택, 성과 지표
-- **기술 스택**: 언어, 프레임워크, 툴 (능숙도 구분 권장)
-- **자격증**: 국가 공인 자격증 + 클라우드/기술 자격증
-- **어학**: 토익/OPIc/토스 점수
+## LaTeX 콘텐츠 생성 규칙
 
-### 선택 항목
-- 수상 이력 (공모전, 해커톤, 장학금)
-- 대외활동 (동아리, 학생회, 봉사활동 — 직무 관련성이 있을 때만)
-- 논문/특허 (해당 시)
+### Education
 
----
+각 항목은 다음이 된다:
 
-## 작성 원칙
-
-1. **한 페이지 원칙** — 신입은 1장, 경력 3년 이하는 1~2장
-2. **수치 중심** — "개발했음" → "MAU 2천 명 서비스 백엔드 개발"
-3. **역순 시간 배열** — 최신 경험이 위에 오게
-4. **직무 관련성 우선** — 관련 없는 활동은 과감히 제거
-5. **깔끔한 레이아웃** — 여백 충분, 글씨 11~12pt, 세리프 계열 또는 고딕 계열
-6. **PDF 제출** — 워드 파일 아닌 PDF로 제출 (서식 깨짐 방지)
-
----
-
-## LaTeX 이력서 생성 흐름
-
-`cv.md`를 읽어 LaTeX 형식으로 변환:
-
-1. `cv.md` + `config/profile.yml` 읽기
-2. 한국 이력서 양식에 맞게 구성 요소 매핑
-3. `templates/cv-template.tex`로 컴파일
-4. A4 기준 PDF 생성
-
-```bash
-node generate-latex.mjs
+```latex
+    \resumeSubheading
+    {Institution}{City, State}
+    {Degree}{Date Range}
 ```
 
----
+수강 과목이 있으면 추가:
 
-## A4 기준 PDF 생성
+```latex
+        \resumeItemListStart
+            \resumeItem{\textbf{Coursework:} Course1, Course2, ...}
+        \resumeItemListEnd
+```
 
-한국 문서 표준 크기:
-- **A4** (210 × 297mm) — 모든 제출 기본
-- Letter 사이즈는 사용하지 않음
+### Experience
 
----
+각 역할은 다음이 된다:
 
-## 이력서 PDF vs 자소서 PDF
+```latex
+    \resumeSubheading
+      {Company}{Date Range}
+      {Role Title}{Location}
+      \resumeItemListStart
+        \resumeItem{JD 키워드가 주입된 불릿 텍스트}
+        ...
+      \resumeItemListEnd
+```
 
-| 문서 | 목적 | 분량 |
-|------|------|------|
-| 이력서 | 스펙·경험 요약 | 1~2페이지 |
-| 자소서 | 지원동기·직무역량·성격 서술 | 항목별 500~1000자 |
-| 포트폴리오 | 프로젝트·결과물 상세 | 자유 형식 |
+### Projects
 
-자소서는 `/career-ops jasoseo` 모드를 사용한다.
+각 프로젝트는 다음이 된다:
 
----
+```latex
+\resumeProjectHeading{Project Name \emph{$|$ Affiliation/Context}}{Date}
+\resumeItemListStart
+    \resumeItem{Bullet text}
+    ...
+\resumeItemListEnd
+```
 
-## 규칙
+### Skills
 
-- CV에 없는 수치나 경험을 만들지 않는다
-- 직무와 무관한 항목은 포함하지 않는다
-- 생성 후 반드시 사용자가 검토하고 제출 여부를 결정한다
+```latex
+    \textbf{Languages}{: C, C++, Java, ...} \\
+    \textbf{Frameworks \& ML}{: PyTorch, LangChain, ...} \\
+    \textbf{Tools \& Cloud}{: Docker, Kubernetes, ...}
+```
+
+## LaTeX 이스케이프 (중요)
+
+모든 텍스트 내용은 삽입 전 반드시 LaTeX용으로 이스케이프해야 한다:
+
+| 문자 | 이스케이프 |
+|-----------|--------|
+| `&` | `\&` |
+| `%` | `\%` |
+| `$` | `\$` |
+| `#` | `\#` |
+| `_` | `\_` |
+| `{` | `\{` |
+| `}` | `\}` |
+| `~` | `\textasciitilde{}` |
+| `^` | `\textasciicircum{}` |
+| `\` | `\textbackslash{}` |
+| `±` | `$\pm$` |
+| `→` | `$\rightarrow$` |
+
+**예외:** LaTeX 명령 자체(`\resumeItem`, `\textbf` 등)는 이스케이프하지 않음 — 사용자 제공 텍스트 내용만.
+
+**URL 예외:** `\href{URL}{...}`의 첫 인자 안 텍스트는 이스케이프하지 않음. URL은 원본(또는 RFC 3986 퍼센트 인코딩) 그대로여야 한다. *표시 텍스트*(둘째 인자)만 이스케이프. 예:
+```latex
+\href{https://example.com/path_with_underscores}{Example\_Display}
+```
+
+## ATS 규칙 (pdf 모드와 동일)
+
+- 단일 컬럼 레이아웃 (템플릿이 강제)
+- 표준 섹션 헤더: Education, Work Experience, Personal Projects, Technical Skills
+- UTF-8, `\pdfgentounicode=1`로 기계 판독 가능
+- 키워드 분산: 각 역할의 첫 불릿, 스킬 섹션
+- 본문에 이미지/그래픽/색상 없음
+
+## 키워드 주입 전략
+
+`modes/pdf.md`와 동일한 윤리 규칙:
+- 후보자에게 없는 역량을 절대 추가하지 않음
+- JD 어휘로 기존 경험을 재구성만 함
+- 예시:
+  - JD가 "RAG pipelines"라 하면 → "LLM workflows with retrieval"을 "RAG pipeline design"으로 재표현
+  - JD가 "MLOps"라 하면 → "observability, evals"를 "MLOps and observability"로 재표현
+
+## Overleaf 호환성
+
+생성된 `.tex` 파일은 표준 CTAN 패키지만 사용한다(커스텀/번들 의존성 없음):
+
+- `latexsym`, `fullpage`, `titlesec`, `marvosym`, `color`, `verbatim`, `enumitem`
+- `hyperref`, `fancyhdr`, `babel`, `tabularx`, `fontawesome5`, `multicol`, `glyphtounicode`
+
+`.tex` 파일을 Overleaf에 직접 업로드 — 추가 설정 없이 컴파일된다.
