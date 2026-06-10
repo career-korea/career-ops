@@ -41,7 +41,7 @@ import type { CareerCommand, CommandResult, Health, Page, PipelineItem, RunDetai
 
 // 해시 라우팅: 공개 페이지(약관·개인정보·환불·이용권)를 공유 가능한 URL로 노출하기 위함.
 // 결제 가맹 심사 시 심사관이 로그인 없이 해당 URL에 직접 접근할 수 있어야 한다.
-const PAGES: Page[] = ['workspace', 'offer', 'discover', 'api', 'result', 'setup', 'account', 'login', 'signup', 'terms', 'privacy', 'refund', 'pricing'];
+const PAGES: Page[] = ['landing', 'workspace', 'offer', 'discover', 'api', 'result', 'setup', 'account', 'login', 'signup', 'terms', 'privacy', 'refund', 'pricing'];
 
 function pageFromHash(): Page | null {
   const raw = window.location.hash.replace(/^#\/?/, '');
@@ -57,7 +57,7 @@ const emptySetup: SetupData = {
 };
 
 export function App() {
-  const [page, setPage] = useState<Page>(() => pageFromHash() ?? 'workspace');
+  const [page, setPage] = useState<Page>(() => pageFromHash() ?? 'landing');
   const [resultOrigin, setResultOrigin] = useState<Page>('workspace');
   const [tab, setTab] = useState<Tab>('evaluate');
   const [health, setHealth] = useState<Health>();
@@ -313,7 +313,7 @@ export function App() {
     setRuns([]);
     setSelectedRun(null);
     setActiveRunId(null);
-    setPage('workspace');
+    setPage('landing');
     await refreshHealth();
   }
 
@@ -390,6 +390,7 @@ export function App() {
           <span>career-ops</span>
         </div>
         <nav className="page-switcher" aria-label="Primary navigation">
+          <button className={page === 'landing' ? 'active' : ''} onClick={() => setPage('landing')}><BriefcaseBusiness size={16} />홈</button>
           <button className={page === 'workspace' ? 'active' : ''} onClick={() => setPage('workspace')}><Sparkles size={16} />워크스페이스</button>
           <button className={page === 'offer' ? 'active' : ''} onClick={() => setPage('offer')}><Activity size={16} />적합도 분석</button>
           <button className={page === 'discover' ? 'active' : ''} onClick={() => setPage('discover')}><Search size={16} />공고 탐색</button>
@@ -414,6 +415,10 @@ export function App() {
           </div>
         )}
       </header>
+
+      {page === 'landing' && (
+        <LandingPage user={user} health={health} setPage={setPage} />
+      )}
 
       {page === 'workspace' && (
         <WorkspacePage
@@ -522,6 +527,77 @@ export function App() {
 
       <Footer setPage={setPage} />
     </main>
+  );
+}
+
+function LandingPage({
+  user,
+  health,
+  setPage,
+}: {
+  user: User | null;
+  health: Health | undefined;
+  setPage: (page: Page) => void;
+}) {
+  const online = Boolean(health?.ok);
+
+  return (
+    <section className="landing-page">
+      <div className="landing-hero">
+        <div className="landing-copy">
+          <span className="eyebrow"><BriefcaseBusiness size={16} /> career-ops</span>
+          <h1>채용 공고를 붙여 넣으면, 지원 판단부터 CV까지 한 번에 정리합니다.</h1>
+          <p>
+            career-ops는 무작정 지원을 늘리는 도구가 아닙니다. 내 이력과 공고의 맞음새를 먼저 보고,
+            좋은 기회에만 더 선명한 지원서를 만들도록 돕습니다.
+          </p>
+          <div className="landing-actions">
+            <button onClick={() => setPage(user ? 'workspace' : 'signup')}>
+              <Play size={16} /> {user ? '워크스페이스 열기' : '무료로 시작하기'}
+            </button>
+            <button className="secondary" onClick={() => setPage('offer')}>
+              <Activity size={16} /> 적합도 분석 보기
+            </button>
+          </div>
+        </div>
+
+        <div className="landing-visual" aria-hidden="true">
+          <div className="landing-score-card">
+            <span>FIT SCORE</span>
+            <strong>4.6/5</strong>
+            <small>apply with tailored proof points</small>
+          </div>
+          <div className="landing-pipeline-card">
+            <span>PIPELINE</span>
+            <strong>12 roles</strong>
+            <small>ranked by signal, not noise</small>
+          </div>
+          <div className="landing-terminal">
+            <span>{online ? 'backend online' : 'local preview'}</span>
+            <strong>/career-ops scan</strong>
+            <small>discover, evaluate, track</small>
+          </div>
+        </div>
+      </div>
+
+      <div className="landing-proof">
+        <div>
+          <CheckCircle2 size={17} />
+          <strong>Quality filter</strong>
+          <span>낮은 적합도 공고는 지원 전에 걸러냅니다.</span>
+        </div>
+        <div>
+          <Search size={17} />
+          <strong>Portal scanner</strong>
+          <span>여러 채용 페이지의 새 공고를 한곳에 모읍니다.</span>
+        </div>
+        <div>
+          <FileText size={17} />
+          <strong>Tailored CV</strong>
+          <span>공고에 맞춘 근거 중심 CV를 생성합니다.</span>
+        </div>
+      </div>
+    </section>
   );
 }
 
