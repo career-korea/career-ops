@@ -464,9 +464,127 @@ h3 {
   margin-top: 26px;
 }
 
-/* Hero visual: quiet dotted product surface instead of a collage */
+/* ════════════════════════════════════════════════════════════════════
+   Motion system — ambient, slow, compositor-friendly
+   Rules: transform/opacity only, 3–48s cycles, staggered phases,
+   everything settles to a sane final frame under reduced-motion.
+   All four art scenes are rebuilt from the SAME existing DOM nodes —
+   no markup changes.
+   ════════════════════════════════════════════════════════════════════ */
+
+@property --arc {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes grid-drift { to { background-position: 90px 54px; } }
+
+@keyframes glow-drift {
+  from { transform: translate3d(-2%, -1%, 0) scale(1); }
+  to { transform: translate3d(2%, 2%, 0) scale(1.06); }
+}
+
+@keyframes float-a {
+  from { transform: translateY(0); }
+  to { transform: translateY(-7px); }
+}
+
+@keyframes float-b {
+  from { transform: translateY(0); }
+  to { transform: translateY(6px); }
+}
+
+@keyframes drift-layer {
+  from { transform: translate3d(0, 0, 0) rotate(var(--tilt, 0deg)); }
+  to { transform: translate3d(10px, -8px, 0) rotate(var(--tilt, 0deg)); }
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes halo {
+  0% { box-shadow: 0 0 0 0 rgba(var(--halo, 16, 185, 129), .32); }
+  70%, 100% { box-shadow: 0 0 0 7px rgba(var(--halo, 16, 185, 129), 0); }
+}
+
+@keyframes ping {
+  from { transform: scale(.5); opacity: .7; }
+  to { transform: scale(2.3); opacity: 0; }
+}
+
+@keyframes packet {
+  0% { left: 0%; opacity: 0; }
+  12% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { left: 100%; opacity: 0; }
+}
+
+@keyframes scan-y {
+  from { top: 19%; }
+  to { top: 56%; }
+}
+
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+
+@keyframes breath {
+  from { opacity: .45; transform: scale(.97); }
+  to { opacity: .9; transform: scale(1.02); }
+}
+
+@keyframes orbit {
+  from { transform: rotate(0turn) translateX(var(--orbit-r, 92px)) rotate(0turn); }
+  to { transform: rotate(1turn) translateX(var(--orbit-r, 92px)) rotate(-1turn); }
+}
+
+@keyframes dash-flow { to { background-position-x: 16px; } }
+
+@keyframes shimmer-bar {
+  from { background-position: 130% 0; }
+  to { background-position: -90% 0; }
+}
+
+@keyframes particle-rise {
+  to { background-position: 0 -240%, 0 -200%, 0 -280%; }
+}
+
+@keyframes caret-blink { 50% { opacity: 0; } }
+
+@keyframes score-fill {
+  from { --arc: 0deg; }
+  to { --arc: 272deg; }
+}
+
+/* Staggered entrance for hero copy */
+.hero-copy > *,
+.api-hero-copy > *,
+.focus-copy > * {
+  animation: rise-in .5s ease both;
+}
+
+.hero-copy > :nth-child(2),
+.api-hero-copy > :nth-child(2),
+.focus-copy > :nth-child(2) { animation-delay: .07s; }
+
+.hero-copy > :nth-child(3),
+.api-hero-copy > :nth-child(3),
+.focus-copy > :nth-child(3) { animation-delay: .14s; }
+
+.hero-copy > :nth-child(4),
+.api-hero-copy > :nth-child(4),
+.focus-copy > :nth-child(4) { animation-delay: .21s; }
+
+/* ── Scene canvases (shared) ───────────────────────────────────────── */
 .hero-visual,
-.api-art {
+.api-art,
+.focus-art {
   position: relative;
   z-index: 1;
   min-height: 340px;
@@ -476,6 +594,23 @@ h3 {
   background-color: var(--surface-2);
   background-image: radial-gradient(rgba(24, 24, 27, .07) 1px, transparent 1.4px);
   background-size: 18px 18px;
+  box-shadow: none;
+  animation: grid-drift 48s linear infinite;
+}
+
+/* Ambient glow layer — drifts slowly behind every scene */
+.hero-visual::before,
+.api-art::before,
+.focus-art::before {
+  content: "";
+  position: absolute;
+  inset: -12%;
+  pointer-events: none;
+  background:
+    radial-gradient(38% 34% at 72% 22%, var(--accent-soft), transparent 70%),
+    radial-gradient(30% 28% at 22% 78%, rgba(16, 185, 129, .07), transparent 70%);
+  filter: blur(34px);
+  animation: glow-drift 16s ease-in-out infinite alternate;
 }
 
 .editorial-collage,
@@ -484,43 +619,184 @@ h3 {
   box-shadow: none;
 }
 
-/* Retro collage shapes retired. */
-.paper-arch,
+/* Connection lines (shared) — hairline beams with traveling packets */
+.stone-form,
 .coral-slab,
 .teal-window,
-.stone-form,
-.yellow-dot,
-.router-ring,
 .router-line,
-.api-coral,
-.api-node,
-.fit-orbit,
-.fit-ruler,
-.fit-coral,
-.fit-yellow,
-.discover-path,
-.discover-teal,
-.discover-coral,
-.discover-dot { display: none; }
+.discover-path {
+  position: absolute;
+  height: 1.5px;
+  width: 24%;
+  border: 0;
+  clip-path: none;
+  box-shadow: none;
+  background: linear-gradient(90deg,
+    transparent, var(--line-strong) 22%, var(--line-strong) 78%, transparent);
+  transform-origin: left center;
+}
 
-/* Floating stat / detail cards — now clean white surfaces */
+.stone-form::after,
+.coral-slab::after,
+.teal-window::after,
+.router-line::after,
+.discover-path::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  margin-top: -2.5px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 8px 1px var(--accent-ring);
+  animation: packet var(--pkt, 4.2s) ease-in-out var(--pkt-delay, 0s) infinite;
+}
+
+/* ── Scene 1 · Workspace — AI command center ───────────────────────── */
+
+/* Hub node */
+.paper-arch {
+  position: absolute;
+  left: 44%;
+  top: 40%;
+  width: 54px;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  opacity: 1;
+  z-index: 1;
+}
+
+.paper-arch::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.paper-arch::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border: 1px solid var(--accent);
+  border-radius: inherit;
+  animation: ping 3s cubic-bezier(0, 0, .2, 1) infinite;
+}
+
+/* Satellite node */
+.yellow-dot {
+  position: absolute;
+  left: 17%;
+  top: 20%;
+  right: auto;
+  bottom: auto;
+  width: 26px;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+  z-index: 1;
+}
+
+.yellow-dot::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 999px;
+  background: #10b981;
+}
+
+.yellow-dot::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border: 1px solid #10b981;
+  border-radius: inherit;
+  animation: ping 3s cubic-bezier(0, 0, .2, 1) 1.2s infinite;
+}
+
+/* Workflow connections: hub → card, hub → card, hub → node */
+.coral-slab {
+  left: 50%;
+  top: 47%;
+  width: 26%;
+  transform: rotate(-32deg);
+  --pkt: 3.8s;
+  --pkt-delay: .4s;
+}
+
+.stone-form {
+  left: 27%;
+  top: 66%;
+  width: 26%;
+  transform: rotate(-27deg);
+  --pkt: 4.6s;
+  --pkt-delay: 1.6s;
+}
+
+.teal-window {
+  left: 19%;
+  top: 23.5%;
+  width: 32%;
+  transform: rotate(25deg);
+  --pkt: 5.2s;
+  --pkt-delay: 2.6s;
+}
+
+/* Floating workflow cards */
 .folio-sheet {
   position: absolute;
-  right: 12%;
-  top: 22%;
+  right: 8%;
+  top: 13%;
   display: grid;
   gap: 4px;
-  width: 200px;
+  width: 208px;
   padding: 14px 16px;
   border: 1px solid var(--line);
   border-radius: var(--r-md);
   background: var(--surface);
   box-shadow: var(--shadow-sm);
+  z-index: 2;
+  animation:
+    rise-in .6s ease .15s both,
+    float-a 7s ease-in-out 1.4s infinite alternate;
 }
 
 .folio-sheet.offset {
-  right: 30%;
-  top: 52%;
+  right: auto;
+  left: 6%;
+  top: 54%;
+  animation:
+    rise-in .6s ease .3s both,
+    float-b 8.5s ease-in-out 1.1s infinite alternate;
+}
+
+/* Live status pip */
+.folio-sheet::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #10b981;
+  --halo: 16, 185, 129;
+  animation: halo 2.6s ease-out infinite;
 }
 
 .folio-sheet span,
@@ -547,24 +823,169 @@ h3 {
   font-size: 12.5px;
 }
 
-.api-collage {
-  background-color: var(--surface-2);
-  background-image: radial-gradient(rgba(24, 24, 27, .07) 1px, transparent 1.4px);
-  background-size: 18px 18px;
+/* ── Scene 4 · API — orchestration console ─────────────────────────── */
+
+/* Depth layer behind the hub (soft parallax) */
+.api-coral {
+  position: absolute;
+  left: 54%;
+  top: 6%;
+  width: 40%;
+  height: 54%;
+  border-radius: var(--r-xl);
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, .45);
+  transform: rotate(-3deg);
+  --tilt: -3deg;
+  z-index: 0;
+  animation: drift-layer 14s ease-in-out infinite alternate;
 }
 
+/* Orchestration hub */
+.router-ring {
+  position: absolute;
+  left: 46%;
+  top: 12%;
+  width: min(210px, 42%);
+  aspect-ratio: 1;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  z-index: 1;
+}
+
+.router-ring::before {
+  content: "";
+  position: absolute;
+  inset: 13%;
+  border: 1px dashed var(--line-strong);
+  border-radius: inherit;
+  animation: spin-slow 40s linear infinite;
+}
+
+.router-ring::after {
+  content: "";
+  position: absolute;
+  inset: 31%;
+  border: 1px solid var(--line);
+  border-radius: inherit;
+  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, .9), var(--accent-soft) 72%);
+  animation: breath 3.2s ease-in-out infinite alternate;
+}
+
+/* Service nodes with status cores + pings */
+.api-node {
+  position: absolute;
+  width: 34px;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+  z-index: 1;
+}
+
+.api-node::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  border-radius: 999px;
+}
+
+.api-node::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  border: 1px solid transparent;
+  animation: ping 3.2s cubic-bezier(0, 0, .2, 1) infinite;
+}
+
+.api-node.alpha { right: 7%; top: 10%; left: auto; }
+.api-node.alpha::before { background: #10b981; }
+.api-node.alpha::after { border-color: #10b981; animation-delay: .2s; }
+
+.api-node.beta { right: 5%; bottom: 30%; left: auto; top: auto; }
+.api-node.beta::before { background: var(--accent); }
+.api-node.beta::after { border-color: var(--accent); animation-delay: 1.3s; }
+
+.api-node.gamma { left: 40%; bottom: 12%; right: auto; top: auto; }
+.api-node.gamma::before { background: var(--faint); }
+.api-node.gamma::after { border-color: var(--faint); animation-delay: 2.2s; }
+
+/* Request / response streams */
+.router-line.one {
+  left: 38%;
+  top: 30%;
+  width: 20%;
+  transform: rotate(12deg);
+  --pkt: 3.4s;
+  --pkt-delay: .2s;
+}
+
+.router-line.two {
+  left: 74%;
+  top: 30%;
+  width: 16%;
+  transform: rotate(-34deg);
+  --pkt: 4.4s;
+  --pkt-delay: 1.4s;
+}
+
+.router-line.three {
+  left: 64%;
+  top: 56%;
+  width: 22%;
+  transform: rotate(127deg);
+  --pkt: 5s;
+  --pkt-delay: 2.4s;
+}
+
+/* Terminal card — traffic lights + blinking caret */
 .api-terminal {
   position: absolute;
-  left: 12%;
-  bottom: 20%;
+  left: 5%;
+  top: 13%;
+  bottom: auto;
   display: grid;
   gap: 5px;
-  width: min(340px, 66%);
-  padding: 16px;
+  width: min(290px, 46%);
+  padding: 32px 16px 28px;
   border: 1px solid var(--line);
   border-radius: var(--r-md);
   background: var(--surface);
   box-shadow: var(--shadow-sm);
+  z-index: 2;
+  animation:
+    rise-in .6s ease .2s both,
+    float-a 8s ease-in-out 1.6s infinite alternate;
+}
+
+.api-terminal::before {
+  content: "";
+  position: absolute;
+  top: 13px;
+  left: 15px;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  box-shadow: 14px 0 0 var(--surface-3), 28px 0 0 var(--surface-3);
+}
+
+.api-terminal::after {
+  content: "";
+  position: absolute;
+  left: 16px;
+  bottom: 11px;
+  width: 7px;
+  height: 12px;
+  background: var(--accent);
+  opacity: .7;
+  animation: caret-blink 1.1s steps(2, start) infinite;
 }
 
 /* ── Focus heroes (offer / discover) — same compact grammar ───────── */
@@ -612,18 +1033,7 @@ h3 {
   line-height: 1.65;
 }
 
-.focus-art {
-  position: relative;
-  z-index: 1;
-  min-height: 340px;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  background-color: var(--surface-2);
-  background-image: radial-gradient(rgba(24, 24, 27, .07) 1px, transparent 1.4px);
-  background-size: 18px 18px;
-  box-shadow: none;
-}
+/* .focus-art canvas styling lives in the shared Motion system above */
 
 .focus-layout {
   display: grid;
@@ -642,6 +1052,135 @@ h3 {
   box-shadow: var(--shadow-xs);
 }
 
+/* ── Scene 2 · Offer — live evaluation & scoring ───────────────────── */
+
+/* Animated score ring: arc fills on load, sheen keeps sweeping */
+.fit-orbit {
+  position: absolute;
+  right: 8%;
+  left: auto;
+  top: 12%;
+  width: min(170px, 36%);
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: 999px;
+  background: conic-gradient(var(--accent) var(--arc, 272deg), var(--surface-3) 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 12px), #000 calc(100% - 11px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 12px), #000 calc(100% - 11px));
+  animation: score-fill 1.6s cubic-bezier(.2, .8, .2, 1) .5s both;
+  z-index: 1;
+}
+
+.fit-orbit::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(from 0deg,
+    transparent 0 80%, rgba(255, 255, 255, .85) 90%, transparent 97%);
+  animation: spin-slow 5.5s linear infinite;
+}
+
+.fit-orbit::after { content: none; }
+
+/* Document under evaluation — skeleton bars shimmer in sequence */
+.fit-document {
+  position: absolute;
+  left: 8%;
+  top: 14%;
+  width: 36%;
+  height: 48%;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  transform: none;
+  box-shadow: var(--shadow-sm);
+  z-index: 1;
+  animation: rise-in .6s ease .1s both;
+}
+
+.fit-document i {
+  display: block;
+  height: 8px;
+  margin-bottom: 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg,
+    var(--surface-3) 30%, #ececee 45%, var(--surface-3) 60%);
+  background-size: 220% 100%;
+  animation: shimmer-bar 2.6s ease-in-out infinite;
+}
+
+.fit-document i:nth-child(2) { width: 72%; }
+
+.fit-document i:nth-child(3) {
+  width: 86%;
+  background: linear-gradient(90deg,
+    var(--accent-soft) 30%, rgba(91, 91, 214, .2) 45%, var(--accent-soft) 60%);
+  background-size: 220% 100%;
+  animation-delay: .35s;
+}
+
+.fit-document i:nth-child(4) {
+  width: 58%;
+  animation-delay: .7s;
+}
+
+/* Scanning beam sweeping over the document */
+.fit-ruler {
+  position: absolute;
+  left: 8%;
+  width: 36%;
+  height: 2px;
+  top: 19%;
+  border: 0;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  box-shadow: 0 0 12px 1px var(--accent-ring);
+  transform: none;
+  z-index: 2;
+  animation: scan-y 3.6s ease-in-out infinite alternate;
+}
+
+/* Frosted data layer drifting between document and ring (parallax) */
+.fit-coral {
+  position: absolute;
+  right: auto;
+  left: 36%;
+  top: 32%;
+  width: 32%;
+  height: 40%;
+  border-radius: var(--r-xl);
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, .45);
+  transform: rotate(3deg);
+  --tilt: 3deg;
+  z-index: 0;
+  animation: drift-layer 13s ease-in-out infinite alternate;
+}
+
+/* Confidence indicator — validated signal next to the document */
+.fit-yellow {
+  position: absolute;
+  left: 41%;
+  bottom: auto;
+  top: 17%;
+  width: 10px;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: #10b981;
+  z-index: 2;
+}
+
+.fit-yellow::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  border: 1px solid #10b981;
+  animation: ping 2.8s cubic-bezier(0, 0, .2, 1) .6s infinite;
+}
+
+/* Floating evaluation cards */
 .fit-card {
   position: absolute;
   z-index: 2;
@@ -655,8 +1194,37 @@ h3 {
   box-shadow: var(--shadow-sm);
 }
 
-.fit-card.primary { left: 12%; top: 20%; }
-.fit-card.secondary { right: 12%; bottom: 22%; }
+.fit-card::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--accent);
+  --halo: 91, 91, 214;
+  animation: halo 2.8s ease-out infinite;
+}
+
+.fit-card.primary {
+  left: 9%;
+  top: auto;
+  bottom: 7%;
+  animation:
+    rise-in .6s ease .25s both,
+    float-a 7.5s ease-in-out 1.3s infinite alternate;
+}
+
+.fit-card.secondary {
+  right: 9%;
+  left: auto;
+  top: auto;
+  bottom: 7%;
+  animation:
+    rise-in .6s ease .4s both,
+    float-b 9s ease-in-out 1s infinite alternate;
+}
 
 .fit-card span,
 .discover-card span {
@@ -684,39 +1252,31 @@ h3 {
   font-size: 12.5px;
 }
 
-/* Document sketch — now a clean skeleton card */
-.fit-document {
+/* Subtle particle field — signals rising through the canvas */
+.offer-hero .focus-art::after {
+  content: "";
   position: absolute;
-  left: 34%;
-  top: 30%;
-  width: 30%;
-  height: 38%;
-  padding: 18px;
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
-  background: var(--surface);
-  transform: rotate(-3deg);
-  box-shadow: var(--shadow-sm);
+  inset: 0;
+  pointer-events: none;
+  opacity: .45;
+  background-image:
+    radial-gradient(2px 2px at 22% 30%, var(--accent-ring), transparent 60%),
+    radial-gradient(2px 2px at 58% 64%, rgba(16, 185, 129, .28), transparent 60%),
+    radial-gradient(1.5px 1.5px at 82% 44%, var(--accent-ring), transparent 60%);
+  background-size: 100% 240%, 100% 200%, 100% 280%;
+  background-repeat: repeat;
+  animation: particle-rise 16s linear infinite;
 }
 
-.fit-document i {
-  display: block;
-  height: 8px;
-  margin-bottom: 12px;
-  border-radius: 999px;
-  background: var(--surface-3);
-}
+/* ── Scene 3 · Discover — search & pipeline flow ───────────────────── */
 
-.fit-document i:nth-child(2) { width: 72%; }
-.fit-document i:nth-child(3) { width: 86%; background: var(--accent-soft); }
-.fit-document i:nth-child(4) { width: 58%; }
-
+/* Radar surface: rotating sweep + search-hit ping */
 .discover-map {
   position: absolute;
-  left: 10%;
-  top: 14%;
-  width: 68%;
-  height: 62%;
+  left: 7%;
+  top: 12%;
+  width: 54%;
+  height: 64%;
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
   background:
@@ -724,16 +1284,80 @@ h3 {
     linear-gradient(rgba(24, 24, 27, .045) 1px, transparent 1px),
     var(--surface);
   background-size: 28px 28px;
-  transform: rotate(-2deg);
+  transform: none;
   box-shadow: var(--shadow-xs);
+  z-index: 1;
 }
 
+.discover-map::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(from 0deg at 50% 50%,
+    transparent 0 72%, rgba(91, 91, 214, .08) 86%, rgba(91, 91, 214, .2) 99%, transparent 100%);
+  -webkit-mask: radial-gradient(circle at 50% 50%, #000 0 56%, transparent 58%);
+  mask: radial-gradient(circle at 50% 50%, #000 0 56%, transparent 58%);
+  animation: spin-slow 6.5s linear infinite;
+}
+
+.discover-map::after {
+  content: "";
+  position: absolute;
+  left: 64%;
+  top: 34%;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  animation: ping 3s cubic-bezier(0, 0, .2, 1) .4s infinite;
+}
+
+/* Orbiting highlight circling the search surface */
+.discover-dot {
+  position: absolute;
+  left: 34%;
+  top: 44%;
+  right: auto;
+  width: 8px;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent-ring);
+  z-index: 2;
+  animation: orbit 16s linear infinite;
+}
+
+/* Opportunities flowing from search into the pipeline */
+.discover-path.one {
+  left: 60%;
+  top: 30%;
+  width: 22%;
+  transform: rotate(-9deg);
+  --pkt: 3.6s;
+  --pkt-delay: .3s;
+}
+
+.discover-path.two {
+  right: auto;
+  bottom: auto;
+  left: 60%;
+  top: 58%;
+  width: 24%;
+  height: 1.5px;
+  transform: rotate(9deg);
+  --pkt: 4.8s;
+  --pkt-delay: 1.8s;
+}
+
+/* Job cards — stacked depth + gentle drift */
 .discover-card {
   position: absolute;
   z-index: 2;
   display: grid;
   gap: 4px;
-  min-width: 172px;
+  min-width: 170px;
   padding: 14px 16px;
   border: 1px solid var(--line);
   border-radius: var(--r-md);
@@ -741,8 +1365,80 @@ h3 {
   box-shadow: var(--shadow-sm);
 }
 
-.discover-card { left: 16%; top: 24%; }
-.discover-card.alt { right: 14%; bottom: 21%; }
+.discover-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  transform: translate(7px, 9px);
+  border: 1px solid var(--line);
+  border-radius: inherit;
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.discover-card::after {
+  content: "";
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #10b981;
+  --halo: 16, 185, 129;
+  animation: halo 2.6s ease-out .4s infinite;
+}
+
+.discover-card {
+  left: auto;
+  right: 7%;
+  top: 13%;
+  animation:
+    rise-in .6s ease .2s both,
+    float-a 7s ease-in-out 1.2s infinite alternate;
+}
+
+.discover-card.alt {
+  right: 10%;
+  top: auto;
+  bottom: 12%;
+  animation:
+    rise-in .6s ease .38s both,
+    float-b 8.5s ease-in-out .9s infinite alternate;
+}
+
+/* Frosted layer behind the radar (parallax depth) */
+.discover-teal {
+  position: absolute;
+  right: auto;
+  left: 16%;
+  top: 7%;
+  width: 30%;
+  height: 32%;
+  border-radius: var(--r-xl);
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, .45);
+  --tilt: -2deg;
+  transform: rotate(-2deg);
+  z-index: 0;
+  animation: drift-layer 15s ease-in-out infinite alternate;
+}
+
+/* Pipeline conveyor — dashes flowing toward the tracker */
+.discover-coral {
+  position: absolute;
+  left: 10%;
+  right: 8%;
+  bottom: 9%;
+  width: auto;
+  height: 2px;
+  border-radius: 0;
+  opacity: .3;
+  background: repeating-linear-gradient(90deg,
+    var(--accent) 0 5px, transparent 5px 16px);
+  animation: dash-flow .9s linear infinite;
+}
 
 .discover-inbox {
   margin-top: 18px;
@@ -809,6 +1505,13 @@ h3 {
   font-weight: 500;
 }
 
+/* Staggered entrance for the metric strip */
+.visual-overlay > * { animation: rise-in .55s ease both; }
+.visual-overlay > :nth-child(1) { animation-delay: .25s; }
+.visual-overlay > :nth-child(2) { animation-delay: .32s; }
+.visual-overlay > :nth-child(3) { animation-delay: .39s; }
+.visual-overlay > :nth-child(4) { animation-delay: .46s; }
+
 .api-mode-strip {
   display: flex;
   flex-wrap: wrap;
@@ -840,6 +1543,20 @@ h3 {
   gap: 6px;
   padding: 16px;
   border-radius: var(--r-md);
+  animation: rise-in .6s ease .35s both;
+}
+
+.api-art-panel::before {
+  content: "";
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #10b981;
+  --halo: 16, 185, 129;
+  animation: halo 2.6s ease-out infinite;
 }
 
 .api-art-panel strong {
@@ -1542,7 +2259,7 @@ select:focus {
   border-radius: var(--r-lg);
   background: var(--surface);
   cursor: pointer;
-  transition: border-color .15s ease, box-shadow .15s ease;
+  transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
   animation: card-in .3s cubic-bezier(.16, 1, .3, 1) both;
 }
 
@@ -1551,6 +2268,7 @@ select:focus {
 .command-card:hover {
   border-color: var(--line-strong);
   box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
 }
 
 .command-card.selected {
@@ -2188,17 +2906,6 @@ tr:last-child td { border-bottom: 0; }
   to { transform: rotate(360deg); }
 }
 
-@keyframes card-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -2507,12 +3214,6 @@ tr:last-child td { border-bottom: 0; }
   .fit-card strong,
   .discover-card strong {
     font-size: 22px;
-  }
-
-  .api-terminal {
-    width: 70%;
-    left: 8%;
-    bottom: 22%;
   }
 
   .api-art-panel {
@@ -2871,4 +3572,24 @@ tr:last-child td { border-bottom: 0; }
   .footer-business { grid-template-columns: 1fr; }
 
   .footer-business dt { min-width: 72px; }
+}
+
+/* ── Motion — small screens: thin the scenes out ───────────────────── */
+@media (max-width: 620px) {
+  .fit-coral,
+  .api-coral,
+  .discover-teal,
+  .teal-window { display: none; }
+
+  .discover-dot { --orbit-r: 54px; }
+  .router-ring { width: 140px; }
+  .fit-orbit { width: 120px; }
+  .fit-document { height: 42%; }
+
+  .api-terminal {
+    width: 74%;
+    left: 6%;
+    top: 12%;
+    bottom: auto;
+  }
 }
