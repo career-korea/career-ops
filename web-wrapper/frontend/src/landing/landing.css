@@ -1,0 +1,614 @@
+/* ════════════════════════════════════════════════════════════════════
+   landing.css — 시네마틱 랜딩 전용 스타일 (네임스페이스: .landing-*)
+
+   설계 메모
+   - 이 파일은 랜딩 청크와 함께 lazy 로드된다. 앱 셸(style.css)은 건드리지
+     않고, 디자인 토큰은 var(...) 폴백과 함께 빌려 쓴다.
+   - body.landing-active: Landing 마운트 중에만 붙는 클래스. 사이드 레일
+     패딩(56px)을 지워 100vw 풀블리드 브레이크아웃이 정확히 0에서 시작하게
+     하고, overflow-x: clip 으로 스크롤바 폭 만큼의 가로 넘침을 막는다.
+   - .landing-canvas 의 CSS background 는 WebGL 실패 시의 폴백이다.
+     (셰이더가 살아 있으면 캔버스가 불투명하게 덮어 그린다)
+   - 모든 키프레임은 lp- 접두사로 자체 정의 — style.css 에 의존하지 않는다.
+     prefers-reduced-motion 은 style.css 의 전역 차단 블록이 함께 덮는다.
+   ════════════════════════════════════════════════════════════════════ */
+
+body.landing-active {
+  padding-left: 0;
+  overflow-x: clip;
+}
+
+body.landing-active .side-rail { display: none; }
+
+/* ── 루트: 풀블리드 브레이크아웃 ─────────────────────────────────────── */
+
+.landing {
+  position: relative;
+  isolation: isolate;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  color: var(--ink, #18181b);
+  background: var(--landing-bg, #fafafa);
+}
+
+.landing-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background: var(--landing-bg, #fafafa); /* WebGL 폴백 */
+}
+
+/* ── 챕터 공통 ──────────────────────────────────────────────────────── */
+
+.landing-chapter {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: clamp(110px, 18vh, 200px) clamp(20px, 5vw, 44px);
+}
+
+.landing-kicker {
+  margin: 0;
+  font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent, #5b5bd6);
+}
+
+.landing-chapter h2 {
+  margin: 0;
+  font-size: clamp(34px, 4.8vw, 62px);
+  font-weight: 650;
+  line-height: 1.06;
+  letter-spacing: -.03em;
+}
+
+.landing-sub {
+  margin: 0;
+  max-width: 56ch;
+  font-size: clamp(15.5px, 1.6vw, 19px);
+  line-height: 1.68;
+  color: var(--ink-2, #52525b);
+}
+
+.landing-num {
+  position: absolute;
+  top: clamp(20px, 5vh, 60px);
+  right: clamp(-14px, 1vw, 30px);
+  z-index: 0;
+  font-size: clamp(150px, 24vw, 320px);
+  font-weight: 650;
+  line-height: 1;
+  letter-spacing: -.04em;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--line-strong, #d6d6da);
+  opacity: .5;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── 버튼 ───────────────────────────────────────────────────────────── */
+
+.landing .landing-btn {
+  min-height: 52px;
+  padding: 0 26px;
+  border-radius: 12px;
+  font-size: 15.5px;
+  font-weight: 600;
+  gap: 9px;
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease,
+    border-color .18s ease, color .18s ease;
+}
+
+.landing .landing-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md, 0 10px 30px rgba(24, 24, 27, .14));
+}
+
+.landing .landing-btn.ghost {
+  border-color: var(--line-strong, #d6d6da);
+  background: rgba(255, 255, 255, .65);
+  color: var(--ink, #18181b);
+  backdrop-filter: blur(8px);
+  box-shadow: none;
+}
+
+.landing .landing-btn.ghost:hover { background: rgba(255, 255, 255, .92); }
+
+.landing .landing-link {
+  margin-top: 22px;
+  min-height: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: none;
+  color: var(--accent, #5b5bd6);
+  font-size: 14.5px;
+  font-weight: 600;
+}
+
+.landing .landing-link:hover {
+  background: none;
+  box-shadow: none;
+  color: var(--accent, #5b5bd6);
+}
+
+.landing .landing-link svg { transition: transform .18s ease; }
+.landing .landing-link:hover svg { transform: translateX(3px); }
+
+/* ── Chapter 00 — 히어로 ────────────────────────────────────────────── */
+
+.landing-hero {
+  min-height: calc(100svh - 120px);
+  justify-content: center;
+  padding-top: clamp(36px, 7vh, 80px);
+  padding-bottom: 130px;
+}
+
+.landing-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.landing-eyebrow {
+  margin: 0;
+  font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent, #5b5bd6);
+}
+
+.landing-headline {
+  margin: 0;
+  font-size: clamp(44px, 7.2vw, 92px);
+  font-weight: 650;
+  line-height: 1.04;
+  letter-spacing: -.035em;
+}
+
+.landing-line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: .08em;
+  margin-bottom: -.08em;
+}
+
+.landing-line > span {
+  display: block;
+  will-change: transform;
+}
+
+.landing-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.landing-trust {
+  margin: 12px 0 0;
+  font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 12px;
+  letter-spacing: .04em;
+  color: var(--ink-3, #71717a);
+}
+
+/* 히어로 목업 — 앱 프레임 미니어처 */
+
+.landing-mock {
+  position: relative;
+  z-index: 1;
+  width: min(880px, 100%);
+  margin: clamp(46px, 7vh, 84px) auto 0;
+  align-self: center;
+}
+
+.landing-glow {
+  position: absolute;
+  inset: -14% -8%;
+  z-index: 0;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(91, 91, 214, .16), rgba(91, 91, 214, 0) 70%);
+  pointer-events: none;
+}
+
+.landing-frame {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  border: 1px solid var(--line, #e9e9eb);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .86);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 30px 80px -20px rgba(24, 24, 27, .18);
+}
+
+.landing-frame-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--line, #e9e9eb);
+  font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 11.5px;
+  color: var(--ink-3, #71717a);
+}
+
+.landing-frame-bar i {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  margin-right: 26px;
+  border-radius: 50%;
+  background: #e4e4e7;
+  box-shadow: 16px 0 0 #e4e4e7, 32px 0 0 #e4e4e7;
+}
+
+.landing-frame-body {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+}
+
+.landing-frame-doc {
+  display: grid;
+  align-content: start;
+  gap: 13px;
+  padding: 26px 24px;
+  border-right: 1px solid var(--line, #e9e9eb);
+}
+
+.landing-frame-doc b {
+  display: block;
+  height: 11px;
+  border-radius: 6px;
+  background: #ececee;
+}
+
+.landing-frame-doc b.hl { background: rgba(91, 91, 214, .28); }
+
+.landing-frame-score {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 7px;
+  padding: 26px 20px;
+}
+
+.landing-ring {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: conic-gradient(var(--accent, #5b5bd6) 272deg, #ececee 272deg);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 9px), #000 calc(100% - 8px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 9px), #000 calc(100% - 8px));
+}
+
+.landing-frame-score strong {
+  font-size: 26px;
+  font-weight: 650;
+  letter-spacing: -.02em;
+}
+
+.landing-frame-score small {
+  font-size: 12px;
+  color: var(--ink-3, #71717a);
+}
+
+.landing-chip {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  gap: 2px;
+  padding: 12px 16px;
+  border: 1px solid var(--line, #e9e9eb);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .9);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 18px 44px -16px rgba(24, 24, 27, .22);
+}
+
+.landing-chip span {
+  font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 10px;
+  letter-spacing: .12em;
+  color: var(--accent, #5b5bd6);
+}
+
+.landing-chip strong { font-size: 17px; font-weight: 650; }
+.landing-chip small { font-size: 11.5px; color: var(--ink-3, #71717a); }
+.landing-chip.one { top: -22px; right: -18px; }
+.landing-chip.two { bottom: -20px; left: -22px; }
+
+.landing-cue {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: grid;
+  justify-items: center;
+  gap: 9px;
+}
+
+.landing-cue i {
+  position: relative;
+  overflow: hidden;
+  width: 1px;
+  height: 46px;
+  background: var(--line-strong, #d6d6da);
+}
+
+.landing-cue i::after {
+  content: "";
+  position: absolute;
+  top: -30%;
+  left: 0;
+  width: 100%;
+  height: 30%;
+  background: var(--accent, #5b5bd6);
+  animation: lp-cue 1.9s ease-in-out infinite;
+}
+
+.landing-cue span {
+  font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 10.5px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--ink-3, #71717a);
+}
+
+/* ── Chapter 01 — 평가 카드 ─────────────────────────────────────────── */
+
+.landing-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  width: 100%;
+  margin-top: 22px;
+}
+
+.landing-card {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 22px 20px;
+  border: 1px solid var(--line, #e9e9eb);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .78);
+  backdrop-filter: blur(6px);
+}
+
+.landing-card svg { color: var(--accent, #5b5bd6); }
+
+.landing-card h3 {
+  margin: 2px 0 0;
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -.01em;
+}
+
+.landing-card p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.62;
+  color: var(--ink-2, #52525b);
+}
+
+/* ── Chapter 02 — 공고 스트림 ───────────────────────────────────────── */
+
+.landing-stream {
+  display: grid;
+  gap: 12px;
+  width: min(640px, 100%);
+  margin-top: 22px;
+}
+
+.landing-job {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border: 1px solid var(--line, #e9e9eb);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .82);
+  backdrop-filter: blur(6px);
+}
+
+.landing-job > div { flex: 1; display: grid; gap: 2px; }
+
+.landing-job strong {
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -.01em;
+}
+
+.landing-job small { font-size: 12.5px; color: var(--ink-3, #71717a); }
+.landing-job svg { flex: none; color: var(--ink-3, #71717a); }
+
+.landing-job .ok,
+.landing-job .no {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.landing-job .ok { background: #34d399; box-shadow: 0 0 0 4px rgba(52, 211, 153, .14); }
+.landing-job .no { background: #a1a1aa; box-shadow: 0 0 0 4px rgba(161, 161, 170, .12); }
+
+.landing-job.ghosted { opacity: .55; border-style: dashed; }
+
+.landing-job.ghosted strong {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+/* ── Chapter 03 — 다크 챕터 ─────────────────────────────────────────── */
+
+.landing-dark { color: #f4f4f5; }
+.landing-dark .landing-kicker { color: #a5a5f2; }
+.landing-dark .landing-sub { color: rgba(244, 244, 245, .62); }
+.landing-dark .landing-num { -webkit-text-stroke-color: rgba(255, 255, 255, .14); }
+
+.landing-terminal {
+  width: min(640px, 100%);
+  margin-top: 24px;
+  padding: 16px 20px 18px;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 14px;
+  background: rgba(19, 19, 26, .82);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 30px 70px -18px rgba(0, 0, 0, .5);
+  font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 13.5px;
+}
+
+.landing-term-bar { display: flex; margin-bottom: 14px; }
+
+.landing-term-bar i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .16);
+  box-shadow: 16px 0 0 rgba(255, 255, 255, .16), 32px 0 0 rgba(255, 255, 255, .16);
+}
+
+.landing-term-line {
+  margin: 8px 0 0;
+  color: rgba(235, 235, 245, .85);
+}
+
+.landing-term-line .m { color: #9a9af5; font-weight: 600; }
+.landing-term-line .ok { color: #34d399; }
+
+.landing-caret {
+  display: inline-block;
+  width: 8px;
+  height: 15px;
+  vertical-align: -2px;
+  background: #9a9af5;
+  animation: lp-caret 1.1s steps(2, start) infinite;
+}
+
+.landing-steps {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 26px;
+  font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 12.5px;
+  letter-spacing: .06em;
+  color: rgba(244, 244, 245, .72);
+}
+
+.landing-steps span {
+  padding: 8px 16px;
+  border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: 999px;
+}
+
+.landing-steps i {
+  width: 26px;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .45), rgba(255, 255, 255, .06));
+}
+
+/* ── Chapter 04 — 마무리 ────────────────────────────────────────────── */
+
+.landing-final {
+  align-items: center;
+  justify-content: center;
+  min-height: 78vh;
+  text-align: center;
+}
+
+.landing-final .landing-sub { max-width: 44ch; }
+.landing-final .landing-cta-row { justify-content: center; }
+
+.landing-meta {
+  display: flex;
+  gap: clamp(28px, 6vw, 64px);
+  margin-top: 34px;
+}
+
+.landing-meta div {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+
+.landing-meta strong {
+  font-size: 28px;
+  font-weight: 650;
+  letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.landing-meta span { font-size: 12.5px; color: var(--ink-3, #71717a); }
+
+/* ── 키프레임 (자체 정의 — lp- 접두사) ──────────────────────────────── */
+
+@keyframes lp-cue {
+  0% { top: -30%; }
+  100% { top: 115%; }
+}
+
+@keyframes lp-caret {
+  50% { opacity: 0; }
+}
+
+/* ── 반응형 ─────────────────────────────────────────────────────────── */
+
+@media (max-width: 820px) {
+  .landing-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .landing-num {
+    font-size: clamp(110px, 30vw, 180px);
+    opacity: .35;
+  }
+
+  .landing-hero { min-height: calc(100svh - 88px); }
+
+  .landing-chip.one { top: -14px; right: -6px; }
+  .landing-chip.two { bottom: -14px; left: -6px; }
+}
+
+@media (max-width: 700px) {
+  .landing-frame-body { grid-template-columns: 1fr; }
+
+  .landing-frame-doc {
+    border-right: none;
+    border-bottom: 1px solid var(--line, #e9e9eb);
+  }
+}
+
+@media (max-width: 560px) {
+  .landing-chapter { padding-top: 96px; padding-bottom: 96px; }
+
+  .landing-cards { grid-template-columns: 1fr; }
+
+  .landing-cta-row {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .landing .landing-btn { width: 100%; }
+
+  .landing-meta { gap: 22px; }
+}
