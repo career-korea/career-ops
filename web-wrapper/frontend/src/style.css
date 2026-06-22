@@ -303,7 +303,18 @@ main::after { content: none; }
   font-weight: 600;
 }
 
-.brand-mark { letter-spacing: -.01em; }
+.brand-mark {
+  letter-spacing: -.01em;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  transition: color var(--duration-fast, 150ms) ease;
+}
+
+.brand-mark:hover { color: var(--coral); }
+
+.brand-mark:hover svg { color: var(--coral); }
 
 .brand-mark svg { color: var(--ink); }
 

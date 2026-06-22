@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import {
   Activity,
   Braces,
@@ -38,10 +38,14 @@ import { PrivacyPage } from './legal/PrivacyPage';
 import { RefundPage } from './legal/RefundPage';
 import { PricingPage } from './legal/PricingPage';
 import type { CareerCommand, CommandResult, Health, Page, PipelineItem, RunDetail, RunMeta, SetupData, Tab, TrackerRow, User } from './types';
+import { initSmoothScroll } from './smooth';
+
+// 랜딩 챕터는 Three.js + GSAP을 쓰므로 별도 청크로 lazy 로드한다 — 앱 번들은 그대로.
+const LandingPage = lazy(() => import('./landing/Landing'));
 
 // 해시 라우팅: 공개 페이지(약관·개인정보·환불·이용권)를 공유 가능한 URL로 노출하기 위함.
 // 결제 가맹 심사 시 심사관이 로그인 없이 해당 URL에 직접 접근할 수 있어야 한다.
-const PAGES: Page[] = ['workspace', 'offer', 'discover', 'api', 'result', 'setup', 'account', 'login', 'signup', 'terms', 'privacy', 'refund', 'pricing'];
+const PAGES: Page[] = ['landing', 'workspace', 'offer', 'discover', 'api', 'result', 'setup', 'account', 'login', 'signup', 'terms', 'privacy', 'refund', 'pricing'];
 
 function pageFromHash(): Page | null {
   const raw = window.location.hash.replace(/^#\/?/, '');
@@ -57,7 +61,7 @@ const emptySetup: SetupData = {
 };
 
 export function App() {
-  const [page, setPage] = useState<Page>(() => pageFromHash() ?? 'workspace');
+  const [page, setPage] = useState<Page>(() => pageFromHash() ?? 'landing');
   const [resultOrigin, setResultOrigin] = useState<Page>('workspace');
   const [tab, setTab] = useState<Tab>('evaluate');
   const [health, setHealth] = useState<Health>();
@@ -100,6 +104,11 @@ export function App() {
 
   useEffect(() => {
     bootstrap();
+  }, []);
+
+  // 사이트 전역 부드러운 스크롤 (prefers-reduced-motion 사용자는 자동 제외)
+  useEffect(() => {
+    initSmoothScroll();
   }, []);
 
   // 브라우저 뒤로/앞으로, 직접 해시 입력에 반응해 페이지를 동기화한다.
@@ -385,10 +394,15 @@ export function App() {
         </div>
       )}
       <header className="app-nav">
-        <div className="brand-mark" aria-label="career-ops brand">
+        <button
+          type="button"
+          className="brand-mark"
+          aria-label="career-ops 홈으로"
+          onClick={() => setPage('landing')}
+        >
           <BriefcaseBusiness size={17} />
           <span>career-ops</span>
-        </div>
+        </button>
         <nav className="page-switcher" aria-label="Primary navigation">
           <button className={page === 'workspace' ? 'active' : ''} onClick={() => setPage('workspace')}><Sparkles size={16} />워크스페이스</button>
           <button className={page === 'offer' ? 'active' : ''} onClick={() => setPage('offer')}><Activity size={16} />적합도 분석</button>
@@ -414,6 +428,12 @@ export function App() {
           </div>
         )}
       </header>
+
+      {page === 'landing' && (
+        <Suspense fallback={<div style={{ minHeight: '100svh' }} aria-hidden="true" />}>
+          <LandingPage setPage={setPage} modeCount={commands.length} />
+        </Suspense>
+      )}
 
       {page === 'workspace' && (
         <WorkspacePage
