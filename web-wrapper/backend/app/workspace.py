@@ -58,6 +58,18 @@ def _scaffold_if_missing(path: Path, default: str) -> None:
         path.write_text(default, encoding="utf-8")
 
 
+def _migrate_pipeline_headers(path: Path) -> None:
+    """scan.mjs uses ## Pendientes/## Procesadas; fix older English-header files."""
+    if not path.exists():
+        return
+    text = path.read_text(encoding="utf-8")
+    updated = text.replace("## Pending\n", "## Pendientes\n").replace(
+        "## Processed\n", "## Procesadas\n"
+    )
+    if updated != text:
+        path.write_text(updated, encoding="utf-8")
+
+
 def base_root() -> Path:
     return settings.root_path
 
@@ -173,8 +185,9 @@ def materialize_setup(
             path.write_text(content, encoding="utf-8")
     _scaffold_if_missing(
         ws / "data" / "pipeline.md",
-        "# Pipeline\n\n## Pending\n\n## Processed\n",
+        "# Pipeline\n\n## Pendientes\n\n## Procesadas\n",
     )
+    _migrate_pipeline_headers(ws / "data" / "pipeline.md")
     _scaffold_if_missing(
         ws / "data" / "applications.md",
         "# Applications Tracker\n\n"
