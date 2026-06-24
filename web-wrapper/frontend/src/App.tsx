@@ -1104,6 +1104,7 @@ function AutopilotPage({ health, commands, pipeline, tracker }: {
   tracker: TrackerRow[];
 }) {
   const [step, setStep] = useState<AutopilotStep>('idle');
+  const [apModel, setApModel] = useState('haiku');
   const [activity, setActivity] = useState('');
   const [logs, setLogs] = useState<{ label: string; text: string }[]>([]);
   const [error, setError] = useState('');
@@ -1120,7 +1121,7 @@ function AutopilotPage({ health, commands, pipeline, tracker }: {
         let buffer = '';
         await postStream(
           '/api/career-ops/stream',
-          { mode: cfg.mode, input: cfg.input, model: undefined },
+          { mode: cfg.mode, input: cfg.input, model: apModel || undefined },
           (event) => {
             if (event.type === 'delta' && event.text) { buffer += event.text; }
             else if (event.type === 'status' && event.text) { setActivity(event.text); }
@@ -1197,6 +1198,9 @@ function AutopilotPage({ health, commands, pipeline, tracker }: {
               {isRunning ? <Loader2 className="spin" size={18} /> : <Zap size={18} />}
               {isRunning ? '실행 중…' : step === 'done' || step === 'error' ? '다시 실행' : '원클릭 실행'}
             </button>
+            <select value={apModel} onChange={(e) => setApModel(e.target.value)} disabled={isRunning} aria-label="모델 선택">
+              {modelOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
           </div>
 
           {logs.map((log, i) => (
