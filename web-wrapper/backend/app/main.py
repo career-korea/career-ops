@@ -1,4 +1,5 @@
 
+import asyncio
 import json
 import re
 import time
@@ -215,17 +216,46 @@ async def run_and_meter(user, coro, input_text: str = "") -> dict:
 _SSE_HEADERS = {"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
 
 
-async def stream_and_meter(user, agen, input_text: str = ""):
-    """Relay agent stream events as SSE frames, metering and persisting the run on completion."""
-    final_result = None
+_AITER_DONE = object()  # sentinel for an exhausted async iterator
+
+
+async def _anext_or_done(ait) -> object:
     try:
-        async for event in agen:
+        return await ait.__anext__()
+    except StopAsyncIteration:
+        return _AITER_DONE
+
+
+async def stream_and_meter(user, agen, input_text: str = ""):
+    """Relay agent stream events as SSE frames with 20-second keep-alive pings.
+
+    HTTP/2 gateways drop idle SSE connections; pings (SSE comment lines) prevent
+    that without touching the client-side parser, which only handles `data:` lines.
+    """
+    PING_INTERVAL = 20  # seconds between heartbeats when agent is silent
+    final_result = None
+    pending: asyncio.Task | None = None
+    try:
+        ait = agen.__aiter__()
+        pending = asyncio.create_task(_anext_or_done(ait))
+        while True:
+            try:
+                result = await asyncio.wait_for(asyncio.shield(pending), timeout=PING_INTERVAL)
+            except asyncio.TimeoutError:
+                yield ": ping\n\n"
+                continue
+            if result is _AITER_DONE:
+                break
+            event = result
+            pending = asyncio.create_task(_anext_or_done(ait))
             if event.get("type") == "done":
                 final_result = event.get("result")
             yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
     except Exception as e:  # surface failures to the client instead of a dead stream
         yield f"data: {json.dumps({'type': 'error', 'message': str(e)}, ensure_ascii=False)}\n\n"
     finally:
+        if pending is not None and not pending.done():
+            pending.cancel()
         if final_result is not None:
             try:
                 db.record_usage(
