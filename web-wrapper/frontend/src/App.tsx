@@ -1094,7 +1094,7 @@ type AutopilotStep = 'idle' | 'scanning' | 'evaluating' | 'writing' | 'done' | '
 const AUTOPILOT_STEPS = [
   { id: 'scanning'   as AutopilotStep, label: '공고 스캔',   mode: 'scan',     input: '', useScript: true },
   { id: 'evaluating' as AutopilotStep, label: '평가',        mode: 'pipeline', input: '모든 출력은 한국어로 작성해주세요.', useScript: false },
-  { id: 'writing'    as AutopilotStep, label: '소개서 작성', mode: '',         input: '방금 평가된 최고 점수 공고의 자기소개서를 한국어로 작성해주세요.', useScript: false },
+  { id: 'writing'    as AutopilotStep, label: '소개서 작성', mode: 'jasoseo',  input: 'reports/ 폴더에서 가장 최근에 생성된 가장 높은 점수의 리포트를 읽고, 해당 공고 자기소개서를 작성해주세요.', useScript: false },
 ];
 
 function AutopilotPage({ health, commands, pipeline, tracker }: {
