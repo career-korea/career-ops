@@ -118,7 +118,7 @@ export class FluidBackground {
       alpha: false,
       powerPreference: 'low-power',
     });
-    this.renderer.setClearColor('#111126', 1);
+    this.renderer.setClearColor('#fafafa', 1);
     const mobile = window.innerWidth < 768;
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, mobile ? 1.25 : 1.75));
 

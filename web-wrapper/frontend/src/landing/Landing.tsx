@@ -29,7 +29,7 @@ const CHAPTERS = [
   { bg: '#fafafa', a: '#fafafa', b: '#ededf6', c: '#c7c7ee', dark: 0 }, // 00 선언
   { bg: '#f2f2fa', a: '#f2f2fa', b: '#e2e2f4', c: '#b4b4ea', dark: 0 }, // 01 평가
   { bg: '#eef2f6', a: '#eef2f6', b: '#dce6ef', c: '#a8c6e6', dark: 0 }, // 02 탐색
-  { bg: '#111126', a: '#111126', b: '#1e1e3a', c: '#4040a0', dark: 1 }, // 03 실행
+  { bg: '#f0eefb', a: '#f0eefb', b: '#e3dfff', c: '#b4aeff', dark: 0 }, // 03 실행
   { bg: '#fafafa', a: '#fafafa', b: '#eaf0ec', c: '#bcd9c9', dark: 0 }, // 04 시작
 ];
 
@@ -314,7 +314,7 @@ export default function Landing({
       </section>
 
       {/* ── Chapter 03 — 실행 (다크) ──────────────────────────────────── */}
-      <section className="landing-chapter landing-dark">
+      <section className="landing-chapter">
         <span className="landing-num" aria-hidden="true">03</span>
         <p className="landing-kicker" data-rise>Chapter 03 — 실행</p>
         <h2 data-rise>평가에서 지원서까지,<br />한 흐름으로.</h2>

@@ -469,13 +469,14 @@ body.landing-active .side-rail { display: none; }
   width: min(640px, 100%);
   margin-top: 24px;
   padding: 16px 20px 18px;
-  border: 1px solid rgba(255, 255, 255, .12);
+  border: 1px solid var(--line, #e9e9eb);
   border-radius: 14px;
-  background: rgba(19, 19, 26, .82);
+  background: rgba(255, 255, 255, .88);
   backdrop-filter: blur(8px);
-  box-shadow: 0 30px 70px -18px rgba(0, 0, 0, .5);
+  box-shadow: 0 30px 70px -18px rgba(91, 91, 214, .15);
   font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
   font-size: 13.5px;
+  color: var(--ink, #18181b);
 }
 
 .landing-term-bar { display: flex; margin-bottom: 14px; }
@@ -484,24 +485,24 @@ body.landing-active .side-rail { display: none; }
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, .16);
-  box-shadow: 16px 0 0 rgba(255, 255, 255, .16), 32px 0 0 rgba(255, 255, 255, .16);
+  background: #e4e4e7;
+  box-shadow: 16px 0 0 #e4e4e7, 32px 0 0 #e4e4e7;
 }
 
 .landing-term-line {
   margin: 8px 0 0;
-  color: rgba(235, 235, 245, .85);
+  color: var(--ink-2, #52525b);
 }
 
-.landing-term-line .m { color: #9a9af5; font-weight: 600; }
-.landing-term-line .ok { color: #34d399; }
+.landing-term-line .m { color: var(--accent, #5b5bd6); font-weight: 600; }
+.landing-term-line .ok { color: #059669; }
 
 .landing-caret {
   display: inline-block;
   width: 8px;
   height: 15px;
   vertical-align: -2px;
-  background: #9a9af5;
+  background: var(--accent, #5b5bd6);
   animation: lp-caret 1.1s steps(2, start) infinite;
 }
 
@@ -514,19 +515,19 @@ body.landing-active .side-rail { display: none; }
   font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
   font-size: 12.5px;
   letter-spacing: .06em;
-  color: rgba(244, 244, 245, .72);
+  color: var(--ink-3, #71717a);
 }
 
 .landing-steps span {
   padding: 8px 16px;
-  border: 1px solid rgba(255, 255, 255, .16);
+  border: 1px solid var(--line-strong, #d6d6da);
   border-radius: 999px;
 }
 
 .landing-steps i {
   width: 26px;
   height: 1px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .45), rgba(255, 255, 255, .06));
+  background: linear-gradient(90deg, transparent, var(--line-strong, #d6d6da), transparent);
 }
 
 /* ── Chapter 04 — 마무리 ────────────────────────────────────────────── */
