@@ -1092,8 +1092,8 @@ function ApiModesPage({ health, loading, commands, selectedApiMode, setSelectedA
 type AutopilotStep = 'idle' | 'scanning' | 'evaluating' | 'writing' | 'done' | 'error';
 
 const AUTOPILOT_STEPS = [
-  { id: 'scanning'   as AutopilotStep, label: '공고 스캔',   mode: 'scan',     input: '' },
-  { id: 'evaluating' as AutopilotStep, label: '평가',        mode: 'pipeline', input: '' },
+  { id: 'scanning'   as AutopilotStep, label: '공고 스캔',   mode: 'scan',     input: '모든 출력은 한국어로 작성해주세요.' },
+  { id: 'evaluating' as AutopilotStep, label: '평가',        mode: 'pipeline', input: '모든 출력은 한국어로 작성해주세요.' },
   { id: 'writing'    as AutopilotStep, label: '소개서 작성', mode: '',         input: '방금 평가된 최고 점수 공고의 자기소개서를 한국어로 작성해주세요.' },
 ];
 
