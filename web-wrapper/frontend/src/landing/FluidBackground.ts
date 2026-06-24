@@ -118,6 +118,7 @@ export class FluidBackground {
       alpha: false,
       powerPreference: 'low-power',
     });
+    this.renderer.setClearColor('#111126', 1);
     const mobile = window.innerWidth < 768;
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, mobile ? 1.25 : 1.75));
 
@@ -148,8 +149,9 @@ export class FluidBackground {
       window.addEventListener('pointermove', this.onPointer, { passive: true });
     }
 
-    if (this.reduced) this.renderOnce();
-    else this.start();
+    this.snapColors();
+    this.renderOnce();
+    if (!this.reduced) this.start();
   }
 
   /** 스크롤 지휘자가 챕터 사이를 지날 때 이미 보간된 색을 흘려보낸다. */
@@ -232,7 +234,12 @@ export class FluidBackground {
   };
 
   private onVisibility = (): void => {
-    if (document.hidden) this.stop();
-    else if (!this.reduced) this.start();
+    if (document.hidden) {
+      this.stop();
+    } else if (!this.reduced) {
+      this.snapColors();
+      this.renderOnce();
+      this.start();
+    }
   };
 }
