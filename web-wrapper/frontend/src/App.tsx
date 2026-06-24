@@ -21,6 +21,7 @@ import {
   Sparkles,
   SquarePen,
   UserCircle,
+  Zap,
 } from 'lucide-react';
 import { ApiError, del, get, post, postStream, put } from './api';
 import { careerCommands, modeOptions, modelOptions, tabs } from './constants';
@@ -33,6 +34,7 @@ import { ResultPage } from './components/ResultPage';
 import { HistorySidebar } from './components/HistorySidebar';
 import { TrackerTable } from './components/TrackerTable';
 import { cx } from './components/cx';
+import { Markdown, looksLikeMarkdown } from './components/Markdown';
 import { TermsPage } from './legal/TermsPage';
 import { PrivacyPage } from './legal/PrivacyPage';
 import { RefundPage } from './legal/RefundPage';
@@ -45,7 +47,7 @@ const LandingPage = lazy(() => import('./landing/Landing'));
 
 // 해시 라우팅: 공개 페이지(약관·개인정보·환불·이용권)를 공유 가능한 URL로 노출하기 위함.
 // 결제 가맹 심사 시 심사관이 로그인 없이 해당 URL에 직접 접근할 수 있어야 한다.
-const PAGES: Page[] = ['landing', 'workspace', 'offer', 'discover', 'api', 'result', 'setup', 'account', 'login', 'signup', 'terms', 'privacy', 'refund', 'pricing'];
+const PAGES: Page[] = ['landing', 'workspace', 'offer', 'discover', 'api', 'result', 'setup', 'account', 'login', 'signup', 'terms', 'privacy', 'refund', 'pricing', 'autopilot'];
 
 function pageFromHash(): Page | null {
   const raw = window.location.hash.replace(/^#\/?/, '');
@@ -408,6 +410,7 @@ export function App() {
           <button className={page === 'offer' ? 'active' : ''} onClick={() => setPage('offer')}><Activity size={16} />적합도 분석</button>
           <button className={page === 'discover' ? 'active' : ''} onClick={() => setPage('discover')}><Search size={16} />공고 탐색</button>
           <button className={page === 'api' ? 'active' : ''} onClick={() => setPage('api')}><Layers3 size={16} />API 모드</button>
+          <button className={page === 'autopilot' ? 'active' : ''} onClick={() => setPage('autopilot')}><Zap size={16} />원클릭</button>
           <button className={page === 'pricing' ? 'active' : ''} onClick={() => setPage('pricing')}><CreditCard size={16} />이용권</button>
           <button className={page === 'setup' ? 'active' : ''} onClick={() => setPage('setup')}><Settings size={16} />설정</button>
         </nav>
@@ -532,6 +535,12 @@ export function App() {
       {page === 'account' && (
         user
           ? <AccountPage user={user} health={health} setup={setup} onLogout={logout} setPage={setPage} />
+          : <AuthPage mode="login" onDone={bootstrap} health={health} onNotice={showNotice} setPage={setPage} />
+      )}
+
+      {page === 'autopilot' && (
+        user
+          ? <AutopilotPage health={health} commands={commands} pipeline={pipeline} tracker={tracker} />
           : <AuthPage mode="login" onDone={bootstrap} health={health} onNotice={showNotice} setPage={setPage} />
       )}
 
@@ -1075,6 +1084,136 @@ function ApiModesPage({ health, loading, commands, selectedApiMode, setSelectedA
       <section className="command-catalog">
         <div className="section-head"><div><span className="kicker">모드 카탈로그</span><h2>실행할 백엔드 워크플로우를 선택하세요.</h2></div></div>
         <CommandGrid commands={commands} selectedMode={selectedApiMode} loading={loading} onSelect={setSelectedApiMode} onRun={(commandMode) => run(() => runCareerOpsMode(commandMode, commandInput))} />
+      </section>
+    </>
+  );
+}
+
+type AutopilotStep = 'idle' | 'scanning' | 'evaluating' | 'writing' | 'done' | 'error';
+
+const AUTOPILOT_STEPS = [
+  { id: 'scanning'   as AutopilotStep, label: '공고 스캔',   mode: 'scan',     input: '' },
+  { id: 'evaluating' as AutopilotStep, label: '평가',        mode: 'pipeline', input: '' },
+  { id: 'writing'    as AutopilotStep, label: '소개서 작성', mode: '',         input: '방금 평가된 최고 점수 공고의 자기소개서를 한국어로 작성해주세요.' },
+];
+
+function AutopilotPage({ health, commands, pipeline, tracker }: {
+  health: Health | undefined;
+  commands: CareerCommand[];
+  pipeline: PipelineItem[];
+  tracker: TrackerRow[];
+}) {
+  const [step, setStep] = useState<AutopilotStep>('idle');
+  const [activity, setActivity] = useState('');
+  const [logs, setLogs] = useState<{ label: string; text: string }[]>([]);
+  const [error, setError] = useState('');
+
+  const runOrder: AutopilotStep[] = ['scanning', 'evaluating', 'writing'];
+
+  async function runAutopilot() {
+    setStep('scanning');
+    setLogs([]);
+    setError('');
+    setActivity('');
+    try {
+      for (const cfg of AUTOPILOT_STEPS) {
+        let buffer = '';
+        await postStream(
+          '/api/career-ops/stream',
+          { mode: cfg.mode, input: cfg.input, model: undefined },
+          (event) => {
+            if (event.type === 'delta' && event.text) { buffer += event.text; }
+            else if (event.type === 'status' && event.text) { setActivity(event.text); }
+            else if (event.type === 'error') { throw new Error(event.message || '스트림 오류'); }
+          }
+        );
+        setActivity('');
+        setLogs((prev) => [...prev, { label: cfg.label, text: buffer }]);
+        if (cfg.id === 'scanning')   setStep('evaluating');
+        if (cfg.id === 'evaluating') setStep('writing');
+      }
+      setStep('done');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      setStep('error');
+      setActivity('');
+    }
+  }
+
+  const isRunning = runOrder.includes(step);
+
+  return (
+    <>
+      <section className="focus-hero autopilot-hero">
+        <div className="focus-copy">
+          <span className="eyebrow"><Zap size={16} /> 원클릭 자동화</span>
+          <h1>스캔 → 평가 → 소개서, 버튼 하나로</h1>
+          <p>portals.yml 포털을 스캔하고, 각 공고를 A-G 기준으로 평가하고, 최고 점수 공고의 소개서를 자동 작성합니다.</p>
+          <div className="api-mode-strip">
+            <span>modes/scan.md</span>
+            <span>modes/pipeline.md</span>
+            <span>modes/oferta.md</span>
+          </div>
+        </div>
+        <div className="focus-art autopilot-art" aria-hidden="true">
+          <div className="ap-ring" />
+          <div className="ap-card ap-card-a"><span>SCAN</span><strong>{pipeline.length}</strong><small>인박스</small></div>
+          <div className="ap-card ap-card-b"><span>EVAL</span><strong>{tracker.length}</strong><small>추적</small></div>
+          <div className="ap-card ap-card-c"><span>WRITE</span><strong>소개서</strong><small>자동 생성</small></div>
+          <div className="ap-dot" />
+        </div>
+      </section>
+
+      <StatusAndMetrics health={health} commands={commands} pipeline={pipeline} tracker={tracker} compact />
+
+      <section className="focus-layout">
+        <div className="focus-panel">
+          <div className="autopilot-steps">
+            {AUTOPILOT_STEPS.map((cfg, i) => {
+              const idx = runOrder.indexOf(step);
+              const isDone   = step === 'done' || idx > i;
+              const isActive = runOrder[i] === step;
+              return (
+                <div key={cfg.id} className={cx('ap-step', isDone && 'done', isActive && 'active')}>
+                  <span className="ap-step-num">{i + 1}</span>
+                  <span className="ap-step-label">{cfg.label}</span>
+                  {isActive && <Loader2 className="spin" size={13} />}
+                </div>
+              );
+            })}
+          </div>
+
+          {activity && (
+            <div className="result-activity" aria-live="polite">
+              <span className="activity-dot" aria-hidden="true" />
+              {activity}
+            </div>
+          )}
+
+          {error && <div className="warn">{error}</div>}
+
+          <div className="button-row">
+            <button disabled={isRunning} onClick={runAutopilot}>
+              {isRunning ? <Loader2 className="spin" size={18} /> : <Zap size={18} />}
+              {isRunning ? '실행 중…' : step === 'done' || step === 'error' ? '다시 실행' : '원클릭 실행'}
+            </button>
+          </div>
+
+          {logs.map((log, i) => (
+            <div key={i} className="ap-log-block">
+              <h3 className="ap-log-title">{log.label} 결과</h3>
+              {looksLikeMarkdown(log.text)
+                ? <Markdown>{log.text}</Markdown>
+                : <pre className="result-plain">{log.text}</pre>}
+            </div>
+          ))}
+
+          {step === 'done' && (
+            <div className="ap-done-banner">
+              <CheckCircle2 size={18} /> 완료! 소개서가 위에 생성됐어요.
+            </div>
+          )}
+        </div>
       </section>
     </>
   );
