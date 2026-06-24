@@ -40,10 +40,22 @@ PROVISION_MARKER = ".provisioned"
 
 # Agent-generated files that are DB-backed (restored before each run, snapshotted
 # after). Exact files + glob patterns, all relative to the workspace root.
-PERSIST_FILES = ["data/applications.md", "data/follow-ups.md"]
+PERSIST_FILES = [
+    "data/applications.md",
+    "data/follow-ups.md",
+    "data/pipeline.md",
+    "data/scan-history.tsv",
+]
 PERSIST_GLOBS = ["reports/*.md", "interview-prep/*.md"]
 # Skip pathological blobs so a runaway file can't bloat the DB row.
 MAX_PERSIST_BYTES = 1_000_000
+
+
+def _scaffold_if_missing(path: Path, default: str) -> None:
+    """Write default content to path only when the file doesn't already exist."""
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(default, encoding="utf-8")
 
 
 def base_root() -> Path:
@@ -159,6 +171,20 @@ def materialize_setup(
         if content.strip():
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(content, encoding="utf-8")
+    _scaffold_if_missing(
+        ws / "data" / "pipeline.md",
+        "# Pipeline\n\n## Pending\n\n## Processed\n",
+    )
+    _scaffold_if_missing(
+        ws / "data" / "applications.md",
+        "# Applications Tracker\n\n"
+        "| # | Date | Company | Role | Score | Status | PDF | Report | Notes |\n"
+        "|---|------|---------|------|-------|--------|-----|--------|-------|\n",
+    )
+    _scaffold_if_missing(
+        ws / "data" / "scan-history.tsv",
+        "url\tfirst_seen\tportal\ttitle\tcompany\tstatus\n",
+    )
     return {
         "cv": bool(cv_md.strip()),
         "profile": bool(profile_yml.strip()),
