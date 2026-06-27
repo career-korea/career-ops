@@ -1,0 +1,2721 @@
+\documentclass{article}
+% if you need to pass options to natbib, use, e.g.:
+%     \PassOptionsToPackage{numbers, compress}{natbib}
+% before loading neurips_2026
+
+% The authors should use one of these tracks.
+% Before accepting by the NeurIPS conference, select one of the options below.
+% 0. "default" for submission
+% \usepackage{neurips_2026}
+% the "default" option is equal to the "main" option, which is used for the Main Track with double-blind reviewing.
+% 1. "main" option is used for the Main Track
+%  \usepackage[main]{neurips_2026}
+% 2. "position" option is used for the Position Paper Track
+%  \usepackage[position]{neurips_2026}
+% 3. "eandd" option is used for the Evaluations & Datasets Track
+ % \usepackage[eandd]{neurips_2026}
+ % if you need to opt-in for a single-blind submission in the E&D track:
+ %\usepackage[eandd, nonanonymous]{neurips_2026}
+% 4. "creativeai" option is used for the Creative AI Track
+%  \usepackage[creativeai]{neurips_2026}
+% 5. "sglblindworkshop" option is used for the Workshop with single-blind reviewing
+ % \usepackage[sglblindworkshop]{neurips_2026}
+% 6. "dblblindworkshop" option is used for the Workshop with double-blind reviewing
+%  \usepackage[dblblindworkshop]{neurips_2026}
+
+% After being accepted, the authors should add "final" behind the track to compile a camera-ready version.
+% 1. Main Track
+ % \usepackage[main, final]{neurips_2026}
+% 2. Position Paper Track
+%  \usepackage[position, final]{neurips_2026}
+% 3. Evaluations & Datasets Track
+ % \usepackage[eandd, final]{neurips_2026}
+% 4. Creative AI Track
+%  \usepackage[creativeai, final]{neurips_2026}
+% 5. Workshop with single-blind reviewing
+%  \usepackage[sglblindworkshop, final]{neurips_2026}
+% 6. Workshop with double-blind reviewing
+%  \usepackage[dblblindworkshop, final]{neurips_2026}
+% Note. For the workshop paper template, both \title{} and \workshoptitle{} are required, with the former indicating the paper title shown in the title and the latter indicating the workshop title displayed in the footnote.
+% For workshops (5., 6.), the authors should add the name of the workshop, "\workshoptitle" command is used to set the workshop title.
+% \workshoptitle{WORKSHOP TITLE}
+
+% "preprint" option is used for arXiv or other preprint submissions
+\usepackage[preprint]{neurips_2026}
+
+% to avoid loading the natbib package, add option nonatbib:
+%    \usepackage[nonatbib]{neurips_2026}
+\usepackage[colorlinks=true, citecolor=hanpurple, urlcolor=hanpurple, linkcolor=fireenginered]{hyperref}  
+\usepackage{amsmath,amssymb,amsfonts,amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{subcaption}
+\usepackage{pifont}
+\usepackage{multirow}
+\usepackage{nicefrac}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{xspace}
+\usepackage{wrapfig}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{titletoc}
+\usepackage{pifont}
+
+\newcommand\DoToC{%
+  \startcontents
+  \begingroup
+  \setcounter{tocdepth}{2}
+  \printcontents{}{1}{\textbf{Contents of Appendix}\vskip3pt\hrule\vskip5pt}
+  \vskip3pt\hrule\vskip5pt
+  \endgroup
+}
+
+\newcommand{\xueqiang}[1]{\textcolor{purple}{~[PatX: #1]}}
+
+\newcommand{\cmark}{\ding{51}}
+\newcommand{\xmark}{\ding{55}}
+\definecolor{lightblue}{RGB}{220,235,252}
+\definecolor{lightgreen}{RGB}{220,252,225}
+\definecolor{lightyellow}{RGB}{255,250,220}
+\definecolor{lightgray}{RGB}{245,245,245}
+\definecolor{bestcolor}{RGB}{230,245,230}
+\definecolor{deeppurple}{RGB}{60,52,137}
+\definecolor{hanpurple}{rgb}{0.32, 0.09, 0.98}
+\definecolor{divoff}{HTML}{D97706}
+\definecolor{divon}{HTML}{4F46E5}
+\definecolor{fireenginered}{rgb}{0.81, 0.09, 0.13}
+\newcommand{\best}[1]{\textbf{#1}}
+\newcommand{\tbd}{\textit{TBD}}
+\newcommand{\sys}{\texttt{Harness-1}\xspace}
+\newcommand{\wm}{\textsc{WorkingMemory}\xspace}
+\newcommand{\eg}{\textsc{EvidenceGraph}\xspace}
+\newcommand{\verify}{\texttt{verify}\xspace}
+\newcommand{\curate}{\texttt{curate}\xspace}
+\newcommand{\heart}{\ensuremath\heartsuit}
+\newcommand{\fourstarwhite}{\ding{71}} % ✧
+\newcommand{\fourstarblack}{\ding{72}} % ✦
+
+\newtcolorbox{keybox}[1][]{
+  colback=lightblue!60,
+  colframe=blue!50!black,
+  boxrule=0.5pt,
+  arc=2pt,
+  left=6pt,right=6pt,top=4pt,bottom=4pt,
+  #1
+}
+
+\newtcolorbox{promptbox}[2][]{
+  enhanced,
+  breakable,
+  colback=lightgray!35,
+  colframe=black!45,
+  boxrule=0.4pt,
+  arc=2pt,
+  left=8pt,right=8pt,top=6pt,bottom=6pt,
+  title={#2},
+  fonttitle=\sffamily\small\bfseries,
+  fontupper=\small\sffamily,
+  #1
+}
+
+\definecolor{toolFanout}{HTML}{2BA6A6}
+\definecolor{toolSearch}{HTML}{4C78A8}
+\definecolor{toolGrep}{HTML}{7B61A8}
+\definecolor{toolRead}{HTML}{F28E2B}
+\definecolor{toolReview}{HTML}{B07AA1}
+\definecolor{toolCurate}{HTML}{59A14F}
+\definecolor{toolVerify}{HTML}{E15759}
+\definecolor{toolStop}{HTML}{8D8D8D}
+\definecolor{toolNeutral}{HTML}{5B6770}
+\definecolor{docred}{RGB}{180,55,55}
+\definecolor{docblue}{RGB}{45,95,170}
+\newcommand{\CaseTool}[2]{\begingroup\setlength{\fboxsep}{1.6pt}\colorbox{#1!12}{\textcolor{#1!75!black}{\texttt{#2}}}\endgroup}
+\lstdefinestyle{trajstyle}{
+  basicstyle=\sffamily\footnotesize,
+  breaklines=true,
+  breakatwhitespace=false,
+  breakautoindent=false,
+  breakindent=0pt,
+  columns=fullflexible,
+  keepspaces=false,
+  showstringspaces=false,
+  xleftmargin=0.15em,
+  xrightmargin=0.15em
+}
+\newtcblisting{trajectorylisting}[3][]{
+  enhanced,
+  breakable,
+  listing only,
+  listing options={style=trajstyle},
+  colback=#2!7,
+  colframe=#2!80!black,
+  colbacktitle=#2!75!black,
+  coltitle=white,
+  boxrule=0.6pt,
+  arc=2pt,
+  left=7pt,right=7pt,top=5pt,bottom=5pt,
+  title={#3},
+  fonttitle=\sffamily\small\bfseries,
+  #1
+}
+\newtcolorbox{casenote}[2][]{
+  enhanced,
+  breakable,
+  colback=#2!8,
+  colframe=#2!80!black,
+  colbacktitle=#2!75!black,
+  coltitle=white,
+  boxrule=0.6pt,
+  arc=2pt,
+  left=8pt,right=8pt,top=6pt,bottom=6pt,
+  fonttitle=\sffamily\small\bfseries,
+  fontupper=\small\sffamily,
+  #1
+}
+\newcommand{\CaseMark}[3]{\begingroup\setlength{\fboxsep}{1.4pt}\colorbox{#1!14}{\textcolor{#1!80!black}{\textbf{#2:} #3}}\endgroup}
+
+\title{Harness-1: Reinforcement Learning for Search Agents with State-Externalizing Harnesses}
+\author{
+  Pengcheng Jiang \hspace{0.5em} Zhiyi Shi \hspace{0.3em} Kelly Hong$^\dagger$\textsuperscript{\fourstarwhite} \hspace{0.3em} Xueqiang Xu \hspace{0.3em} Jiashuo Sun \\
+  \textbf{Jimeng Sun} \hspace{0.3em} \textbf{Hammad Bashir}\textsuperscript{\fourstarwhite} \hspace{0.3em} \textbf{Jiawei Han}\\
+  University of Illinois at Urbana-Champaign \quad $^\dagger$UC Berkeley \quad \textsuperscript{\fourstarwhite}Chroma \\
+  % \texttt{\{pj20\}@illinois.edu}
+}
+
+\begin{document}
+\maketitle
+
+% \begin{abstract}
+% Retrieval agents are usually trained as if search were only a
+% policy-learning problem. Given a query and a growing transcript, the
+% model must decide where to search, what to keep, what to verify, and
+% how to remember the evidence it has already seen. We argue that this
+% formulation places too much mechanical state management inside the
+% policy. In long-horizon search, much of the burden is bookkeeping:
+% maintaining a candidate pool, tracking which documents support which
+% constraints, exposing cross-document links, preserving useful evidence
+% under a context budget, and recording which claims have actually been
+% checked. We introduce \sys, a 20B retrieval subagent trained with
+% reinforcement learning in a stateful harness that moves this
+% bookkeeping into environment-side working memory while leaving all
+% semantic choices to the policy. The policy still decides what to
+% search, which documents to add or remove, what importance to assign,
+% what claims to verify, and when to stop. The harness maintains the
+% state that makes those decisions tractable: an auto-seeded curated
+% set, importance-tagged curation, a compact evidence graph,
+% claim-level verification, compressed and deduplicated retrieval
+% observations, and budget-safe context construction.  
+% Across eight benchmarks, \sys
+% achieves $0.728$ average curated recall, outperforming the next
+% strongest open search subagent by $+12.7$ points and remaining
+% competitive with much larger frontier-model searchers.
+% \end{abstract}
+\begin{abstract}
+Search agents are often trained as policies over growing transcripts: the model must decide how to search while also remembering what it has seen, which evidence is useful, which constraints remain open, and which claims have actually been checked. We argue that this formulation puts too much routine state management inside the policy: reinforcement learning is forced to optimize both semantic search decisions and recoverable bookkeeping that the environment can maintain more reliably.
+\
+We introduce \sys, a 20B search agent (retrieval subagent) trained with reinforcement learning inside a stateful search harness. The harness maintains environment-side working memory, including a candidate pool, an importance-tagged curated set, compact evidence links, verification records, compressed and deduplicated observations, and budget-aware context rendering. The policy retains the semantic decisions: what to search, which documents to keep or discard, what to verify, and when to stop.
+\
+Across eight retrieval benchmarks spanning web, finance, patents, and multi-hop QA, \sys achieves 0.730 average curated recall, outperforming the next strongest open search subagent by +11.4 points and remaining competitive with much larger frontier-model searchers. Its gains are especially strong on held-out transfer benchmarks, suggesting that reinforcement learning over explicit search state can produce retrieval behaviors that generalize beyond the training domains. Our code is available at \url{https://github.com/pat-jj/harness-1}.
+\end{abstract}
+
+\vspace{-1em}
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/teaser_recall_barchart.pdf}
+\caption{\textbf{Averaged performance across eight challenging search benchmarks.}
+Each method reports: Curated Set Recall and Trajectory Recall
+(documents encountered anywhere in the episode). \sys is our 20B open search
+agent trained with a stateful harness; it substantially improves over open
+search agents and remains competitive with much larger frontier-model
+searchers.}
+\label{fig:teaser}
+\end{figure}
+
+
+% % ==========================================================================
+% \section{Introduction}
+% \label{sec:intro}
+% % ==========================================================================
+
+% A search agent is often described as a language model with tools:
+% given a question, it issues a query, reads returned evidence, reasons
+% about what remains unknown, calls another tool, and eventually returns
+% a set of documents to a downstream answerer. This description is
+% useful but incomplete. A successful multi-turn search episode is not
+% only a sequence of tool calls. It is also a sequence of state
+% transformations. The agent must remember which documents have already
+% been seen, which candidates are worth keeping, which constraints each
+% document satisfies, which entities connect otherwise separate pieces of
+% evidence, and which claims have been checked rather than inferred from
+% snippets.
+
+% This distinction matters for reinforcement learning. Most retrieval
+% agent training places both semantic decisions and mechanical
+% bookkeeping inside the model. The transcript grows, the context window
+% fills, and the policy is expected to reconstruct the useful state of
+% the search from raw observations. RL then optimizes the resulting
+% behavior end to end. This default is simple, but it can be wasteful.
+% Gradient is spent not only on learning better search decisions, but
+% also on learning to maintain state that the environment can compute
+% exactly. The optimization problem can also become poorly conditioned:
+% hard queries can give every rollout an empty curated set and nearly
+% identical reward; a larger tool vocabulary can collapse into repeated
+% search calls; cross-document structure can be present in the
+% transcript but too diffuse for the policy to exploit reliably.
+
+% \begin{keybox}
+% \textbf{Design principle.} A retrieval policy should make semantic
+% decisions over an explicit search state: what to search, which
+% documents to keep, what claim to verify, and when to stop. The harness
+% maintains that state: seen documents, curated candidates,
+% cross-document links, verification records, and context-budget
+% summaries. This gives RL a stable interface for improving search
+% decisions instead of asking the model to reconstruct bookkeeping from
+% an append-only transcript.
+% \end{keybox}
+
+% This does not make tool orchestration irrelevant; it changes what is
+% being orchestrated. Standard tool-use training largely treats the
+% interface as fixed: the policy learns when to search, read, or stop
+% from an append-only observation stream. In \sys, the interface is part
+% of the method. The environment maintains a persistent retrieval state
+% and renders it back to the policy; the policy acts through queries,
+% curation edits, memory review, and verification over that state. This
+% is the sense in which a stateful harness provides cognitive
+% offloading: it moves mechanical search bookkeeping out of the policy
+% while preserving policy control over semantic judgment.
+
+% We instantiate this principle in \sys, a 20B retrieval agent built
+% on \texttt{gpt-oss-20b}. At each turn, the model observes recent tool
+% results plus a rendered \wm containing the candidate pool, curated
+% set, search history, evidence graph summary, verification state, and
+% context-budget marker. The action space is an edit over working memory
+% rather than an append-only retrieval loop: \curate updates the final
+% document set with add/remove operations and four importance levels;
+% \verify checks whether remembered documents support a policy-written
+% claim; \texttt{review\_docs} re-renders previously seen documents
+% without another corpus call; retrieval observations are compressed and
+% deduplicated before reaching the prompt. The same context construction
+% path is used for data generation, SFT replay, RL rollout, and
+% evaluation, so the policy is trained on the state representation it
+% sees at test time.
+
+% \begin{figure}[t]
+% \centering
+% \includegraphics[width=\textwidth]{figures/method_figure.pdf}
+% \caption{\textbf{Overview of \sys.} The policy makes semantic
+% decisions over search, inspection, curation, verification, and
+% termination. The harness maintains the mechanical state around those
+% decisions: document pool, importance-tagged curated set, evidence
+% graph, verification records, compression/deduplication, result
+% summaries, and budget markers. The same state interface is used for
+% teacher rollouts, SFT replay, CISPO RL, and evaluation; RL optimizes
+% decisions over the rendered state rather than asking the policy to
+% reconstruct state from a raw transcript.}
+% \label{fig:harness}
+% \end{figure}
+
+% The non-trivial part is making such a harness trainable. A richer
+% harness can simply create more ways for the policy to fail: if every
+% rollout starts with an empty curated set, early rewards are often
+% indistinguishable; if derived state is verbose, it competes with
+% evidence for context; if reward only favors discovery, the policy can
+% ignore curation and verification and collapse to repeated search. We
+% identify three coupled RL-compatibility requirements:
+% \textbf{(1) warm-started curation}, implemented by auto-seeding a
+% tentative curated set from the first successful search;
+% \textbf{(2) compact derived-state rendering}, implemented by
+% importance-tagged curation, evidence-graph summaries, and
+% verification records; and \textbf{(3) diversity-preserving
+% incentives}, implemented by reward and prompt pressure that encourage
+% a regular sequence of searching, curating, reviewing, and verifying.
+
+% We evaluate \sys across eight retrieval benchmarks spanning web,
+% finance, patents, and long-context multi-hop search. The agent reaches
+% $0.728$ average curated recall and produces curated sets that improve
+% downstream answer accuracy when passed to frozen frontier generators
+% that never see the search trajectory. Its gains are not confined to a
+% single benchmark family: the same search-state operations improve
+% retrieval across specialized corpora, open-web tasks, and long-context
+% multi-hop QA.
+
+% \textbf{Contributions.} (i) We formulate harness design as a central
+% problem in retrieval-agent RL and cast stateful harnessing as cognitive
+% offloading: which loads belong in the policy, and which can be
+% represented as environment-side working memory? (ii) We introduce
+% \sys, a 20B retrieval subagent whose harness
+% maintains an importance-tagged curated set, compact evidence graph,
+% verification results, deduplicated and compressed observations, and
+% budget-safe context rendering. (iii) We identify three
+% RL-compatibility requirements for stateful search harnesses:
+% warm-started curation, compact derived-state rendering, and
+% diversity-preserving incentives. (iv) We show that stateful harnessing
+% improves retrieval quality and modular RAG answer accuracy across
+% eight benchmarks. Weights, harness code, data-generation pipeline, and
+% RL recipe will be released.
+% % ==========================================================================
+% \section{Introduction}
+% \label{sec:intro}
+% % ==========================================================================
+
+% Search agents are usually described as language models that call retrieval
+% tools: given a question, they issue queries, read returned evidence, decide what
+% is still missing, and return documents to a downstream answerer. This view
+% follows a broad line of work on reasoning-and-acting agents, iterative
+% retrieval, active retrieval, and tool-use training
+% \citep{yao2023react,trivedi2023interleaving,jiang2023active,qin2023toolllm,jiang2026adaptationagenticaisurvey}.
+% It captures the visible behavior of the agent, but not the state it must
+% maintain. A successful multi-turn search episode requires the agent to remember
+% which documents have been seen, which candidates are worth keeping, which
+% constraints remain uncovered, which entities connect separate evidence, and
+% which claims have actually been checked against source text.
+
+% This distinction matters for reinforcement learning. Recent work has shown that
+% LLMs can be trained to interact with search engines or retrieval systems through
+% RL, improving query generation, multi-turn search, and downstream retrieval
+% utility \citep{jin2025searchr1,jiang2025deepretrieval,jiang2025s3}. However,
+% most retrieval-agent training still asks the model to learn both semantic search
+% decisions and routine state management from a growing transcript. As the context
+% fills, the policy must reconstruct the useful state of the search from raw
+% observations. This is wasteful and can make learning poorly conditioned: hard
+% queries may give rdu bollouts nearly identical empty-set rewards, larger tool
+% vocabularies may collapse to repeated search calls, and cross-document structure
+% may be present in the transcript but too diffuse to use reliably. When the final curated set is empty or wrong, the reward often does not reveal whether the failure came from bad search, forgotten evidence, missing verification, or poor curation.
+
+% \begin{keybox}
+% \textbf{Stateful cognitive offloading.}
+% A retrieval policy should make semantic decisions over explicit search state:
+% what to search, which documents to keep, what claim to verify, and when to stop.
+% The harness should maintain the recoverable state around those decisions:
+% candidate pools, curated evidence, cross-document links, verification records,
+% and context-budget summaries. This gives RL a stable interface for improving
+% search behavior, rather than asking the model to rediscover bookkeeping from an
+% append-only transcript.
+% \end{keybox}
+
+% This view changes what tool orchestration means. Prior work on agent-computer
+% interfaces and software-engineering agents has shown that the interface around a
+% language model can strongly shape agent behavior and performance
+% \citep{yang2024sweagent,xia2025demystifying}. In retrieval agents, recent systems
+% have begun to treat context management itself as part of the search process,
+% for example through context pruning or self-editing search
+% \citep{bashir2026context1}. In \sys, the interface itself is part of the
+% method. The agent acts over a persistent retrieval state maintained by the
+% environment, and each observation renders that state back to the policy. The
+% policy still decides what to search, which documents to promote, what to verify,
+% and when the evidence is sufficient. The harness carries the routine state
+% maintenance that would otherwise occupy the policy's context and optimization
+% budget. 
+% % Here, the interface consists of the action space, the observation renderer, the persistent state transition, and the reward under which the policy is trained.
+
+% We instantiate this principle in \sys, a 20B retrieval subagent built on
+% \texttt{gpt-oss-20b}. At each turn, the model observes recent tool results and
+% a rendered \wm containing the candidate pool, curated set, search history,
+% evidence graph summary, verification state, and context-budget marker. Its
+% actions edit this state rather than only append to a retrieval transcript:
+% \curate adds, removes, and importance-tags documents; \verify checks
+% policy-written claims against remembered documents; \texttt{review\_docs}
+% re-renders previously seen documents without a new corpus call. Search
+% observations are compressed and deduplicated before reaching the prompt. The
+% same state renderer is used for teacher data generation, SFT replay, RL rollout,
+% and evaluation.
+
+% \begin{figure}[t]
+% \centering
+% \includegraphics[width=\textwidth]{figures/method_figure.pdf}
+% \caption{\textbf{Overview of \sys.} The policy makes semantic decisions over
+% search, inspection, curation, verification, and termination. The harness
+% maintains the state around those decisions: document pool, importance-tagged
+% curated set, evidence graph, verification records, compression and
+% deduplication, result summaries, and budget markers. The same state interface is
+% used for teacher rollouts, SFT replay, CISPO RL, and evaluation.}
+% \label{fig:harness}
+% \end{figure}
+
+% A richer harness is not automatically trainable. If every rollout starts with an
+% empty curated set, early rewards can be indistinguishable. If derived state is
+% too verbose, it competes with evidence for context. If reward only values
+% discovery, the policy can ignore curation and verification and converge to
+% repeated search. We therefore identify three requirements for stateful search
+% harnesses: \textbf{warm-started curation}, implemented by auto-seeding a
+% tentative curated set from the first successful search; \textbf{compact
+% derived-state rendering}, implemented through importance tags, evidence-graph
+% summaries, and verification records; and \textbf{diversity-preserving
+% incentives}, which encourage a rhythm of searching, curating, reviewing, and
+% verifying.
+
+% We evaluate \sys on eight retrieval benchmarks spanning web, finance, patents,
+% and long-context multi-hop search. It reaches $0.728$ average curated recall and
+% improves downstream answer accuracy when its curated set is passed to frozen
+% frontier generators. The gains are not confined to the training domains: the
+% same operations over explicit search state improve retrieval across specialized
+% corpora, open-web tasks, and held-out multi-hop QA benchmarks.
+
+% \textbf{Contributions.}
+% First, we formulate harness design as a central problem in retrieval-agent RL
+% and introduce stateful cognitive offloading as a principle for assigning search
+% state between policy and environment. Second, we introduce \sys, a 20B retrieval
+% subagent with an importance-tagged curated set, compact evidence graph,
+% verification records, compressed and deduplicated observations, and
+% budget-aware context rendering. Third, we identify three trainability
+% requirements for stateful search harnesses: warm-started curation, compact
+% derived-state rendering, and diversity-preserving incentives. Fourth, we show
+% that stateful harnessing improves retrieval quality and modular RAG answer
+% accuracy across eight benchmarks. We will release the model weights, harness
+% code, data-generation pipeline, and RL recipe.
+
+% ==========================================================================
+\section{Introduction}
+\label{sec:intro}
+% ==========================================================================
+
+Search agents are usually described as language models that call retrieval
+tools: given a question, they issue queries, read returned evidence, decide what
+is still missing, and return documents to a downstream answerer. This view
+follows a broad line of work on reasoning-and-acting agents, iterative
+retrieval, active retrieval, and tool-use training
+\citep{yao2023react,trivedi2023interleaving,jiang2023active,qin2023toolllm,jiang2026adaptationagenticaisurvey}.
+It captures the visible behavior of the agent, but not the search state that
+must be built along the way. A successful multi-turn search episode requires
+the agent to remember which documents have been seen, which candidates are worth
+keeping, which constraints remain uncovered, which entities connect separate
+pieces of evidence, and which claims have actually been checked against source
+text.
+
+This distinction becomes especially important for reinforcement learning.
+Recent work has shown that LLMs can be trained to interact with search engines
+and retrieval systems through RL, improving query generation, multi-turn search,
+and downstream retrieval utility
+\citep{jiang2025deepretrieval,jin2025searchr1,jiang2025s3,wang2025stepsearch}. Yet most
+retrieval-agent training still asks the model to learn two different things at
+once: semantic search behavior and routine state management. As the transcript
+grows, the policy must reconstruct the useful state of the search from raw
+observations. This is inefficient, and it can make learning poorly conditioned.
+Hard queries may give rollouts nearly identical empty-set rewards; larger tool
+vocabularies may collapse to repeated search calls; and cross-document
+structure may be present in the transcript but too diffuse to use reliably. When the final curated set is empty or wrong, the reward often does not reveal
+whether the failure came from bad search, forgotten evidence, missing
+verification, or poor curation.
+
+\begin{keybox}
+\textbf{Stateful cognitive offloading.}
+A retrieval policy should make semantic decisions over explicit search state:
+what to search, which documents to keep, what claim to verify, and when to stop.
+The harness should maintain the recoverable state around those decisions:
+candidate pools, curated evidence, cross-document links, verification records,
+and context-budget summaries. This gives RL a stable interface for improving
+search behavior, rather than asking the model to rediscover bookkeeping from an
+append-only transcript.
+\end{keybox}
+
+This view changes what tool orchestration means. Prior work on agent-computer
+interfaces and software-engineering agents has shown that the interface around
+a language model can strongly shape agent behavior and performance
+\citep{yang2024sweagent,xia2025demystifying}. In retrieval, recent systems have
+begun to treat context management as part of the search process, for example
+through context pruning or self-editing search \citep{bashir2026context1}. In
+\sys, the interface itself is part of the method. The agent acts over a
+persistent retrieval state maintained by the environment, and each observation
+renders that state back to the policy. The policy still decides what to search,
+which documents to promote, what to verify, and when the evidence is sufficient.
+The harness carries the state maintenance that would otherwise consume the
+policy's context and optimization budget.
+
+We instantiate this principle in \sys, a 20B search agent built on
+\texttt{gpt-oss-20b}~\citep{agarwal2025gpt}. At each turn, the model observes recent tool results
+together with a rendered \wm containing the candidate pool, curated set, search
+history, evidence graph summary, verification state, and context-budget marker.
+The model's actions edit this state rather than merely extending a transcript:
+\curate adds, removes, and importance-tags documents; \verify checks
+policy-written claims against remembered documents; and
+\texttt{review\_docs} re-renders previously seen documents without a new corpus
+call. Search observations are compressed and deduplicated before reaching the
+prompt. The same state renderer is used for teacher data generation, SFT replay,
+RL rollout, and evaluation.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/method_figure.pdf}
+\caption{\textbf{Overview of \sys.} The policy makes semantic decisions over
+search, inspection, curation, verification, and termination. The harness
+maintains the state around those decisions: document pool, importance-tagged
+curated set, evidence graph, verification records, compression and
+deduplication, result summaries, and budget markers. The same state interface is
+used for teacher rollouts, SFT replay, CISPO RL, and evaluation.}
+\label{fig:harness}
+\end{figure}
+
+A richer harness does not automatically yield an environment suitable for policy training. If every rollout starts with an
+empty curated set, early rewards can be indistinguishable. If derived state is
+too verbose, it competes with evidence for context. If reward only values
+discovery, the policy can ignore curation and verification and converge to
+repeated search. We therefore identify three requirements for stateful search
+harnesses: \textbf{warm-started curation}, implemented by auto-seeding a
+tentative curated set from the first successful search; \textbf{compact
+derived-state rendering}, implemented through importance tags, evidence-graph
+summaries, and verification records; and \textbf{diversity-preserving
+incentives}, which encourage a rhythm of searching, curating, reviewing, and
+verifying.
+
+We evaluate \sys on eight retrieval benchmarks spanning web, finance, patents,
+and long-context multi-hop search. It reaches $0.730$ average curated recall and
+improves downstream answer accuracy when its curated set is passed to frozen
+frontier generators. The gains are not confined to the training domains: the
+same operations over explicit search state improve retrieval across specialized
+corpora, open-web tasks, and held-out multi-hop QA benchmarks.
+
+\textbf{Contributions.}
+First, we formulate harness design as a central problem in retrieval-agent RL
+and introduce stateful cognitive offloading as a principle for assigning search
+state between policy and environment. Second, we introduce \sys, a 20B search agent with an importance-tagged curated set, compact evidence graph,
+verification records, compressed and deduplicated observations, and
+budget-aware context rendering. Third, we identify three trainability
+requirements for stateful search harnesses: warm-started curation, compact
+derived-state rendering, and diversity-preserving incentives. Fourth, we show
+that stateful harnessing improves retrieval quality and modular RAG answer
+accuracy across eight benchmarks. We will release the model weights, harness
+code, data-generation pipeline, and RL recipe.
+
+% % ==========================================================================
+% \section{\sys}
+% \label{sec:method}
+% % ==========================================================================
+
+% \sys is a search agent. Given a query, it produces a ranked set of
+% documents for a downstream answering model. The agent runs inside a
+% state-machine harness whose central object is a per-episode \wm. At each turn,
+% the harness renders a compact view of \wm together with recent actions and
+% observations. The model emits one structured action in the Harmony format; the
+% harness executes the action, updates \wm, and renders the next observation. 
+
+% The purpose of the harness is not to make retrieval decisions for the model.
+% Rather, it makes the state of the search explicit. The policy still decides
+% what to search, which documents to inspect or keep, what claims to verify, and
+% when to stop. The harness maintains the recoverable state around those
+% decisions, so that later actions can operate on a stable representation of the
+% episode rather than on an unstructured transcript.
+
+% Formally, the harness maintains a retrieval state
+% $s_t=(P_t,C_t,I_t,D_t,G_t,V_t,H_t,B_t)$
+% (Table~\ref{tab:state-offload}).
+% Each turn applies a state transition
+% $(s_t,a_t)\mapsto(s_{t+1},o_{t+1})$, where $a_t$ is the policy's structured action and $o_{t+1}$ is the rendered
+% observation. This is the sense in which the harness is \emph{stateful}: tool outputs
+% do not only produce text for the next prompt. They update persistent search
+% state that future actions can inspect, edit, or verify.
+
+
+% \begin{table}[t]
+% \centering
+% \small
+% \caption{State notation and offloaded bookkeeping in the \sys harness.
+% The harness maintains and renders state; the policy retains the semantic
+% choices over that state.}
+% \label{tab:state-offload}
+% \resizebox{\textwidth}{!}{
+% \begin{tabular}{lll}
+% \toprule
+% \textbf{State} & \textbf{Harness-maintained bookkeeping} & \textbf{Policy decision preserved} \\
+% \midrule
+% $P_t$ & Candidate pool after compression and deduplication & Which candidates to inspect, read, or curate \\
+% $C_t,I_t$ & Curated output set and importance tags, warm-started by auto-seeding & Which documents to add, remove, promote, or demote \\
+% $D_t$ & Full-text memory for retrieved documents & Which seen documents to revisit through \texttt{review\_docs} \\
+% $G_t$ & Evidence graph over entities, dates, and documents & Which bridge, singleton, or relation to pursue next \\
+% $V_t$ & Verification records for policy-written claims & Which claim to check and which documents to test \\
+% $H_t$ & Search history and result summaries & When to diversify, backtrack, or continue a search thread \\
+% $B_t$ & Budget-safe renderer and context marker & When to search, read, summarize, or stop \\
+% \bottomrule
+% \end{tabular}
+% }
+% \end{table}
+
+% Appendix~\ref{app:harness-algorithms} gives the full state-transition
+% algorithm, and Appendix~\ref{app:case-studies} provides trajectory-level
+% examples on both source-family and held-out transfer benchmarks.
+
+% \wm has two tiers: a prompt-facing state that renders $P_t$, $C_t$, $I_t$,
+% $G_t$, $V_t$, $H_t$, and $B_t$, and an outer document store $D_t$ that keeps
+% full text and metadata for retrieved chunks. The policy can revisit $D_t$
+% through \texttt{review\_docs} or \texttt{read\_document}, so the prompt carries
+% compact search state rather than the full retrieval transcript.
+
+% ==========================================================================
+\section{\sys}
+\label{sec:method}
+% ==========================================================================
+
+\sys is a search agent that produces a ranked set of documents for a downstream
+answering model. It runs inside a state-machine harness centered on a
+per-episode \wm. At each turn, the harness renders compact search state together
+with recent actions and observations; the model emits one structured Harmony
+action; and the harness executes the action, updates the state, and renders the
+next observation.
+
+The harness does not make retrieval decisions for the model. Instead, it
+maintains the recoverable state around those decisions. The policy still decides
+what to search, which documents to inspect or keep, what claims to verify, and
+when to stop. Each action applies a transition
+$(s_t,a_t)\mapsto(s_{t+1},o_{t+1})$ over the harness state summarized in
+Table~\ref{tab:state-offload}. This is the sense in which the harness is
+\emph{stateful}: tool outputs do not merely produce text for the next prompt;
+they update persistent search state that future actions can inspect, edit, or
+verify.
+
+\begin{table}[t]
+\centering
+\small
+\caption{State notation and offloaded bookkeeping in the \sys harness.
+The harness maintains and renders state; the policy retains the semantic
+choices over that state.}
+\label{tab:state-offload}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{lll}
+\toprule
+\textbf{State} & \textbf{Harness-maintained bookkeeping} & \textbf{Policy decision preserved} \\
+\midrule
+$P_t$ & Candidate pool after compression and deduplication & Which candidates to inspect, read, or curate \\
+$C_t,I_t$ & Curated output set and importance tags, warm-started by auto-seeding & Which documents to add, remove, promote, or demote \\
+$D_t$ & Full-text memory for retrieved documents & Which seen documents to revisit through \texttt{review\_docs} \\
+$G_t$ & Evidence graph over entities, dates, and documents & Which bridge, singleton, or relation to pursue next \\
+$V_t$ & Verification records for policy-written claims & Which claim to check and which documents to test \\
+$H_t$ & Search history and result summaries & When to diversify, backtrack, or continue a search thread \\
+$B_t$ & Budget-safe renderer and context marker & When to search, read, summarize, or stop \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\wm has two tiers. The prompt-facing tier renders compact state:
+$P_t$, $C_t$, $I_t$, $G_t$, $V_t$, $H_t$, and $B_t$. The outer tier $D_t$
+stores full text and metadata for retrieved chunks, which the policy can revisit
+through \texttt{review\_docs} or \texttt{read\_document}. Thus the prompt
+carries actionable search state rather than the full retrieval transcript.
+
+Full state-transition algorithms and trajectory-level examples are given in
+Appendices~\ref{app:harness-algorithms} and~\ref{app:case-studies}.
+
+% The full algorithmic specification is given in
+% Appendix~\ref{app:harness-algorithms}. The appendix separates the stage driver
+% from the internal harness mechanisms, including observation processing, memory
+% updates, curation and eviction, budget-safe rendering, and stage-specific
+% training or inference updates. Appendix~\ref{app:case-studies} provides
+% trajectory-level case studies that show these state updates in full, including
+% source-family examples on BC+ and SEC
+% (Appendices~\ref{app:case-bc643},~\ref{app:case-sec497}) and held-out transfer
+% examples on FRAMES and HotpotQA
+% (Appendices~\ref{app:case-frames461},~\ref{app:case-hotpot-snl}).
+
+% \subsection{Two-tier working memory}
+% \label{sec:method:memory}
+
+% \wm separates compact state rendering from full-text storage. The inner tier is
+% the prompt-facing state. It renders the candidate pool $P_t$, curated set $C_t$,
+% importance map $I_t$, evidence graph $G_t$, verification cache $V_t$, search
+% history $H_t$, and budget marker $B_t$. The outer tier is the document store
+% $D_t$, which keeps full text and metadata for every retrieved chunk. The model
+% can access this outer tier through \texttt{review\_docs} and
+% \texttt{read\_document}, but the full text does not need to remain in the prompt
+% at all times.
+
+% This two-tier design turns transcript management into state management. A raw
+% search trajectory contains repeated snippets, partial matches, stale
+% observations, and long passages whose relevance changes as the search develops.
+% The useful state of the episode is smaller and more structured: what has been
+% found, which candidates are strongest, which constraints remain uncovered,
+% which entities connect multiple documents, and which documents have already
+% been checked against a claim. \sys renders this state explicitly, allowing the
+% policy to make retrieval decisions over a maintained working memory rather than
+% reconstructing it from the transcript.
+\subsection{Policy actions as edits over working memory}
+\label{sec:method:action}
+
+\sys exposes five classes of actions: retrieval, memory inspection, curation,
+verification, and termination. Retrieval actions bring new evidence into the
+episode. \texttt{fan\_out\_search} runs up to five diverse queries in parallel,
+\texttt{search\_corpus} performs targeted hybrid search, \texttt{grep\_corpus}
+performs exact pattern matching, and \texttt{read\_document} returns full text
+for a known document ID. Their outputs are not simply appended to the prompt.
+After compression and deduplication, they update the candidate pool $P_t$ and
+the full-text store $D_t$.
+
+\textbf{Curation.}
+The central state-editing action is \curate, which updates the final output set
+$C_t$ and its importance map $I_t$. The action specifies documents to add,
+documents to remove, and importance tags for added documents. Tags take one of
+four values: \texttt{very\_high}, \texttt{high}, \texttt{fair}, or
+\texttt{low}. The curated set is capped at $M{=}30$ documents; when the cap is
+reached, the harness evicts the lowest-importance documents first
+(Appendix~\ref{app:importance}). This gives the policy an explicit language for
+confidence and priority, while the harness handles the mechanical capacity
+constraint.
+
+
+\textbf{Auto-seeding.}
+A blank curated set provides little learning signal on hard queries, since many
+early rollouts terminate with the same empty output. To avoid this, the first
+successful search automatically seeds $C_t$ with the top $k{=}8$ reranked
+results from $P_t$, each assigned $I_t(d)=\texttt{fair}$. The policy must then
+refine this tentative set by promoting strong documents and removing weak ones.
+Auto-seeding does not decide relevance for the model. It changes the initial
+state from construction from scratch to refinement, so that early trajectories
+differ in how they edit candidates. The BC+ and SEC trajectories in
+Appendices~\ref{app:case-bc643} and~\ref{app:case-sec497} show this pattern:
+the first search seeds plausible candidates, and later \curate calls promote
+documents that survive reading, exact search, or verification.
+
+\textbf{Verification and memory review.}
+\verify lets the policy write a claim and select remembered documents to test;
+the harness checks support against text in $D_t$ and records yes/no judgments
+with rationales in $V_t$. Thus the policy decides what requires verification,
+while the harness performs the mechanical support check. \texttt{review\_docs}
+re-renders documents already stored in $D_t$, allowing the policy to revisit
+evidence before promoting, demoting, removing, or verifying it without issuing
+another corpus search.
+% \textbf{Verification.}
+% The \verify action attaches claim-level support records to the working memory.
+% The policy writes a concrete claim and selects remembered documents to test. The
+% harness runs the entailment check against text already stored in $D_t$ and
+% appends the resulting \texttt{yes}/\texttt{no} judgments and short rationales to
+% $V_t$. Thus the harness performs the mechanical check, but the policy chooses
+% when verification is needed, which claim matters, and which documents should be
+% tested. In the agent prompt, \texttt{very\_high} importance is reserved for
+% documents that directly support the query, preferably after verification.
+
+% \textbf{Memory review.}
+% \texttt{review\_docs(doc\_ids)} re-renders documents already present in $D_t$
+% without issuing another corpus search. This separates memory access from
+% retrieval. The policy can revisit previously seen candidates before promoting,
+% demoting, removing, or verifying them, instead of spending another search call
+% to recover evidence that the harness has already stored.
+
+\subsection{Derived-state rendering: evidence graph, compression, and deduplication}
+\label{sec:method:render}
+
+The harness does not only store retrieved text. It derives compact signals from
+the search history and renders them into each observation, so the policy sees a
+structured search state rather than a raw accumulation of tool outputs.
+
+\textbf{Evidence graph.}
+The evidence graph $G_t$ summarizes cross-document structure. Each chunk entering
+$P_t$ is scanned with a lightweight regex extractor for three entity classes:
+multi-word capitalized proper nouns, four-digit years or decades, and numeric
+dates. The harness maintains two maps, \texttt{entity\_to\_docs} and
+\texttt{doc\_to\_entities}, and renders a compact block with frequent entities,
+bridge documents, and singleton entities. Frequent entities are the top entities
+by document count. Bridge documents contain two or more frequent entities and
+are natural candidates for \verify or high-importance promotion. Singleton
+entities appear in only one document and often provide leads for follow-up
+search.
+
+\begin{wrapfigure}{r}{0.50\textwidth}
+\vspace{-1.8em}
+\begin{tcolorbox}[
+  width=0.5\textwidth,
+  colback=white,
+  colframe=black!85,
+  boxrule=0.8pt,
+  arc=4pt,
+  left=4pt,
+  right=4pt,
+  top=4pt,
+  bottom=4pt,
+  boxsep=0pt
+]
+\small\ttfamily
+[Evidence Graph] Entities appearing in multiple docs (bridges):\\
+\hspace*{1em}Brussels: \textcolor{docred}{22816\_0}, \textcolor{docblue}{91442\_3}, 62390\_5\\
+\hspace*{1em}1878: \textcolor{docred}{22816\_0}, 11293\_2\\
+\hspace*{1em}Grande Synagogue: \textcolor{docred}{22816\_0}, \textcolor{docblue}{91442\_3}\\
+\hspace*{1em}(2 singleton entities, potential hops)
+\end{tcolorbox}
+\vspace{-1.2em}
+\end{wrapfigure}
+
+The example illustrates how the graph makes evidence overlap visible. Document
+\textcolor{docred}{22816\_0} connects all three rendered entities, while
+\textcolor{docblue}{91442\_3} connects two of them. The policy can therefore
+treat these documents as candidate bridges without rereading the full
+transcript. More generally, the rendering changes questions such as ``what have
+I seen about entity $X$?'' from a full-context reread into a direct lookup in
+working memory. The harness builds the graph with one regex pass per chunk and a
+top-$k$ scan at render time; the policy decides which bridge to verify, which
+singleton to pursue, and which relation matters for the query.
+
+\textbf{Result summaries and budget markers.}
+After each retrieval or memory action, the harness records the tool used, the
+number of returned and novel documents, updates to $P_t$ and $C_t$, and the
+current context budget $B_t$. Thus the policy observes search progress and
+remaining budget as explicit state.
+\
+\textbf{Sentence-BM25 compression.}
+To prevent search observations from dominating the context, the harness
+compresses outputs from \texttt{search\_corpus}, \texttt{fan\_out\_search}, and
+\texttt{grep\_corpus} by scoring sentences with BM25 against the query and
+rendering the top $K{=}4$ sentences in original order. Explicit
+\texttt{read\_document} calls still return full text from $D_t$.
+\
+\textbf{Two-level deduplication.}
+\sys removes repeated evidence by both chunk ID and content fingerprint.
+Near-duplicates are omitted from the rendered state, while reward accounting
+still credits all relevant evidence encountered during the trajectory.
+\
+The same budgeted context builder is used for teacher generation, SFT replay,
+RL rollout, and evaluation. It combines the system prompt, rendered working
+memory, recent actions and observations, and result summaries, while truncating
+older reasoning and clipping long observations as needed.
+
+\subsection{Training: SFT and RL}
+\label{sec:training}
+
+Training follows the same division of labor as the harness: SFT teaches the
+model to operate the interface, while RL improves search decisions over the
+state maintained by that interface.\footnote{We use Tinker
+(\url{https://thinkingmachines.ai/tinker/}) for model training.}
+
+\textbf{SFT for harness operation.}
+The role of SFT is deliberately narrow. Since the harness carries much of the
+bookkeeping load, the supervised prior only needs to teach tool-call format,
+the search$\to$curate rhythm, importance-tagging discipline, memory review, and
+the \verify-before-promote norm. A single teacher, GPT-5.4, runs as a live agent
+inside the full \sys harness, using the same tools and working-memory rendering
+later shown to the student. Turn-level guidance encourages curation after
+search, verification before high-confidence promotion, backtracking after
+low-yield searches, and early termination once the curated set is sufficient.
+\
+We keep trajectories that are format-valid, return at least one document, and
+achieve final curated recall $\geq 0.10$. Each retained trajectory is replayed
+through the same \wm and context builder used by RL, then expanded into one
+supervised datum per turn. SFT runs on \texttt{gpt-oss-20b} via LoRA
+with rank $32$ for $3$ epochs; the step-$550$ checkpoint initializes RL.
+
+% \textbf{RL over full search episodes.}
+% Starting from the SFT checkpoint, we train with on-policy CISPO
+% \citep{cispo2025,scalerl2025} and within-group advantage normalization. Each
+% step samples $128$ SEC queries, with $8$ independent rollouts per query,
+% yielding $1{,}024$ trajectories per step. Groups whose eight rollouts receive
+% identical rewards are dropped from the gradient. We apply four gradient substeps
+% per step using CISPO clip range $[0,5]$, LoRA rank $32$, and learning rate
+% $1{\times}10^{-5}$ for $80$ total steps. The deployed run uses terminal-only
+% reward, full-trajectory rollouts, a $40$-turn cap, no KL anchor
+% (\texttt{KL\_PENALTY\_COEF=0.0}), and no pool-curated gap penalty
+% (\texttt{GAP\_PENALTY\_WEIGHT=0.0}).
+\textbf{RL over full search episodes.}
+Starting from the SFT checkpoint, we train with on-policy CISPO
+\citep{cispo2025,scalerl2025} and within-group advantage normalization on SEC
+training queries. RL uses full-trajectory rollouts, terminal-only reward, a
+$40$-turn cap, and no KL anchor. Groups whose rollouts receive identical
+rewards are dropped from the gradient. Full rollout scale and optimization
+hyperparameters are in Appendix~\ref{app:reward}.
+
+\textbf{Reward.}
+The terminal reward combines search-quality signals, answer-evidence shaping, a
+tool-diversity bonus, and a turn penalty. Episodes that terminate with an empty
+curated set short-circuit to $\pi_\emptyset=-0.2$; otherwise,
+\begin{equation*}
+\begin{aligned}
+\mathcal{R} \;=\;& \underbrace{w_F\,F_\beta}_{\text{set quality}}
+       + \underbrace{w_\tau\,\rho_\tau}_{\text{trajectory coverage}}
+       + \underbrace{w_{\mathrm{A}}\,\rho_{\mathrm{A}}
+                    + w_{\tau\mathrm{A}}\,\rho_{\tau\mathrm{A}}}_{\text{answer evidence}}
+       + \underbrace{B_{\mathrm{A}}\,\mathbf{1}[\rho_{\mathrm{A}}>0]}_{\text{answer bonus}} \\
+       & + \underbrace{w_{\mathrm{div}}\,\min(\nu/\nu_0,\,1)}_{\text{tool diversity}}
+       - \underbrace{w_{\mathrm{miss}}\,(\rho_{\tau\mathrm{A}}-\rho_{\mathrm{A}})_+}_{\text{answer miss}}
+       - \underbrace{\pi_{\mathrm{turn}}(t)}_{\text{turn penalty}} .
+\end{aligned}
+\end{equation*}
+For any successfully formatted episode, the reward is clipped below by
+$\mathcal{R}\geq 10^{-3}$. Here $\rho_\tau$ is trajectory recall,
+$\rho_{\mathrm{A}}$ is curated final-answer recall,
+$\rho_{\tau\mathrm{A}}$ is trajectory final-answer recall, $\nu$ is the number
+of distinct tools used, and $\nu_0$ is the diversity target. $F_\beta$ uses
+$\beta{=}2$, weighting recall four times more than precision. 
+% The deployed
+% weights are
+% \(
+% (w_F, w_\tau, w_{\mathrm{A}}, w_{\tau\mathrm{A}},
+% B_{\mathrm{A}}, w_{\mathrm{miss}}, w_{\mathrm{div}})
+% = (0.7, 0.3, 0.8, 0.4, 1.0, 0.35, 0.15),
+% \)
+% with $\nu_0=6$. The turn penalty ramps linearly from $0$ at $t{=}20$ to $0.02$
+% at $t{=}40$. 
+The reward separates discovery from selection: trajectory terms
+credit evidence found anywhere in the pool, curated terms credit evidence
+selected for the final output, and the answer-miss penalty penalizes
+trajectories that found answer evidence but failed to promote it. Full
+hyperparameters and code variables are listed in Appendix~\ref{app:reward}.
+
+% \textbf{Engineering.} Rollouts use vLLM with MXFP4 quantisation on
+% MoE layers and a hosted Qwen3-Reranker-8B; at
+% $128{\times}8{\times}4$ concurrency, peak reranker load exceeds
+% $3{,}000$ queries per second.
+
+\begin{table}[t]
+\centering
+\small
+\caption{\textbf{Search quality across benchmarks.}
+We report curated-set Recall, Final-Answer Recall, and Trajectory Recall.
+Green and blue rows denote the overall best models among open-source small models and
+frontier models, respectively. Results are averaged over three runs.}
+\label{tab:search_quality}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{llcccccccc}
+\toprule
+\textbf{Model} & \textbf{Metric} & \textbf{BC+} & \textbf{Web} & \textbf{Patents} & \textbf{SEC}
+               & \textbf{LongSeal} & \textbf{Seal0} & \textbf{FRAMES} & \textbf{HotpotQA} \\
+\midrule
+\multicolumn{10}{l}{\textbf{Open-source small models}} \\
+\midrule
+\rowcolor{bestcolor}
+& Recall               & 0.584 & 0.787 & 0.890 & 0.589 & 0.891 & 0.551 & 0.710 & 0.841 \\
+\rowcolor{bestcolor}
+& Final-Answer Recall  & 0.667 & 0.845 & 0.890 & 0.659 & 0.891 & 0.551 & 0.710 & 0.841 \\
+\rowcolor{bestcolor}
+\multirow{-3}{*}{\sys (20B)}
+& Trajectory Recall    & 0.665 & 0.881 & 0.973 & 0.677 & 0.944 & 0.708 & 0.749 & 0.860 \\
+\midrule
+\multirow{3}{*}{Context-1 (20B)}
+& Recall               & 0.500 & 0.689 & 0.857 & 0.467 & 0.563 & 0.367 & 0.638 & 0.746 \\
+& Final-Answer Recall  & 0.618 & 0.775 & 0.857 & 0.498 & 0.563 & 0.367 & 0.638 & 0.746 \\
+& Trajectory Recall    & 0.567 & 0.823 & 0.975 & 0.507 & 0.858 & 0.697 & 0.787 & 0.835 \\
+\midrule
+\multirow{3}{*}{GPT-OSS-20B}
+& Recall               & 0.109 & 0.174 & 0.393 & 0.133 & 0.253 & 0.250 & 0.391 & 0.395 \\
+& Final-Answer Recall  & 0.156 & 0.252 & 0.393 & 0.166 & 0.253 & 0.250 & 0.391 & 0.395 \\
+& Trajectory Recall    & 0.246 & 0.512 & 0.742 & 0.252 & 0.816 & 0.632 & 0.702 & 0.819 \\
+\midrule
+\multirow{3}{*}{{Tongyi DeepResearch 30B}} 
+& Recall               & 0.381 & 0.607 & 0.780 & 0.419 & 0.855 & 0.577 & 0.561 & 0.751 \\
+& Final-Answer Recall  & 0.428 & 0.679 & 0.780 & 0.433 & 0.855 & 0.577 & 0.561 & 0.751 \\
+& Trajectory Recall    & 0.413 & 0.722 & 0.780 & 0.478 & 0.855 & 0.631 & 0.654& 0.852 \\
+\midrule
+\multirow{3}{*}{Search-R1 (32B)}
+& Recall               & 0.053 & 0.135 & 0.405 & 0.109 & 0.514 & 0.312 & 0.329 & 0.454 \\
+& Final-Answer Recall  & 0.074 & 0.240 & 0.405 & 0.155 & 0.514 & 0.312 & 0.329 & 0.454 \\
+& Trajectory Recall    & 0.053 & 0.135 & 0.405 & 0.109 & 0.514 & 0.312 & 0.329 & 0.454 \\
+\midrule
+% \multirow{3}{*}{Qwen3 (32B)}
+% & Recall               & 0.072 & 0.132 & 0.257 & 0.058 & 0.445 & 0.283 & 0.364 & 0.425 \\
+% & Final-Answer Recall  & 0.092 & 0.211 & 0.257 & 0.072 & 0.445 & 0.283 & 0.364 & 0.425 \\
+% & Trajectory Recall    & 0.154 & 0.410 & 0.577 & 0.215 & 0.445 & 0.283 & 0.364 & 0.425 \\
+\multirow{3}{*}{Qwen3 (32B)}
+& Recall               & 0.072 & 0.132 & 0.257 & 0.058 & 0.427 & 0.279 & 0.164 & 0.342 \\
+& Final-Answer Recall  & 0.092 & 0.211 & 0.257 & 0.072 & 0.427 & 0.279 & 0.164 & 0.342 \\
+& Trajectory Recall    & 0.154 & 0.410 & 0.577 & 0.215 & 0.704 & 0.568 & 0.402 & 0.535 \\
+\midrule
+\multicolumn{10}{l}{\textbf{Frontier models}} \\
+\midrule
+\rowcolor{lightblue}
+& Recall               & 0.619 & 0.819 & 0.915 & 0.589 & 0.823 & 0.636 & 0.814 & 0.893 \\
+\rowcolor{lightblue}
+& Final-Answer Recall  & 0.736 & 0.928 & 0.915 & 0.696 & 0.823 & 0.636 & 0.814 & 0.893 \\
+\rowcolor{lightblue}
+\multirow{-3}{*}{Opus-4.6}
+& Trajectory Recall    & 0.634 & 0.832 & 0.939 & 0.601 & 0.876 & 0.682 & 0.878 & 0.910 \\
+\midrule
+\multirow{3}{*}{GPT-5.4}
+& Recall               & 0.443 & 0.800 & 0.909 & 0.452 & 0.824 & 0.555 & 0.815 & 0.870 \\
+& Final-Answer Recall  & 0.499 & 0.858 & 0.909 & 0.465 & 0.824 & 0.555 & 0.815 & 0.870 \\
+& Trajectory Recall    & 0.476 & 0.821 & 0.919 & 0.464 & 0.885 & 0.691 & 0.865 & 0.898 \\
+\midrule
+\multirow{3}{*}{Sonnet-4.6}
+& Recall               & 0.505 & 0.744 & 0.832 & 0.411 & 0.783 & 0.577 & 0.787 & 0.863 \\
+& Final-Answer Recall  & 0.597 & 0.892 & 0.832 & 0.480 & 0.783 & 0.577 & 0.787 & 0.863 \\
+& Trajectory Recall    & 0.535 & 0.767 & 0.845 & 0.421 & 0.840 & 0.658 & 0.859 & 0.878 \\
+\midrule
+\multirow{3}{*}{Kimi-K2.5}
+& Recall               & 0.593 & 0.707 & 0.833 & 0.454 & 0.661 & 0.455 & 0.697 & 0.776 \\
+& Final-Answer Recall  & 0.670 & 0.843 & 0.833 & 0.478 & 0.661 & 0.455 & 0.697 & 0.776 \\
+& Trajectory Recall    & 0.739 & 0.878 & 0.945 & 0.549 & 0.911 & 0.655 & 0.840 & 0.837 \\
+\midrule
+\multirow{3}{*}{GPT-OSS-120B}
+& Recall               & 0.508 & 0.478 & 0.570 & 0.395 & 0.464 & 0.400 & 0.495 & 0.657 \\
+& Final-Answer Recall  & 0.641 & 0.664 & 0.570 & 0.504 & 0.464 & 0.400 & 0.495 & 0.657 \\
+& Trajectory Recall    & 0.682 & 0.796 & 0.824 & 0.488 & 0.914 & 0.689 & 0.863 & 0.897 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+
+% ==========================================================================
+\section{Experiments}
+\subsection{Experimental Setup}
+\label{sec:setup}
+% ==========================================================================
+
+\textbf{Benchmarks \& Data.} We evaluate on eight retrieval benchmarks:
+BrowseComp+~\cite{chen2025browsecompplus}, \emph{Web} synthetic,
+\emph{Patents} from USPTO office actions, \emph{SEC} filings~\citep{bashir2026context1},
+LongSealQA and Seal0QA~\cite{pham2025sealqa},
+FRAMES~\cite{krishna2024frames}, and HotpotQA~\cite{yang2018hotpotqa}.
+They span web, finance, patents, and multi-hop QA, and use both
+Chroma-backed corpora and a shared Serper$+$Jina web backend.
+\sys's SFT data spans four benchmark families (BC+, Web, Patents,
+SEC), while the RL stage optimizes only on SEC data. We therefore
+separate the four source-family benchmarks (BC+, Web, Patents, SEC)
+from four held-out transfer benchmarks not used for \sys SFT or RL
+(LongSealQA, Seal0QA, FRAMES, HotpotQA). Per-benchmark statistics are
+in Appendix~\ref{app:benchstats}. The raw SFT quotas are BC+/300,
+SEC/250, Patents/150, Web/150, Web-simple/75, and SEC-simple/75; after
+filtering, $899$ trajectories remain. We use the training split of SEC\footnote{\url{https://github.com/chroma-core/context-1-data-gen/blob/main/agentic_search_data_gen/}} (3,453 queries in total) for RL training.
+
+% \textbf{Search-quality metrics.} \emph{Recall}: fraction of relevant
+% gold documents in the curated set. \emph{Trajectory Recall}:
+% fraction encountered at any point in the trajectory (upper bound on
+% recall). \emph{Final-Answer Recall}: fraction of gold-answer
+% documents (a strict subset of relevant docs) in the curated set.
+% We do not report metrics $F_1$ or precision because \sys's curated set is
+% hard-capped at $30$ docs with importance-aware eviction while
+% Context-1's has no cap, so precision is dominated by a design
+% choice rather than retrieval quality.
+\textbf{Search-quality metrics.}
+We evaluate search quality by evidence coverage. \emph{Recall} measures
+coverage of all annotated relevant documents in the final curated set.
+\emph{Trajectory Recall} measures the same coverage over every document
+encountered during the episode, before final selection. \emph{Final-Answer
+Recall} measures coverage of the gold answer documents only. Formal
+definitions, including the distinction between answer documents and supporting
+documents, are given in Appendix~\ref{app:metric-defs}. We focus on
+recall-oriented metrics since the search agent is designed to collect evidence
+needed for answering. Precision and $F_1$ are secondary because curated-set size
+is part of the agent interface.
+
+\textbf{Evaluation protocol and baselines.}
+We evaluate on the benchmark splits summarized in
+Table~\ref{tab:bench-stats}. All methods use the same retrieval primitives,
+web backend, Qwen3-Reranker-8B reranker, and final budget of at most
+$30$ returned documents, following Context-1~\citep{bashir2026context1}.
+\sys runs at temperature $1.0$ with a $40$-turn cap. Context-1 and proprietary
+frontier LLMs (GPT-5.4, Sonnet-4.6, Opus-4.6, Kimi-K2.5), used as zero-shot
+retrievers, run under the Context-1 harness at temperature $1.0$ with a
+$64$-turn cap; Appendix~\ref{app:harness-confound} quantifies the harness
+contribution alone (a $+4$-point recall lift on the same LLM).
+Open-model baselines include base \texttt{gpt-oss-20b}/\texttt{gpt-oss-120b},
+Qwen3-32B, Context-1, Search-R1~32B~\citep{jin2025searchr1}, and Tongyi
+DeepResearch 30B~\citep{team2025tongyi}. For Search-R1 and Tongyi
+DeepResearch, we use their released agent harnesses while standardizing the
+external search and reranking APIs. Because these harnesses do not natively
+produce a curated set capped at $30$ documents, we apply reranking to obtain the final top-$30$ documents; details are given in
+Appendix~\ref{app:eval-recipe}. Full evaluation details are in
+Appendices~\ref{app:metric-defs} and~\ref{app:benchstats}.
+
+% % ==========================================================================
+% \section{Results}
+% \label{sec:results}
+% % ==========================================================================
+
+\subsection{Results}
+\label{sec:results}
+
+Table~\ref{tab:search_quality} reports Recall, Final-Answer Recall,
+and Trajectory Recall on all eight benchmarks. \sys is the strongest
+open retrieval subagent we evaluate, reaching $0.730$ average curated
+recall and improving over the next open subagent, Tongyi DeepResearch
+30B, by $+11.4$ points.
+It is also competitive with much larger frontier retrievers: it has
+higher average curated recall than GPT-5.4, Sonnet-4.6, Kimi-K2.5,
+and GPT-OSS-120B under this protocol, with Opus-4.6 the only frontier
+retriever ahead on average.
+
+\begin{wrapfigure}{r}{0.5\textwidth}
+\vspace{-0.8em}
+\centering
+\includegraphics[width=\linewidth]{figures/ood_asymmetry.pdf}
+\vspace{-1.5em}
+\caption{\textbf{Transfer pattern.} \sys gains more on held-out
+transfer benchmarks ($+17.0$ pts mean) than on source-family
+benchmarks ($+7.9$ pts), a $2.2\times$ gap over Context-1.}
+\label{fig:ood-asymmetry}
+% \vspace{-0.8em}
+\end{wrapfigure}
+
+
+\paragraph{Transfer is the clearest signature of the mechanism.}
+Absolute recall is useful, but the structure of the gains is more
+diagnostic. \sys is not trained from a single dataset: its SFT stage
+uses BC+, Web, Patents, and SEC trajectories. The stricter transfer
+test is therefore the four benchmarks excluded from both \sys SFT and
+RL. If the gains came mainly from replaying source-family behaviors,
+the advantage should shrink on these held-out tasks. We observe the
+opposite.
+
+A standard machine-learning prior would expect gains to be strongest
+on benchmarks closest to the SFT and RL data. Across the four
+source-family benchmarks (BC+, Web, Patents, SEC), \sys gains $+6.2$,
+$+9.8$, $+3.3$, and $+12.2$ recall points over the closest open
+baseline (mean $+7.9$).
+
+Across the four
+\emph{held-out transfer benchmarks} excluded from \sys SFT and RL
+(LongSealQA, Seal0QA, FRAMES, HotpotQA), \sys gains
+$+32.8$, $+18.4$, $+7.2$, and $+9.5$ points
+(\emph{mean $+17.0$}). This is a $\boldsymbol{2.2\times}$ larger gain
+on the benchmarks furthest from any training data
+(Figure~\ref{fig:ood-asymmetry}). The mechanism is straightforward:
+the policy is learning operations over a domain-general search state:
+refine the auto-seeded set, read bridge entities from the evidence
+graph, re-inspect uncertain candidates, verify before promotion, and
+submit a compact curated set. Those operations transfer more naturally
+than domain-specific patterns stored in weights. The FRAMES and
+HotpotQA trajectories in Appendices~\ref{app:case-frames461}
+and~\ref{app:case-hotpot-snl} show the same operations outside the
+SFT/RL families: fan-out or targeted search proposes candidate bridges,
+then reading, exact matching, and curation resolve the final evidence.
+
+\begin{wrapfigure}{r}{0.4\textwidth}
+\vspace{-2em}
+\centering
+\includegraphics[width=\linewidth]{figures/training_data_scale.pdf}
+\caption{\textbf{Training-data scale.} Paired bars show reported
+unique task/query units used for SFT and RL. 
+% Context-1's SFT count is
+% a lower bound from its ``over 8K'' report.
+}
+\label{fig:training-data-scale}
+\vspace{-1.5em}
+\end{wrapfigure}
+
+\paragraph{Data scale.}
+The transfer pattern is not explained by simply using more training
+data. \sys uses $899$ filtered SFT trajectories and RL on the SEC
+train split ($3{,}453$ queries), for $4{,}352$ unique training items.
+Context-1 reports over $8$K synthetic SFT tasks and its RL trainer uses
+$9{,}159$ unique queries (the four full train splits sum to $8{,}859$,
+plus two capped 150-query curriculum splits). Search-R1 uses no SFT
+warmup and trains RL on the merged NQ+HotpotQA set ($221{,}328$ rows).
+Figure~\ref{fig:training-data-scale} therefore compares unique
+task/query counts, not rollout count or token compute. The point is
+not that less data is always sufficient, but that \sys moves much of
+the behavioral prior into the stateful interface, allowing small SFT
+and focused RL to transfer.
+
+
+\begin{table}[t]
+\centering
+\small
+\caption{\textbf{Inference-time component ablation on
+BrowseComp+} (same trained \sys
+checkpoint). Each row disables exactly one harness mechanism.
+$\Delta$Recall (\%) and $\Delta$FA (\%) report the
+\emph{relative} change versus full \sys, i.e.\ $100\times
+(\text{ablated}-\text{full})/\text{full}$. The rightmost column
+points to the per-mechanism failure mode with a representative
+example trajectory.}
+\label{tab:ablation}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Configuration} & \textbf{Recall} & \textbf{$\Delta$Recall (\%)} & \textbf{FA Recall} & \textbf{$\Delta$FA (\%)} & \textbf{Failure mode} \\
+\midrule
+\rowcolor{bestcolor}
+Full \sys (all mechanisms enabled)                  & 0.584 & ---      & 0.667 & ---      & --- \\
+\midrule
+$-$ Importance tags (binary \curate, FIFO eviction) & 0.560          & $-4.1$  & 0.614          & $-7.9$  & §\ref{app:err:importance-tags} \\
+$-$ Sentence-BM25 compression (raw chunks)          & 0.585          & $+0.2$  & 0.620          & $-7.0$  & §\ref{app:err:sentence-compress} \\
+$-$ Auto-seed on first search                       & 0.582          & $-0.3$  & 0.624          & $-6.4$  & §\ref{app:err:auto-seed} \\
+$-$ Evidence graph hidden in observations           & 0.569          & $-2.6$  & 0.631          & $-5.4$  & §\ref{app:err:evidence-graph} \\
+$-$ \verify returns ``unavailable''                 & 0.566          & $-3.1$  & 0.641          & $-3.9$  & §\ref{app:err:verify} \\
+$-$ \texttt{review\_docs} returns ``unavailable''   & 0.598          & $+2.4$  & 0.641          & $-3.9$  & §\ref{app:err:review-docs} \\
+$-$ Content-fingerprint dedup (chunk-ID dedup kept) & 0.611          & $+4.6$  & 0.678          & $+1.6$  & §\ref{app:err:content-dedup} \\
+\midrule
+All \sys harness mechanisms disabled                & 0.513          & $-12.2$ & 0.624          & $-6.4$  & §\ref{app:err:all-disabled} \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\paragraph{Inference-Time Component Ablation}
+\label{sec:ablation}
+We run the trained \sys checkpoint on $100$ paired BrowseComp+
+test queries with individual harness mechanisms disabled at
+inference time (no retraining). Each row of
+Table~\ref{tab:ablation} disables exactly one mechanism;
+\verify and \texttt{review\_docs} are switched off by returning
+``unavailable.'' The bottom row disables \emph{all} \sys harness
+mechanisms simultaneously while keeping the trained policy
+unchanged.
+
+
+\textbf{Six of seven mechanisms produce clean FA-recall drops}
+($-3.9\%$ to $-7.9\%$ relative) with a consistent behavioural
+signature: on queries the full system solves but the ablated
+condition fails, \texttt{search\_corpus} rises by $3$--$7$
+points and \texttt{read\_document}/\verify drop $2$--$6\times$.
+Removing a state mechanism does not just lose information ---
+the trained policy reverts to a wide, shallow, search-dominated
+mode and never converges on the relevant documents. The four
+largest FA drops correspond to the mechanisms with coupled
+training roles: importance tags
+(§\ref{app:err:importance-tags}), sentence compression
+(§\ref{app:err:sentence-compress}), auto-seed
+(§\ref{app:err:auto-seed}), and the evidence graph
+(§\ref{app:err:evidence-graph}).
+\
+\textbf{Content dedup is the only ablation that nominally
+helps} ($+4.6\%$ Recall, $+1.6\%$ FA, both relative). BC+ qrels
+occasionally contain near-duplicate gold documents, which our
+MinHash--LSH dedup ($\theta_{\text{Jaccard}}{=}0.85$) sometimes
+collapses, costing one gold ID per affected query. Dedup is a
+token-budget mechanism, not a recall mechanism: it shrinks the
+curated context for downstream answering with negligible loss
+in what the agent actually retrieves. We report it rather than
+hide it; the trade-off is the design intent
+(§\ref{app:err:content-dedup}).
+\
+\textbf{Mechanisms compose.} Disabling \emph{all} harness
+mechanisms at once gives Recall $0.513$ ($-12.2\%$) and FA
+$0.624$ ($-6.4\%$) --- a larger relative Recall drop than any
+single ablation. The trained policy keeps searching but cannot
+prioritize what it sees: the harness is where per-turn search
+bandwidth is converted into a discriminative curated set, and
+removing it leaves exploration intact but the decision
+substrate gone (§\ref{app:err:all-disabled}).
+
+\begin{wrapfigure}{r}{0.32\textwidth}
+\vspace{-0.5em}
+\centering
+\includegraphics[width=\linewidth]{figures/training_dynamics_combined.pdf}
+\caption{\textbf{Training dynamics.} \textbf{(a)}~Recall
+during RL training. \textbf{(b)}~Mean tool diversity. \textcolor{divoff}{Without the
+diversity bonus}, recall plateaus and
+tool use collapses; \textcolor{divon}{with the bonus},
+diversity stabilises and final recall is higher.}
+\label{fig:dynamics}
+\vspace{-3em}
+\end{wrapfigure}
+
+% \paragraph{Discovery and selection.} Trajectory recall separates
+% finding evidence from selecting it. \sys has high trajectory recall
+% across domains, showing that the harness surfaces a large pool of gold
+% documents before final curation. Final-answer recall then measures
+% whether the final output contains the evidence most tied to downstream
+% answers. The remaining gap to Opus-4.6 on BC+ final-answer recall
+% ($0.658$ vs.\ $0.736$), despite similar trajectory recall, is a
+% selection gap rather than a discovery gap: the right documents are
+% often seen but not always promoted. The qualitative cases make this
+% distinction visible at turn level. In the BC+ and SEC examples
+% (Appendices~\ref{app:case-bc643},~\ref{app:case-sec497}), the relevant
+% document appears early in the trajectory, but final-answer recall
+% depends on later state edits: reading the full document, using exact
+% search for the needle phrase or date, and preserving the result in the
+% importance-tagged curated set.
+
+\paragraph{Discovery and selection.}
+Trajectory recall shows that \sys usually discovers the relevant
+evidence: across domains, the harness surfaces a large pool of gold
+documents before final curation. The remaining gap to Opus-4.6 on BC+
+final-answer recall ($0.658$ vs.\ $0.736$), despite similar trajectory
+recall, is therefore mainly a selection gap rather than a discovery gap.
+Qualitative examples in Appendices~\ref{app:case-bc643}
+and~\ref{app:case-sec497} show cases where the right document is seen
+but not preserved in the final curated set.
+
+
+% \paragraph{Training Dynamics}
+% \label{sec:dynamics}
+% Figure~\ref{fig:dynamics} compares two RL runs that differ only in
+% whether the tool-diversity reward $w_{\mathrm{div}}$ is active.
+% Both start from the same SFT checkpoint and use the same
+% hyperparameters otherwise. This is the most direct evidence that
+% a rich harness without RL-compatible reward shaping is not just
+% sub-optimal but \emph{actively unstable}.
+
+% Without $w_{\mathrm{div}}$, the policy discovers in the first
+% dozen steps that issuing many \texttt{fan\_out\_search} calls is
+% the fastest way to maximize trajectory recall. Because CISPO
+% normalises advantages within each group, this search-heavy
+% strategy dominates even though it neglects curation and
+% verification. Tool diversity collapses from ${\sim}6$ to
+% ${\sim}3.5$ within $15$ steps, and curated recall plateaus at
+% $0.53$. The agent finds many relevant documents but never learns to
+% promote the right ones into the output set. The harness's
+% \verify, \texttt{review\_docs}, and importance-tagging machinery
+% sit unused.
+
+% With $w_{\mathrm{div}}$ active, the diversity bonus counteracts
+% this attractor by awarding partial reward (up to
+% $w_{\mathrm{div}}{=}0.15$) when the trajectory uses tools toward
+% the target $\nu_0{=}6$. The diversity curve stabilises around
+% $4.75$, meaning the agent regularly invokes \curate, \verify, and
+% \texttt{review\_docs} in addition to search. Initial recall
+% growth is \emph{slower} because the agent spends more turns on
+% curation and verification, but the final recall is higher
+% (${\sim}0.65$) because the curated set is better \emph{edited}, not
+% just larger.
+
+% \textbf{This is the third RL-compatibility requirement in
+% demonstration.} A rich harness is useless if the reward structure
+% lets the policy ignore most of the tools it provides. The
+% diversity bonus is a small shaping term relative to the terminal
+% retrieval reward, but it is the difference between a harness used and
+% a harness ignored. The same point applies to the other two
+% requirements: ablating auto-seeding
+% (§\ref{sec:ablation}) eliminates the within-group gradient signal
+% on hard queries; rendering the evidence graph verbatim instead of
+% as derived state inflates the observation beyond what fits in the
+% context window. The three requirements are coupled: violating any
+% one collapses the system back toward the minimal-harness baseline.
+
+% \paragraph{Modular RAG answer accuracy.}
+% Search gains translate to downstream answers when each subagent's
+% curated set is passed to frozen frontier generators with no trajectory
+% or intermediate reasoning. Closed-Book and Naive RAG are weak on BC+,
+% while the ordering among search subagents broadly tracks
+% Table~\ref{tab:search_quality}: better curated sets yield higher answer
+% accuracy across generators, and \sys dominates the open subagents in
+% the reported modular RAG settings. Full plots and protocol details are
+% in Appendix~\ref{sec:answeracc}.
+
+\paragraph{Training Dynamics}
+\label{sec:dynamics}
+Figure~\ref{fig:dynamics} compares two RL runs that differ only in
+whether the tool-diversity reward $w_{\mathrm{div}}$ is active.
+Both start from the same SFT checkpoint and use the same
+hyperparameters otherwise. The comparison shows that a rich harness
+alone is insufficient: without RL-compatible shaping, the policy
+collapses to a narrow search-heavy strategy.
+
+Without $w_{\mathrm{div}}$, the agent quickly learns to issue many
+\texttt{fan\_out\_search} calls, which improves trajectory recall but
+bypasses curation and verification. Tool diversity falls from
+${\sim}6$ to ${\sim}3.5$, and curated recall plateaus at ${\sim}0.53$.
+The agent finds relevant documents, but does not reliably promote the
+right ones into the final output set.
+
+With $w_{\mathrm{div}}$ active, tool use remains broader: diversity
+stabilises around ${\sim}4.30$, and the agent regularly combines search
+with curation and verification. Early recall improves more slowly
+because the policy spends more turns editing the candidate set, but
+final curated recall is higher, reaching ${\sim}0.60$.
+\
+This demonstrates the third RL-compatibility requirement. The harness
+must not only expose useful tools; the reward must also make those
+tools learnable and worth using. Otherwise, RL exploits the easiest
+reward path and collapses back toward a minimal search-only harness.
+
+\paragraph{Modular RAG answer accuracy.}
+The search gains also translate to downstream answer quality. When each
+subagent's curated set is passed to frozen frontier generators, better
+curated sets yield higher answer accuracy, and \sys outperforms the
+open subagents in the reported modular RAG setting. Full plots and
+protocol details are in Appendix~\ref{sec:answeracc}.
+
+
+% % ==========================================================================
+% \section{Conclusion}
+% \label{sec:conclusion}
+% % ==========================================================================
+
+% \sys shows that retrieval-agent RL benefits from an explicit
+% environment state: the policy still chooses what to search, curate,
+% verify, and submit, while the harness maintains the candidate pool,
+% evidence links, verification records, and context-budgeted rendering
+% around those choices. This stateful interface yields the strongest
+% open search subagent in our evaluation, competitive performance
+% against much larger frontier searchers, better modular RAG answer
+% accuracy, and consistent gains across heterogeneous retrieval tasks.
+
+% \paragraph{Limitations.} Our tasks are mostly needle-in-a-haystack in
+% style; breadth queries and abstention remain future work. The evidence
+% graph uses a regex-level entity extractor, \verify uses a small LLM as
+% a proxy NLI model, and benchmark sizes in Table~\ref{tab:bench-stats}
+% leave non-negligible confidence intervals for some datasets.
+
+% \paragraph{Broader impact and release.} Lower-cost retrieval agents can
+% make evidence-seeking systems more accessible, but the same capability
+% can amplify unsupported or privacy-sensitive retrieval if deployed
+% without oversight. Our planned release is a retrieval subagent with
+% documentation for intended use, dataset provenance, and evaluation
+% protocols; it is not a general autonomous web agent or answer generator.
+% ==========================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+% ==========================================================================
+
+We introduced \sys, a 20B search agent trained with reinforcement learning
+inside a stateful harness. The key idea is to separate semantic search decisions
+from recoverable bookkeeping: the policy decides what to search, curate, verify,
+and submit, while the harness maintains candidate pools, importance-tagged
+evidence, verification records, evidence links, and budget-aware context
+rendering.
+
+Across eight benchmarks, \sys achieves the strongest average recall among the
+open search agents we evaluate and remains competitive with much larger
+frontier-model searchers. Its gains on held-out transfer benchmarks and
+component ablations suggest that the harness is not merely an implementation
+detail, but a central part of what the policy learns to use.
+
+These results point to stateful harness design as an important direction for
+retrieval-agent RL. Future work can make the evidence graph more intelligent,
+for example by replacing regex-based extraction with learned entity linking,
+relation extraction, and uncertainty-aware evidence organization. We discuss
+connections to agentic search, tool orchestration, and harness
+engineering in Appendix~\ref{app:related}, and limitations, ethics, and broader
+impact in Appendix~\ref{sec:limitations-ethics-impact}.
+\bibliographystyle{plain}
+\bibliography{references}
+
+
+\clearpage
+\DoToC
+% \clearpage
+
+% ==========================================================================
+\appendix
+% ==========================================================================
+
+\section{Related Work}
+\label{app:related}
+
+\paragraph{Harness engineering.}
+Harness engineering designs the environment layer between a language
+model and its task~\citep{openai2026harness,martin2026managed}. Recent
+work shows that the same model can vary by tens of points when placed
+in different harnesses~\citep{yang2024sweagent,
+xia2024agentlessdemystifyingllmbasedsoftware}, making
+the interface a major determinant of system-level performance. Tool
+orchestration~\citep{qin2023toolllm,jin2025searchr1,liu2025webexplorer,su2025toolorchestraelevatingintelligenceefficient}
+usually fixes this interface and trains the policy to call the exposed
+tools more effectively. Harness engineering asks a lower-level design
+question: what interface should the policy operate?
+
+Most existing harnesses are designed by hand~\citep{yang2024sweagent,
+zhang2025generalmodularharnessllm}, often as empirical responses to
+model behaviors that may change as models improve~\citep{martin2026managed}.
+Recent systems automate harness construction by searching over code
+space~\citep{lou2026autoharness,lee2026meta} or configuration
+space~\citep{sengupta2026harborautomatedharnessoptimization}. In
+\sys, we study a complementary question: how should a retrieval harness
+be shaped so that a trainable policy can use it well? Our answer is to
+offload mechanical search bookkeeping into environment-side state, then
+train the policy to make semantic decisions over that state.
+
+\begin{keybox}
+\textbf{Tool orchestration vs.\ stateful harnessing.}
+Let an agent interface be
+$\mathcal{I}=(\mathcal{A},\mathcal{O},T,r)$: actions,
+observation renderer, environment transition, and reward. Tool
+orchestration usually fixes an interface $\mathcal{I}_0$ and learns a
+policy inside it:
+\[
+\max_\theta \; \mathbb{E}\!\left[R(\pi_\theta;\mathcal{I}_0)\right].
+\]
+Stateful harnessing changes $\mathcal{I}$ by adding the editable
+retrieval state from Table~\ref{tab:state-offload}:
+\[
+s_t=(P_t,C_t,I_t,D_t,G_t,V_t,H_t,B_t).
+\]
+The transition is
+\[
+(s_t,a_t)\mapsto(s_{t+1},o_{t+1}),
+\]
+not merely $a_t\mapsto o_{t+1}$. The policy still learns tool use, but
+it learns over a state representation maintained by the harness:
+\[
+\max_\theta \; \mathbb{E}\!\left[R(\pi_\theta;\mathcal{I}_{\sys})\right].
+\]
+\end{keybox}
+
+% \paragraph{Memory and context management.}
+% A multi-turn agent's context window fills with retrieved material,
+% much of which becomes redundant or tangential, degrading
+% quality~\cite{liu2024lostmiddle,hong2025contextrot}. Prior systems
+% therefore add memory or compression: MemGPT~\cite{packer2024memgpt}
+% pages information between main context and external storage;
+% ReSum~\cite{yu2025resum} periodically summarises accumulated context;
+% Recursive Language Models~\cite{rlm2025} treat the prompt as a
+% variable in an external REPL. Context-1~\citep{bashir2026context1} uses binary pruning with a
+% token-budget signal.
+
+% \sys uses memory, but not only as storage. It exposes memory as a
+% task state that the policy can edit and inspect. The curated set is
+% the final output, \curate changes it, importance tags prioritize it,
+% \verify attaches claim-level support records, \texttt{review\_docs}
+% reads stored documents without another search, and the evidence graph
+% summarizes cross-document structure. Thus the harness is not merely
+% remembering the transcript. It turns remembered evidence into an
+% actionable retrieval state optimized by SFT and RL.
+
+\paragraph{Agentic search.}
+Agentic search refers to large language  model agents that gather evidence through multiple rounds of query generation, reading returned documents, and deciding when to stop~\citep{zhang2025web}. 
+Early work in this direction interleaved retrieval with reasoning in tight loops~\citep{li2025search, gao2025beyond, liu2025webexplorer, cognition2025swegrep}. ReAct~\citep{yao2023react}, Self-Ask~\citep{press2023measuring}, and IRCoT~\citep{trivedi2023interleaving} established the pattern of alternating reasoning and tool calls. However, prompting-based reasoning alone is often inconsistent with surface behavior failing to reliably translate into the intended decision patterns~\citep{turpin2023language,lanham2023measuring, han2025personalityillusionrevealingdissociation, han2026steer2adapt}.
+
+Reinforcement learning post-training~\citep{schulman2017proximalpolicyoptimizationalgorithms, hu2025reinforce++, yu2025dapo, Guo_2025} has emerged as a powerful tool for shaping LLM reasoning, and a growing line of work brings it to retrieval and agentic search~\citep{song2025r1, chen2025researchlearningreasonsearch, jiang2025deepretrieval, zheng-etal-2025-deepresearcher}. DeepRetrieval~\citep{jiang2025deepretrieval} shows that LLMs can be trained with RL to interact directly with real search engines and retrievers, improving retrieval through learned query and search behavior. Search-R1~\citep{jin2025searchr1} trains a single LLM to interleave reasoning and search calls under a downstream question-answering reward. s3~\citep{jiang2025s3} decouples the searcher from the generator, training only the search policy for modular optimization with frozen generators. These methods work well at short horizons but as tasks grow longer and more complex, like report generation~\citep{wu2025webdancer, li2025websailor}, the policy is asked to do too much at once: planning the next search\citep{chen2026apexsearcheraugmentingllmssearch, sun2025decouplesearch}, remembering which documents have been seen~\citep{zhou2025mem1, packer2024memgpt}, tracking which constraints remain uncovered~\citep{chen2025browsecompplus}, and managing an ever-growing context~\citep{hong2025context}. Under this load, the reward signal grows sparse relative to the work the policy is actually doing causing the degradation of RL training~\citep{deng2025atom, wang2025spa}. Recent work begins to address parts of this overload. Context-1~\citep{bashir2026context1} trains a 20B retrieval agent that learns to selectively prune its own context during search, beginning to treat context management as part of the policy itself.
+
+Across these systems, the harness of the agent remains a thin tool wrapper, and any state beyond 
+the prune action must be reconstructed by the policy 
+from a raw, append-only observation stream. 
+\sys takes a different stance: instead of training a stronger 
+policy on a thin interface, we make the interface itself part of the 
+method. 
+The harness is stateful, with environment-side working memory 
+that absorbs the mechanical bookkeeping of multi-turn search. We frame this division of labor as 
+cognitive offloading, and treat harness design itself as a central axis of agentic search.
+
+\section{Limitations, Ethics, and Broader Impact}
+\label{sec:limitations-ethics-impact}
+
+\paragraph{Limitations.}
+\sys is designed for evidence-seeking retrieval tasks where the goal is to
+identify documents that support an answer. Most benchmarks in our evaluation are
+needle-in-a-haystack or multi-hop search tasks with annotated relevant evidence.
+This setting is important, but it does not cover all retrieval use cases.
+Breadth-oriented research tasks, open-ended report generation, abstention under
+missing evidence, and adversarial web environments remain outside the main scope
+of this work.
+
+Our harness also introduces several engineered components whose quality may vary
+across domains. The evidence graph uses a lightweight regex-based extractor for
+entities, dates, and years, rather than a full entity-linking system. The
+\verify tool uses an LLM-based verifier as a proxy entailment model, which can
+make mistakes on ambiguous, highly technical, or underspecified claims. The
+sentence-level BM25 compressor may remove useful context when relevance depends
+on discourse structure rather than local sentence overlap.
+
+Evaluation is limited by benchmark size and annotation coverage. Some datasets
+have non-negligible confidence intervals, and near-duplicate or incomplete qrels
+can affect recall-oriented metrics. We therefore report multiple retrieval
+metrics, trajectory-level diagnostics, ablations, and modular RAG answer
+accuracy, but these measurements should still be interpreted as evidence of
+retrieval behavior under the specified benchmark and harness conditions rather
+than as a complete measure of real-world search reliability.
+
+\paragraph{Ethics.}
+This work studies how to train language-model search agents to retrieve
+supporting evidence more effectively. The primary ethical motivation is to make
+retrieval-augmented systems more transparent and auditable: instead of relying
+only on a model's parametric memory, the system returns an explicit curated set
+of documents that can be inspected, verified, and used by downstream models or
+human users.
+
+The main ethical risks come from misuse and over-reliance. A stronger search
+agent could retrieve sensitive, private, copyrighted, or otherwise inappropriate
+information if connected to an unrestricted corpus. It could also amplify
+misleading evidence if the retrieval backend contains low-quality, biased, or
+adversarial documents. Our method should therefore be deployed only with
+appropriate corpus access controls, logging, rate limits, privacy filters, and
+human oversight for sensitive domains.
+
+The system should not be treated as a source of truth by itself. \sys retrieves
+and curates evidence; it does not guarantee that the evidence is complete,
+unbiased, or correctly interpreted. In high-stakes domains such as medicine,
+law, finance, or public policy, any downstream answer should be reviewed by
+qualified experts and validated against authoritative sources.
+
+\paragraph{Broader impact.}
+Stateful retrieval agents can reduce the cost of evidence gathering and make
+long-horizon search more accessible. This may benefit scientific literature
+review, legal and financial document analysis, fact-checking, education, and
+other workflows where users need to locate and organize evidence across many
+documents. Because \sys separates retrieval from generation, its outputs can be
+audited more directly than closed-book answers.
+
+At the same time, lower-cost search agents can also increase the scale of
+undesirable information-seeking behavior, including privacy-invasive search,
+automated evidence cherry-picking, and targeted collection of sensitive
+information. These risks are not unique to our method, but stronger and cheaper
+retrieval agents can make them easier to execute. Responsible deployment should
+therefore restrict corpus access, monitor usage, and pair retrieval with
+verification and human review.
+
+Our planned release is limited to the retrieval subagent, harness code,
+data-generation pipeline, and evaluation recipe, with documentation of intended
+use and dataset provenance. It is not a general autonomous web agent and is not
+intended to replace expert judgment in high-stakes decision-making.
+
+\section{Tool Signatures}
+\label{app:tools}
+
+This section lists the tools exposed to the \sys policy. The tools are grouped
+around the main operations in the harness: retrieving new candidates, revisiting
+stored evidence, editing the curated set, verifying claims, and ending the
+episode. The policy chooses among these tools, while the harness executes the
+calls and updates the working-memory state described in
+Table~\ref{tab:state-offload}.
+
+Table~\ref{tab:tools} gives the functional signature of each tool used in all
+teacher, SFT, RL, and evaluation runs.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{\sys tool signatures.}
+\label{tab:tools}
+\begin{tabular}{ll}
+\toprule
+\textbf{Tool} & \textbf{Effect} \\
+\midrule
+\texttt{fan\_out\_search(queries)} & Up to five parallel hybrid searches, RRF + rerank \\
+\texttt{search\_corpus(query)} & Single hybrid search (BM25 + dense), RRF, rerank \\
+\texttt{grep\_corpus(pattern)} & Regex match over the corpus \\
+\texttt{read\_document(doc\_id)} & Full-text read, reranked and truncated to budget \\
+\texttt{review\_docs(doc\_ids)} & Re-render seen docs from \wm (no corpus call) \\
+\curate(add, remove, importance) & Edit curated set with four-level importance tag \\
+\verify(doc\_ids, claim) & Per-document LLM entailment check against the claim \\
+\texttt{end\_search(reasoning)} & Terminate episode, return curated set \\
+\midrule
+\multicolumn{2}{l}{\emph{For backward compatibility (registered, no-op):}} \\
+\texttt{prune\_chunks(\ldots)} & Returns ``managed via working memory; no pruning needed.'' \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Reward \& Training Hyperparameters}
+\label{app:reward}
+
+Table~\ref{tab:reward-hp} lists the reward weights and penalty
+coefficients used in the deployed RL run, alongside their
+configuration names.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Reward hyperparameters for the deployed \sys RL run.
+\textbf{Note on the empty-set penalty:} when the curated set is
+empty at episode termination, the reward short-circuits to
+$\pi_\emptyset = -0.2$, bypassing the rest of the formula. For
+all other terminations, the formula in §\ref{sec:training} applies and
+is clipped below by $\mathcal{R} \geq 10^{-3}$.}
+\label{tab:reward-hp}
+\begin{tabular}{lll}
+\toprule
+\textbf{Symbol} & \textbf{Code variable} & \textbf{Value} \\
+\midrule
+$w_F$ (set quality) & \texttt{OUTCOME\_WEIGHT} & $0.7$ \\
+$w_\tau$ (trajectory recall) & \texttt{TRAJECTORY\_RECALL\_WEIGHT} & $0.3$ \\
+$\beta$ ($F_\beta$ exponent) & \texttt{RECALL\_BETA} & $2.0$ \\
+$w_{\mathrm{A}}$ (FA recall) & \texttt{FINAL\_ANSWER\_RECALL\_WEIGHT} & $0.8$ \\
+$w_{\tau\mathrm{A}}$ (trajectory FA recall) & \texttt{TRAJECTORY\_FA\_RECALL\_WEIGHT} & $0.4$ \\
+$B_{\mathrm{A}}$ (binary FA bonus) & \texttt{FINAL\_ANSWER\_BONUS} & $1.0$ \\
+$w_{\mathrm{miss}}$ (FA miss penalty) & \texttt{FA\_MISS\_PENALTY\_WEIGHT} & $0.35$ \\
+$\pi_\emptyset$ (empty-set short-circuit) & \texttt{NO\_CURATE\_PENALTY} & $-0.2$ \\
+Turn penalty start & \texttt{TURN\_PENALTY\_MIN\_TURNS} & $20$ \\
+Turn penalty max & \texttt{TURN\_PENALTY\_MAX} & $0.02$ \\
+Max turns hard cap & \texttt{MAX\_TURNS} & $40$ \\
+Format-reward floor & \texttt{MIN\_FORMAT\_REWARD} & $10^{-3}$ \\
+KL coefficient (anchor to SFT) & \texttt{KL\_PENALTY\_COEF} & $0.0$ \\
+% \rowcolor{lightyellow}
+$w_{\mathrm{div}}$ (tool-diversity bonus weight) & \texttt{TOOL\_DIVERSITY\_BONUS} & $\mathbf{0.15}$ \\
+% \rowcolor{lightyellow}
+$\nu_0$ (tool-diversity target) & \texttt{TOOL\_DIVERSITY\_TARGET} & $\mathbf{6}$ \\
+% Reward version & \texttt{REWARD\_VERSION} & v3 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+We also report the training configuration for the released \sys
+checkpoint. We separate hyperparameters for SFT, RL, the search environment,
+retrieval infrastructure, and evaluation. The goal is to make the reported
+training recipe reproducible and to clarify which settings belong to the model
+optimization stage versus the harness and retrieval backend.
+
+SFT is used only to teach the model how to operate the stateful interface. RL is
+then applied over full search episodes using the same harness state renderer and
+tool set. Table~\ref{tab:hp-train} lists the exact settings used in the
+deployed run.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{SFT and RL hyperparameters for the deployed \sys
+checkpoint.}
+\label{tab:hp-train}
+\begin{tabular}{lll}
+\toprule
+\textbf{Stage} & \textbf{Setting} & \textbf{Value} \\
+\midrule
+SFT & Base model                 & \texttt{openai/gpt-oss-20b} (MoE) \\
+SFT & Adapter                    & LoRA, rank $32$ \\
+SFT & Optimiser                  & AdamW (Tinker default) \\
+SFT & Learning rate              & $5\times10^{-6}$ \\
+SFT & Batch size                 & $128$ \\
+SFT & Max sequence length        & $32{,}768$ \\
+SFT & Epochs                     & $3$ \\
+SFT & Min recall filter          & $0.10$ (final output recall) \\
+SFT & Per-trajectory expansion   & one datum per turn \\
+SFT & Selected checkpoint        & step $550$ (sampler weights) \\
+\midrule
+RL  & Algorithm                  & on-policy CISPO (clip $[0,5]$) \\
+RL  & Adapter                    & LoRA, rank $32$ \\
+RL  & Learning rate              & $1\times10^{-5}$ \\
+RL  & Queries per step (BATCH)   & $128$ \\
+RL  & Rollouts per query (GROUP) & $8$ \\
+RL  & Total rollouts per step    & $1{,}024$ \\
+RL  & Substeps per step          & $4$ \\
+RL  & Total steps                & $80$ \\
+RL  & Total rollouts             & ${\sim}82$K \\
+RL  & Rollout temperature        & $1.0$ \\
+RL  & Generation budget          & $2{,}048$ tokens \\
+RL  & Model context limit        & $32{,}768$ tokens \\
+RL  & KL anchor                  & disabled \\
+RL  & Drop constant-reward groups& yes \\
+RL  & Dataset                    & \texttt{sec} (single-domain) \\
+\midrule
+Env & MAX\_TURNS                 & $40$ \\
+Env & RECENT\_K (recent window)  & $5$ \\
+Env & SEARCH\_DISPLAY\_LIMIT     & $10$ \\
+Env & MAX\_OBS\_CHARS            & $15{,}000$ \\
+Env & SEARCH\_TOKEN\_BUDGET      & $4{,}096$ \\
+Env & SENTENCE\_COMPRESS\_K      & $4$ \\
+Env & MINHASH\_DEDUP\_THRESHOLD  & $0.85$ \\
+Env & MINHASH\_NUM\_PERM         & $64$ \\
+Env & EVIDENCE\_GRAPH\_MAX\_ENT  & $8$ \\
+Env & AUTO\_POPULATE\_TOP\_K     & $8$ \\
+Env & MAX\_CURATED\_DOCS         & $30$ \\
+Env & DOC\_SNIPPET\_CHARS        & $120$ \\
+\midrule
+Retr & Retrieval                 & hybrid BM25 $+$ dense, RRF \\
+Retr & Reranker                  & Qwen3-Reranker-8B (Baseten-hosted) \\
+Retr & Reranker max tokens       & $4{,}096$ \\
+% Retr & Adaptive rerank instruction & disabled in deployed run (code-side option) \\
+\midrule
+Eval & Sampling temperature      & $1.0$ \\
+Eval & Max tokens per turn       & $2{,}048$ (\sys), $4{,}096$ (Context-1) \\
+% Eval & Token-budget threshold    & N/A (\sys), $16{,}384$ (Context-1) \\
+% Eval & Token budget cap          & N/A (\sys), $32{,}768$ (Context-1) \\
+Eval & Max trajectory length     & $40$ turns (\sys), $64$ turns (Context-1) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Benchmark Statistics}
+\label{app:benchstats}
+
+This section summarizes the evaluation benchmarks used in the main experiments.
+The benchmark suite covers static Chroma-backed corpora and live web-backed
+retrieval settings, spanning encyclopedic web search, finance filings, patents,
+and multi-hop question answering. The split is also used in the main text to
+distinguish source-family benchmarks from held-out transfer benchmarks.
+
+Table~\ref{tab:bench-stats} reports the backend, number of test queries, domain,
+and task style for each benchmark.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Benchmark statistics.}
+\label{tab:bench-stats}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Benchmark} & \textbf{Backend} & \textbf{Test queries} & \textbf{Domain} & \textbf{Style} \\
+\midrule
+BrowseComp+~\cite{chen2025browsecompplus}
+    & Chroma (BC+ corpus) & 166 & Web encyclopaedic & Multi-constraint \\
+Web~\cite{bashir2026context1}
+    & Chroma (web 1.17) & 554 & Web encyclopaedic & Multi-hop \\
+Patents~\cite{bashir2026context1,uspto_open_data}
+    & Chroma (USPTO 1.18) & 718 & Legal/USPTO & Single-doc heavy \\
+SEC~\cite{bashir2026context1,sec_edgar_api}
+    & Chroma (SEC 1.4) & 502\footnote{\url{}} & Finance filings & Multi-filing \\
+LongSealQA~\cite{pham2025sealqa}
+    & Chroma (longsealqa) & 254 & Open web & Multi-hop, long-context \\
+Seal0QA~\cite{pham2025sealqa}
+    & Web (Serper+Jina) & 111 & Open web & Factoid / multi-hop mix \\
+FRAMES~\cite{krishna2024frames}
+    & Web (Serper+Jina) & 824 & Open web & Multi-hop \\
+HotpotQA-subset~\cite{yang2018hotpotqa}
+    & Web (Serper+Jina) & 493 & Open web & 2-hop \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\section{Two-Tier Memory and Working-Memory Rendering}
+\label{app:wm-rendering}
+
+\sys uses a two-tier memory: an inner \wm summary that fits in
+the prompt and an outer \texttt{doc\_store} (full text of every
+chunk ever retrieved) accessible via \texttt{review\_docs}. This
+section documents the exact rendering protocol so the reported
+behaviour is reproducible.
+
+\paragraph{Working-memory text layout.} Each rendered \wm block
+contains, in order:
+\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=2pt]
+\item Header: \texttt{== Working Memory (summarising turns
+0--$n$) ==} followed by the original query.
+\item Curated set: rendered grouped by importance level
+(\texttt{very\_high} first, \texttt{high}, \texttt{fair},
+\texttt{low} last), each entry showing the doc ID and a
+$120$-character snippet.
+\item Document pool: the most recent $50$ uncurated docs are
+shown with snippets; older uncurated docs are summarised as a
+comma-separated ID list (truncated at $30$ IDs with a
+\texttt{(+N more)} marker if longer).
+\item Search history: the last $12$ entries; entries older than
+that are summarised as
+\texttt{... ($k$ earlier searches)}.
+\item Evidence-graph block (only if $\geq 1$ multi-doc bridge
+entity exists): up to $8$ frequent entities listed with their
+doc IDs, plus a singleton count.
+\item Dedup notice (only if any near-duplicates were
+suppressed): \texttt{[Dedup] $k$ near-duplicate chunk(s)
+auto-suppressed}.
+\end{enumerate}
+
+\paragraph{Per-turn observation layout.} Each observation
+rendered to the policy contains, in order: (a) the \wm summary
+block; (b) up to \texttt{RECENT\_K=5} prior (action, result)
+pairs, with reasoning truncated to $300$ characters for all but
+the most recent turn; (c) the freshly produced tool result for
+the most recent action. Search-style observations within (c) are
+passed through sentence-BM25 compression ($K{=}4$ kept sentences)
+and content-fingerprint deduplication. Search results are
+truncated to \texttt{SEARCH\_DISPLAY\_LIMIT=10} entries per call;
+each per-result snippet is capped at
+\texttt{DOC\_SNIPPET\_CHARS=120}.
+
+\paragraph{Context-budget truncation (5-pass progressive
+degradation).} Whenever the rendered context exceeds the prompt
+token budget ($30{,}720$ tokens, leaving $2{,}048$ for
+generation within the $32{,}768$ context limit),
+\texttt{render\_context\_within\_budget} applies progressive
+degradation in five passes, returning the first that fits:
+(1)~normal render; (2)~truncate the document-pool section of the
+\wm summary while preserving curated-set, search history, and
+evidence graph; (3)~truncate analysis text in older turns to
+$100$ chars and the \wm summary itself to $2{,}000$ chars;
+(4)~drop the oldest recent (action, result) pair and retry,
+iterating; (5)~minimal context (system $+$ tool descriptions $+$
+query only). Pass 5 always succeeds because the system prompt is
+constant-size. This mechanism guarantees that no rollout fails
+due to context overflow, and that the curated set and recent
+working memory are the last things to be cut.
+
+\section{Per-Turn Programmatic Nudges (Result Summaries)}
+\label{app:nudges}
+
+For full transparency: between each turn's tool result and the
+next observation, \sys injects a short \emph{result summary} as
+a user message. The summary is generated programmatically (no
+LLM call) and combines factual status with conditional prescriptive nudges.
+The same summaries are seen by the SFT teacher (GPT-5.4) and
+the trained policy at RL and inference time, so the prompt
+distribution is identical across all three stages.
+
+\paragraph{Always-on factual lines.}
+\texttt{[STATUS]}: tool name, number of docs returned, novel
+docs, total pool size; or curate/review status.
+\texttt{Curated:} current curated set size and a preview of the
+first five doc IDs.
+
+\paragraph{Conditional prescriptive lines (gated by
+\texttt{HARNESS\_PRESCRIPTIVE=1}, which was on for all reported
+runs).}
+\texttt{[ACTION REQUIRED]}: triggered after a search turn with
+$\geq 1$ turn since last curate; instructs the agent to curate
+before searching again.
+\texttt{[WARN]}: triggered on multiple consecutive non-curate
+turns or a blank curated set while the pool already has candidates.
+\texttt{[TIP]}: triggered when truncation is detected
+(suggesting \texttt{read\_document}), when only one tool type
+has been used by turn $\geq 3$, or when \texttt{grep\_corpus} or
+\texttt{read\_document} have not been used by turn $\geq 4$/$6$.
+\texttt{[NEXT]}: short suggestion of the immediate next action.
+
+These nudges are \emph{not} part of the trained policy's
+intrinsic capability. They are part of the harness. They are
+included in the harness mass we report ablating in
+Table~\ref{tab:ablation} (the ``all \sys mechanisms disabled''
+row removes them).
+
+\section{Harness Algorithms}
+\label{app:harness-algorithms}
+
+This appendix gives the formal harness algorithms used by \sys. The
+driver in Algorithm~\ref{alg:harness-driver} is intentionally small:
+all mechanism-specific behavior is delegated to explicit subroutines.
+The same subroutines are used during teacher trajectory generation,
+SFT replay, RL rollout, and inference, so the policy is trained on the
+same state interface it uses at test time.
+
+\paragraph{State variables.}
+For a query $q$, the harness maintains a document pool $P$, a curated
+output set $C$ with cap $M{=}30$, an importance map $I:C\to
+\{\texttt{very\_high},\texttt{high},\texttt{fair},\texttt{low}\}$, a
+full-text store $D$, an evidence graph $G$, a verification cache $V$,
+a search history $H$, a near-duplicate index $U$, and a Boolean flag
+\textsc{AutoSeeded}. The policy controls semantic choices (queries,
+claims, promotions, removals, and termination); the harness controls
+deterministic state maintenance.
+
+\begin{algorithm}[t]
+\caption{\sys stage driver.}
+\label{alg:harness-driver}
+\small
+\begin{algorithmic}[1]
+\REQUIRE query $q$, tools $\mathcal{T}$, stage $s\in\{\mathrm{teacher},\mathrm{sft},\mathrm{rl},\mathrm{infer}\}$, policy $\pi$ or replay trajectory $\tau$
+\ENSURE trajectory record for training stages, or curated set $C$ for inference
+\STATE Initialize $P,C,I,D,G,V,H,U\leftarrow\emptyset$ and \textsc{AutoSeeded}$\leftarrow$ false
+\STATE Build a per-episode rerank instruction from $q$ and the dataset family
+\FOR{$t=1,\ldots,T_{\max}$}
+  \STATE $x_t\leftarrow\textsc{RenderContext}(q,P,C,I,D,G,V,H,\text{recent turns})$ \hfill Algorithm~\ref{alg:render}
+  \IF{$s=\mathrm{sft}$}
+    \STATE Read stored action $a_t$ and stored observation $o_t$ from $\tau$
+  \ELSE
+    \STATE Sample a structured tool action $a_t\sim\pi(\cdot\mid x_t)$
+    \STATE Execute $a_t$ with tools $\mathcal{T}$ to obtain raw observation $o_t$
+  \ENDIF
+  \IF{$a_t$ is a retrieval or memory-inspection action}
+    \STATE $(o_t,P,D,G,U,C,I,\textsc{AutoSeeded})\leftarrow\textsc{ProcessObservation}(a_t,o_t)$ \hfill Algorithm~\ref{alg:obs}
+  \ELSIF{$a_t=\curate$}
+    \STATE $(C,I)\leftarrow\textsc{Curate}(a_t,C,I,P)$ \hfill Algorithm~\ref{alg:curate}
+  \ELSIF{$a_t=\verify$}
+    \STATE $V\leftarrow V\cup\textsc{VerifyClaim}(a_t,D)$ \hfill Algorithm~\ref{alg:verify-review}
+  \ELSIF{$a_t=\texttt{review\_docs}$}
+    \STATE $o_t\leftarrow\textsc{ReviewDocs}(a_t,D)$ \hfill Algorithm~\ref{alg:verify-review}
+  \ELSIF{$a_t=\texttt{end\_search}$}
+    \STATE \textbf{break}
+  \ENDIF
+  \STATE Update search history $H$, result summary, token marker, and a working-memory snapshot
+\ENDFOR
+\STATE Apply the stage-specific finalizer in Algorithm~\ref{alg:stages}
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[t]
+\caption{Observation processing and working-memory update.}
+\label{alg:obs}
+\small
+\begin{algorithmic}[1]
+\REQUIRE action $a$, raw observation $o$, ranked IDs $R$, query text $q$, state $(P,D,G,U,C,I,\textsc{AutoSeeded})$
+\ENSURE processed observation and updated memory state
+\IF{$a\in\{\texttt{search\_corpus},\texttt{fan\_out\_search},\texttt{grep\_corpus}\}$}
+  \STATE Split each returned chunk into sentences and keep the top $K{=}4$ BM25-scored sentences, preserving original order
+\ENDIF
+\STATE Parse document IDs and document text blocks from $o$
+\FOR{each returned chunk $(r,\mathrm{text})$}
+  \STATE Normalize $r$ to a document ID $d$ when the dataset uses document-level IDs
+  \IF{$d\in P$}
+    \STATE skip adding $d$ to the pool, but retain the observation for trajectory accounting
+  \ELSIF{$\mathrm{text}$ is a near-duplicate under $U$}
+    \STATE suppress $d$ from rendered memory and increment the dedup counter
+  \ELSE
+    \STATE Add $d$ to $P$ and store full text plus snippet in $D[d]$
+    \STATE Extract proper nouns, years, and numeric dates from $\mathrm{text}$ and update $G$
+  \ENDIF
+\ENDFOR
+\IF{$a\in\{\texttt{search\_corpus},\texttt{fan\_out\_search}\}$ and \textsc{AutoSeeded} is false and $R\neq\emptyset$}
+  \STATE Add the first $k{=}8$ ranked IDs from $R$ to $C$ with $I(d)=\texttt{fair}$
+  \STATE Set \textsc{AutoSeeded}$\leftarrow$ true and append an \texttt{[AUTO-POPULATED]} notice
+\ENDIF
+\IF{token-budget markers are enabled}
+  \STATE Append \texttt{[Context: X/Y]} using the current approximate prompt budget
+\ENDIF
+\RETURN processed observation and updated state
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[t]
+\caption{Importance-aware curation and capacity management.}
+\label{alg:curate}
+\small
+\begin{algorithmic}[1]
+\REQUIRE add IDs $A$, remove IDs $R$, proposed importance map $J$, curated set $C$, importance map $I$, pool $P$
+\ENSURE updated $(C,I)$ and a capacity-status observation
+\STATE Normalize all IDs in $A$, $R$, and $J$ to the dataset's output ID convention
+\STATE Remove every $d\in R$ from $C$ and delete $I(d)$
+\FOR{each $d\in A$}
+  \STATE Let $j\leftarrow J(d)$ if valid, otherwise $j\leftarrow\texttt{fair}$
+  \IF{$d\in C$}
+    \STATE Re-tag $I(d)\leftarrow j$ and continue
+  \ENDIF
+  \IF{$|C|<M$}
+    \STATE Insert $d$ into $C$ with $I(d)\leftarrow j$
+  \ELSE
+    \STATE Let $w=\arg\max_{c\in C}\mathrm{rank}(I(c))$, where $\texttt{low}$ has worst rank
+    \IF{$\mathrm{rank}(j)<\mathrm{rank}(I(w))$}
+      \STATE Evict $w$; insert $d$ with $I(d)\leftarrow j$
+    \ELSE
+      \STATE Reject $d$ and report a \texttt{[CAPACITY]} marker
+    \ENDIF
+  \ENDIF
+\ENDFOR
+\RETURN $(C,I)$ rendered by priority $\texttt{very\_high}\succ\texttt{high}\succ\texttt{fair}\succ\texttt{low}$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[t]
+\caption{Verification and memory review.}
+\label{alg:verify-review}
+\small
+\begin{algorithmic}[1]
+\REQUIRE action $a$, full-text store $D$, verification cache $V$
+\ENSURE observation $o$ and updated verification cache $V$
+\IF{$a=\texttt{review\_docs}(\mathcal{D})$}
+  \STATE Return the full text of up to $5$ requested IDs from $D$, without a corpus call
+\ELSIF{$a=\verify(\mathcal{D},c)$}
+  \FOR{each requested document $d\in\mathcal{D}$}
+    \STATE Ask the verifier whether $D[d]$ directly supports every constraint in claim $c$
+    \STATE Store $(d,c,\texttt{yes/no},\text{short rationale})$ in $V$
+  \ENDFOR
+  \STATE Return the per-document yes/no judgments and rationales
+\ENDIF
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[t]
+\caption{Budget-safe context rendering.}
+\label{alg:render}
+\small
+\begin{algorithmic}[1]
+\REQUIRE system prompt, rendered working memory $W$, recent actions and observations, result summaries, token budget $B$
+\ENSURE tokenized prompt $x$ with $|x|\leq B$
+\STATE Build $W$ from query, curated set grouped by importance, recent uncurated pool, search history, evidence graph, verification cache, dedup notice, and context marker
+\STATE Render system message, tool descriptions, query, optional $W$, recent turns, and result summaries
+\IF{the tokenized prompt fits within $B$}
+  \RETURN prompt
+\ENDIF
+\STATE Truncate the document-pool section of $W$, preserving curated set, search history, and evidence graph; retry
+\STATE If needed, truncate older reasoning to $100$ characters and cap $W$ at $2{,}000$ characters; retry
+\STATE If needed, drop the oldest recent action-observation pair one at a time; retry after each drop
+\STATE If all retries fail, return the minimal prompt: system message, tool descriptions, and query
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[t]
+\caption{Stage-specific finalizers.}
+\label{alg:stages}
+\small
+\begin{algorithmic}[1]
+\REQUIRE stage $s$, trajectory $\tau$, pool $P$, curated set $C$, policy $\pi$
+\IF{$s=\mathrm{teacher}$}
+  \STATE Save all turns, observations, working-memory snapshots, $P$, $C$, document store $D$, and final retrieval metrics
+\ELSIF{$s=\mathrm{sft}$}
+  \STATE Filter trajectories below the recall threshold
+  \STATE Replay each kept trajectory through Algorithms~\ref{alg:obs}--\ref{alg:render}
+  \STATE For every turn $t$, train on the supervised pair $\textsc{RenderContext}_t\mapsto a_t$
+\ELSIF{$s=\mathrm{rl}$}
+  \STATE Score $C$ and $P$ with curated recall, precision, final-answer recall, trajectory recall, and trajectory final-answer recall
+  \STATE Compute terminal reward: set quality, trajectory coverage, answer bonus, dense answer shaping, answer-miss penalty, tool-diversity shaping, and turn penalty
+  \STATE Update $\pi$ with on-policy CISPO; save checkpoint and rollout summaries
+\ELSIF{$s=\mathrm{infer}$}
+  \STATE Return the priority-sorted curated set $C$ to the downstream answer generator
+\ENDIF
+\end{algorithmic}
+\end{algorithm}
+
+\section{System Prompts and Templates}
+\label{app:prompts}
+
+\subsection{Agent System Prompt (\sys)}
+\label{app:syspr-h1}
+
+\begin{promptbox}{Agent system prompt}
+\textbf{Role.} You are a retrieval subagent. Find the most relevant
+documents from the corpus for the question; do not answer the question
+yourself.\\[3pt]
+\textbf{Input.}
+\texttt{QUERY: [query]}\\[3pt]
+\textbf{Tools.} \texttt{fan\_out\_search} runs up to five diverse
+queries; \texttt{search\_corpus} runs a single hybrid query;
+\texttt{grep\_corpus} performs exact regex matching;
+\texttt{read\_document} opens full text; \texttt{review\_docs}
+re-renders remembered documents; \curate edits the curated set
+(maximum $30$ documents); \verify checks a claim against remembered
+documents; \texttt{end\_search} submits the curated set.\\[3pt]
+\textbf{Loop.} Decompose the query into constraints. Search, curate
+immediately, search again from a different angle, inspect or review
+uncertain documents, verify multi-constraint evidence, and end when
+the curated set is sufficient. The episode has at most $40$ turns.\\[3pt]
+\textbf{State rules.} Use importance tags
+\{\texttt{very\_high}, \texttt{high}, \texttt{fair}, \texttt{low}\};
+\texttt{very\_high} requires prior verification. The first successful
+search seeds tentative \texttt{fair} candidates; promote strong
+documents and remove weak ones. Use evidence-graph bridge entities as
+follow-up signals. Each observation ends with
+\texttt{[Context: X/Y]}; wrap up above $75\%$ and call
+\texttt{end\_search} above $90\%$.
+\end{promptbox}
+
+\subsection{\texttt{verify} Sub-Prompt}
+\label{app:verify-prompt}
+
+\verify is implemented as a small per-document LLM call.
+\begin{promptbox}{\texttt{verify} sub-prompt}
+\textbf{System.} You are a strict document verifier. Given one
+\texttt{CLAIM} and one document's full text, answer only
+\texttt{yes} or \texttt{no}, followed by a rationale of at most
+$20$ words. Answer \texttt{yes} only if the document directly
+supports every part of the claim. Answer \texttt{no} if any constraint
+is missing or contradicted. Be conservative.\\[3pt]
+\textbf{User template.}\\
+\texttt{CLAIM: [claim]}\\
+\texttt{DOCUMENT: [document text]}\\
+\texttt{Answer: yes/no. rationale}
+\end{promptbox}
+
+\subsection{Answer-Generator Prompt (modular RAG)}
+\label{app:ansgen-prompt}
+
+\begin{promptbox}{Answer-generator prompt}
+\textbf{Task.} You are given a question and retrieved documents. Use
+only the documents to reason step by step and answer the question.\\[3pt]
+\textbf{Question.} \texttt{[query]}\\[3pt]
+\textbf{Retrieved documents.}\\
+\texttt{[documents]}\\[3pt]
+\textbf{Output rule.} End the response with the final answer on the
+last line, prefixed exactly with \texttt{Final Answer:}.
+\end{promptbox}
+For \textbf{Closed-Book}, the prompt omits the documents and the
+instruction is changed to ``Using only your own knowledge, reason
+step by step and provide your final answer.'' For
+\textbf{Naive RAG}, a single BM25$+$dense hybrid query retrieves
+the top-$10$ chunks and those replace the curated set.
+
+\subsection{LLM-as-Judge Prompt}
+\label{app:judge-prompt}
+
+We use GPT-5.4 at temperature $0$ as the judge, following the
+official BrowseComp+ template; we report the strict
+\textsc{correct} rate as ``answer accuracy.''
+\begin{promptbox}{LLM-as-judge prompt}
+\textbf{Task.} Judge whether \texttt{[response]} answers
+\texttt{[question]} correctly according to the precise
+\texttt{[correct\_answer]}. Do not solve the problem independently or
+comment on irrelevant background.\\[3pt]
+\textbf{Inputs.}\\
+\texttt{[question]: [query]}\\
+\texttt{[response]: [generated\_answer]}\\
+\texttt{[correct\_answer]: [gold\_answer]}\\[3pt]
+\textbf{Return fields.}
+\texttt{extracted\_final\_answer} is the exact final answer, or
+\texttt{None} if absent. \texttt{reasoning} explains only meaningful
+differences. \texttt{correct} is \texttt{yes} when the extracted
+answer matches the gold answer, allowing small numerical tolerances,
+and \texttt{no} otherwise. \texttt{confidence} is $0$--$100\%$.
+\end{promptbox}
+
+\section{SFT Data Generation Recipe}
+\label{app:sft-gen}
+
+SFT trajectories are produced by GPT-5.4
+(\texttt{tool\_choice=required},
+\texttt{max\_completion\_tokens=4096}) running natively inside
+the \sys harness. The teacher sees the same system prompt
+(Appendix~\ref{app:syspr-h1}), the same observation layout, and
+the same tool schemas as the trained policy will see at RL and
+inference time.
+
+\paragraph{Teacher agent loop.}
+The generation script runs a single-phase loop: at each turn, the
+teacher's full conversation history (system prompt $+$ working-
+memory text $+$ the most recent $K{=}3$ turn transcripts $+$
+result summaries for older turns) is sent to GPT-5.4 with all
+$7{+}1$ tool schemas. The teacher selects a tool via
+\texttt{tool\_choice=required} and returns structured JSON
+arguments including a mandatory \texttt{reasoning} field. The
+harness executes the tool against the live Chroma corpus and
+returns the observation.
+
+\paragraph{Guidance protocol.} The generation script injects
+turn-level guidance into the prompt: search$\to$curate rhythm
+enforcement; \verify nudges on multi-constraint queries (after
+$\geq 6$ turns and $\geq 3$ curated docs); backtracking triggers
+when the last $3$ search-history entries yielded $\leq 1$ new
+doc; tool diversity hints if \texttt{grep\_corpus}/
+\texttt{read\_document} are unused after $4$ turns; urgency and
+curate-aggressiveness messages near the turn cap. This guidance
+ensures teacher trajectories exhibit the full tool vocabulary
+and the search$\to$curate rhythm.
+
+\paragraph{Per-dataset quotas and filtering.} Per-dataset raw
+quotas: BC$+$/300, SEC/250, Patents/150, Web/150, Web-simple/75,
+SEC-simple/75 (total ${\sim}1$K raw). After a $0.10$ recall gate
+(trajectories with recall $<0.10$ are discarded), the corpus
+contains $899$ trajectories. Per-trajectory expansion into
+turn-conditional datums yields ${\sim}26$K training examples.
+
+\paragraph{Auto-populate on first search.}
+During trajectory generation, the first successful search
+triggers \texttt{auto\_populate\_from\_first\_search}, which adds
+the top-$k$ reranked results ($k{=}8$) to the curated set at
+\texttt{fair} importance. Idempotent via the per-trajectory
+\texttt{wm.auto\_populated} flag. The observation appends an
+\texttt{[AUTO-POPULATED]} marker instructing the teacher to
+promote good docs and remove irrelevant ones.
+
+\paragraph{Observation processing.} Search observations are
+processed identically to RL: BM25 sentence compression
+(top-$4$ sentences per chunk), content-hash dedup (MinHash-LSH
+with $64$ permutations, 5-gram shingles, threshold $0.85$, with
+SHA-prefix fallback over a normalised $4{,}000$-char prefix when
+\texttt{datasketch} is unavailable), and the
+\texttt{[Context: X/Y]} token marker.
+
+\section{Importance-Aware Curation: Algorithmic Detail}
+\label{app:importance}
+
+This section details the eviction policy central to the
+subtractive-curation mechanism in \sys (§\ref{sec:method:action}).
+
+\paragraph{Importance levels and ordering.}
+Every document carries an importance tag $\in
+\{\texttt{very\_high}, \texttt{high}, \texttt{fair},
+\texttt{low}\}$ with rank $\texttt{very\_high}{=}0 <
+\texttt{high}{=}1 < \texttt{fair}{=}2 < \texttt{low}{=}3$ (lower
+rank $=$ higher importance). Auto-populated documents enter at
+\texttt{fair}.
+
+\paragraph{ID normalisation.} Both \texttt{add\_ids} and
+\texttt{importance} keys are normalised by stripping a trailing
+\texttt{\_N} chunk suffix \emph{only if} the resulting ID is not
+already in the pool. This lets the policy pass either chunk IDs
+(\texttt{42982\_3}) or doc IDs (\texttt{42982}) interchangeably,
+while preserving doc IDs that legitimately contain underscores.
+
+\paragraph{Eviction protocol.}
+When the curated set is at capacity ($M{=}30$) and the agent
+issues a \curate call with new \texttt{add\_ids}:
+\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=2pt]
+\item For each incoming doc, compute its
+\texttt{incoming\_rank} from the provided importance tag
+(default \texttt{fair}).
+\item Scan the current curated set for the document with the
+\emph{worst} (highest) importance rank.
+\item If $\texttt{worst\_rank} > \texttt{incoming\_rank}$, evict
+the worst-ranked doc and insert the new doc.
+\item If no evictable doc exists, the add is rejected; the
+status string includes a \texttt{[CAPACITY]} marker listing up
+to $5$ rejected IDs.
+\end{enumerate}
+
+\paragraph{Re-tagging in place.}
+A \curate call with an \texttt{add\_id} already in the curated
+set updates the tag in-place without eviction. This allows the
+agent to promote a document after a successful \verify call.
+
+\paragraph{Rendering.}
+The curated set is rendered grouped by importance level
+(\texttt{very\_high} first, \texttt{low} last) with the tag
+visible next to each document ID:
+\begin{quote}\small\ttfamily
+Curated Set (15/30):\\
+\hspace*{1em}very\_high:\\
+\hspace*{1em}[*] doc\_42982: Tesla 10-K 2023 mentioning SEC fine...\\
+\hspace*{1em}high:\\
+\hspace*{1em}[*] doc\_11293: Tesla annual report 2023...\\
+\hspace*{1em}fair:\\
+\hspace*{1em}[*] doc\_55017: General Motors 10-K 2023...
+\end{quote}
+
+\section{Content Deduplication: Algorithmic Detail}
+\label{app:dedup}
+
+\sys's content-fingerprint dedup is implemented in
+\texttt{ultra\_core.ContentDedupTracker}.
+
+\paragraph{Primary path (MinHash-LSH).} When \texttt{datasketch}
+is available, each chunk is fingerprinted by tokenising on the
+regex \texttt{[a-z0-9]+}, building $5$-gram shingles, and
+inserting them into a MinHash with $64$ permutations. The LSH
+index uses Jaccard threshold $0.85$. For each new chunk, the
+tracker queries the LSH; any match is treated as a near-duplicate
+and dropped from the pool but \emph{retained} in the
+\texttt{trajectory\_recall} accounting (so the agent is credited
+for having encountered the gold information).
+
+\paragraph{Fallback path (SHA prefix).} If \texttt{datasketch}
+is unavailable, the tracker computes a SHA-1 of the first
+$4{,}000$ characters of the normalised token-stream and compares
+against a hash set. This catches exact duplicates only, not
+near-duplicates, but introduces no extra dependency.
+
+\paragraph{Diagnostic.} The number of suppressed duplicates is
+exposed in the \wm rendering as a \texttt{[Dedup] $k$
+near-duplicate chunk(s) auto-suppressed} line, which lets the
+policy reason about whether the corpus has heavy duplication.
+
+% ==========================================================================
+\section{Component Ablation: Error Analysis}
+\label{app:ablation-error}
+% ==========================================================================
+
+This appendix unpacks Table~\ref{tab:ablation} at the trajectory
+level. For each ablation we identify queries that full \sys
+solves (FA Recall ${\geq}0.5$) but the ablated condition fails
+on (FA Recall ${=}0$), then compare action mixes and trajectories
+on those \emph{paired} queries. All numbers are over the same
+$100$ BrowseComp+ test queries; no retraining is involved.
+
+A consistent pattern emerges: removing a single state mechanism
+\emph{changes the policy's behaviour} rather than just losing
+information. On failing paired queries the share of
+\texttt{search\_corpus} actions rises by $3$--$7$ points, while
+\texttt{read\_document} and \verify drop by $2$--$6\times$ ---
+a retrieval failure, not a curation failure. The trained
+policy reverts to a wide, shallow, search-dominated mode and
+never reaches the relevant documents in the first place. The
+per-mechanism analyses below each illustrate the pattern with
+one representative failing query (truncated for length).
+
+% --------------------------------------------------------------
+\subsection{Per-mechanism failure modes}
+% --------------------------------------------------------------
+
+\subsubsection{Importance tags}
+\label{app:err:importance-tags}
+$\Delta$Recall $-4.1\%$, $\Delta$FA $-7.9\%$ relative
+($15$ hard fails).
+Binary \curate with FIFO eviction loses the
+\texttt{very\_high}/\texttt{high}/\texttt{fair}/\texttt{low}
+confidence signal over the curated set. On failing queries,
+\texttt{read\_document} drops $7\times$ ($4.7\%{\to}0.7\%$),
+\verify drops to $0\%$, and \texttt{search\_corpus} climbs to
+$94.1\%$ of all actions.
+
+\textbf{Example.} Q893 asks for the birth name of a 1920s-born
+actress married to a director-translator
+(gold answer: ``Medea Japaridze''). Full \sys reads
+\texttt{doc\_3161}, identifies Medea Japaridze on T4, then
+re-anchors via her spouse Revaz Tabukashvili (T28, T37, T39)
+and saturates curated recall at $1.0$ in $40$ turns. The
+ablation issues $19$ \texttt{search\_corpus} calls without a
+single \texttt{read\_document} or \verify, never anchors on
+``Medea Japaridze'', and ends with curated recall $0.12$ on
+\emph{the same} $40$-turn budget. The agent cannot decide which
+candidate to follow up on without the importance gradient.
+
+\subsubsection{Sentence-BM25 compression}
+\label{app:err:sentence-compress}
+$\Delta$Recall $+0.2\%$, $\Delta$FA $-7.0\%$ relative
+($13$ hard fails).
+Without per-return sentence compression, top-$k$ chunks come
+back raw; returns are longer and noisier. The aggregate Recall
+delta is $\sim$$0$, but FA Recall drops sharply because the
+agent loses the bridge sentences it normally uses to seed
+follow-up reads. \texttt{read\_document} on failing queries
+drops from $4.1\%$ to $2.6\%$ and \verify from $2.0\%$ to
+$0.4\%$.
+
+\textbf{Example.} Q1012 asks for the title of a $2018$--$2023$ EP
+whose songs all end in a question mark and were drawn from the
+artist's journal entries. Full \sys recovers it in $26$ turns:
+T14 \texttt{grep}s for \texttt{"gave my all"} (a phrase from
+the artist interview), reads \texttt{doc\_22401} on T22, and
+\verify confirms ``Maki's Tanong'' on T24. The ablation reads
+\texttt{doc\_77931} on T2 (a near-miss), then issues
+$18$ subsequent searches without ever reading another doc;
+without compressed bridge sentences from the search returns it
+cannot identify the next phrase to query.
+
+\subsubsection{Auto-seed}
+\label{app:err:auto-seed}
+$\Delta$Recall $-0.3\%$, $\Delta$FA $-6.4\%$ relative
+($12$ hard fails).
+With $C_0$ empty, the first \curate has no comparison context,
+and the importance-tag space is undefined until $C$ fills up.
+Aggregate Recall barely moves because the policy still curates
+the right number of documents; FA Recall drops sharply because
+the policy retains the wrong documents during the cold-start
+window.
+
+\textbf{Example.} Q394 asks for an investment-bank founder who
+was a Sagittarius rugby player born in the 1920s (gold answer:
+Ron Jarden). Full \sys identifies Ron Jarden on T2 with the
+auto-seeded curated set already containing related New
+Zealand-rugby chunks for comparison, reads \texttt{doc\_1124} on
+T4, \verify-confirms on T6, and ends in $8$ turns with FA
+recall $1.0$. The ablation goes through $11$
+\texttt{search\_corpus} calls before reading
+\texttt{doc\_49990} on T18, but with no warm $C_0$ to anchor
+importance against, every candidate looks equally plausible and
+the trained \verify call on T20 fails because the supporting
+chunks were never curated.
+
+\subsubsection{Evidence graph}
+\label{app:err:evidence-graph}
+$\Delta$Recall $-2.6\%$, $\Delta$FA $-5.4\%$ relative
+($10$ hard fails).
+With the graph block hidden, the policy can no longer see which
+entities bridge documents in $C$. On failing queries it searches
+more ($91.8\%$ of actions vs.~$88.9\%$) and \texttt{read\_document}
+drops $3\times$, leaving the curated set without the bridging
+entity chunks needed to close the chain.
+
+\textbf{Example.} Q754 asks about a youngest-eligible governor
+elected in a newly formed territory with a self-deprecating
+slogan and a flamboyant predecessor (gold: Fernando de la R\'ua).
+Full \sys leverages the evidence graph to follow the
+nickname--territory--predecessor chain across multiple
+documents, lands on the correct answer by T34 (FA $1.0$). The
+ablation knows nothing about which entities co-occur, so on T39
+it tries \texttt{"Fernando de la R\'ua"} as a free-text guess
+without the structural anchor, never connecting it to the
+``baby bottle'' / ``pacifier'' nickname or the territory-status
+clue, and ends at FA $0$.
+
+\subsubsection{\texttt{verify} tool}
+\label{app:err:verify}
+$\Delta$Recall $-3.1\%$, $\Delta$FA $-3.9\%$ relative
+($12$ hard fails).
+When \verify returns \texttt{unavailable},
+\texttt{read\_document} drops from $5.1\%$ to $0.8\%$ on failing
+queries and search rises to $94.6\%$.
+
+\textbf{Example.} Q751 asks for the full name of a University of
+Arizona management professor with a $2010$ PhD whose
+undergraduate university was founded in the 1800s by a specific
+person (gold: William J.\ Becker, UCD). Full \sys reads
+\texttt{doc\_15523} on T28, then on T32--T36 traces ``William
+Becker'' through the ``University College Dublin'' bridge with
+\verify never explicitly invoked but \emph{implicitly} usable.
+Without \verify the policy has no closed-loop check and rushes
+\textbf{to} commit documents to $C$; on T28--T38 it issues ten
+unverified searches and never re-reads its own candidate, so
+the curated set ends up with no Becker chunk at all.
+
+\subsubsection{\texttt{review\_docs} tool}
+\label{app:err:review-docs}
+$\Delta$Recall $+2.4\%$, $\Delta$FA $-3.9\%$ relative
+($9$ hard fails).
+The aggregate Recall delta is mildly positive because the policy
+substitutes additional turn-level reads for the bulk sweep, but
+FA Recall still drops because the policy cannot economically
+scan the curated set when partial information from many
+documents must be combined. \texttt{read\_document} drops
+$4\times$ ($4.0\%{\to}1.1\%$) on failing queries and search
+rises to $93.6\%$.
+
+\textbf{Example.} Q912 asks for the doctorate university of a
+researcher named on a 1995--2005 whale-research paper with $12$
+students and $4$ project leaders (gold: University of Hawai\textquotesingle i
+at Manoa). Full \sys reads \texttt{doc\_33637} on T4, calls
+\verify on T6, then uses \texttt{review\_docs} on T7--T13 to
+sweep the curated set for ``Adam Frankel'' co-occurring with
+``UH Manoa''; ends in $15$ turns. The ablation reads the same
+\texttt{doc\_33637} on T2 but with no bulk re-read it loses
+track of the candidate after a handful of new searches and
+spends T15--T39 thrashing through name-extraction guesses.
+
+\subsubsection{Content-fingerprint dedup}
+\label{app:err:content-dedup}
+$\Delta$Recall $+4.6\%$, $\Delta$FA $+1.6\%$ relative
+($0$ hard fails).
+This is the one ablation that nominally improves the metric.
+The cause is mechanical: BC+ qrels occasionally contain
+near-duplicate gold documents (e.g., a press release and an
+article that quotes it), and \sys's MinHash--LSH dedup
+($\theta_{\text{Jaccard}}{=}0.85$) sometimes collapses two such
+gold variants into one, costing one gold ID per affected query.
+Disabling dedup recovers those IDs but inflates the curated
+context with redundant chunks. Dedup is by design a
+token-budget mechanism, not a recall mechanism; the
+answer-accuracy benchmark in Appendix~\ref{sec:answeracc}
+prefers the deduped variant in the majority of paired queries
+despite the slightly lower curated recall. We report this row
+in the table rather than hide it, because the trade-off is the
+design intent.
+
+\subsection{All harness mechanisms disabled}
+\label{app:err:all-disabled}
+$\Delta$Recall $-12.2\%$, $\Delta$FA $-6.4\%$ relative.
+With every \sys
+mechanism off simultaneously, the policy has the same action
+vocabulary but no compact state to reason over. Recall drops to
+$0.513$ and FA recall to $0.624$ --- a larger relative Recall
+drop than any single ablation. The agent keeps searching,
+sweeping a wide
+raw-document space, but cannot rank what it has seen. This is
+the cleanest evidence in the paper that the gains attributed to
+\sys come from the harness rather than from capability implicit
+in the underlying model: on the same queries, the trained
+checkpoint searches comparably hard but cannot discriminate
+among candidates once the harness is removed.
+
+\section{Evaluation Recipe}
+\label{app:eval-recipe}
+
+\paragraph{Metric Definitions}
+\label{app:metric-defs}
+For each query, let $A_q$ denote the annotated \emph{answer-bearing}
+documents: documents that directly contain or support the final answer. Let
+$R_q$ denote the full annotated relevant set used for search-quality recall.
+On benchmarks with extra evidence annotations, $R_q$ may include additional
+supporting documents beyond $A_q$; in BrowseComp+ and Web, for example,
+the answer-bearing documents are a subset of the broader relevant set. On
+benchmarks without separate answer-document annotations, the evaluator sets
+$A_q=R_q$.
+
+Let $C_q$ be the final curated set returned by the search subagent, after
+normalizing retrieved chunks to document identifiers. Let $P_q$ be the
+trajectory pool: all documents encountered anywhere in the episode, again
+normalized to document identifiers. We report three recall-oriented metrics:
+\[
+\mathrm{Recall}(q) = \frac{|C_q \cap R_q|}{|R_q|}, \qquad
+\mathrm{FinalAnswerRecall}(q) = \frac{|C_q \cap A_q|}{|A_q|},
+\]
+\[
+\mathrm{TrajectoryRecall}(q) = \frac{|P_q \cap R_q|}{|R_q|}.
+\]
+Dataset-level scores are macro-averages over queries. For fact-level datasets,
+the same definitions apply with facts in place of documents: a fact is counted
+as covered if any annotated chunk for that fact is retrieved.
+
+Final-Answer Recall is not mathematically constrained to be above or below
+Recall. When $A_q \subset R_q$, the denominators differ: Recall averages over
+all relevant annotations, while Final-Answer Recall averages only over
+answer-bearing annotations. Thus a system that finds answer documents but misses
+many auxiliary supporting documents can have Final-Answer Recall $>$ Recall,
+whereas a system that finds supporting documents but misses answer documents can
+have Final-Answer Recall $<$ Recall. Trajectory Recall is an upper-bound-style
+diagnostic for discovery before final curation; it need not equal final Recall
+because the agent may encounter evidence and later omit it from $C_q$.
+
+% \paragraph{Chroma-backed benchmarks.} BrowseComp+, Web, Patents, and
+% SEC use static Chroma collections. Hybrid search returns top-$50$
+% candidates fused by RRF and reranked with Qwen3-Reranker-8B. \sys is
+% evaluated with temperature $0.6$, max $2{,}048$ generation tokens per
+% turn, and a $40$-turn cap. Context-1 and frontier zero-shot retrievers
+% use the Context-1 harness on the same benchmark instances with the
+% published Context-1 settings: temperature $1.0$, $4{,}096$ max tokens,
+% $32{,}768$ token budget with prune threshold $16{,}384$, and a
+% $64$-turn cap.
+
+% \paragraph{Transfer benchmarks.} LongSealQA uses a dedicated Chroma
+% collection. Seal0QA, FRAMES, and HotpotQA-subset use the Serper$+$Jina
+% web backend. Evaluation follows the benchmark splits summarized in
+% Table~\ref{tab:bench-stats}. Trajectories are saved per query so any
+% metric can be recomputed post-hoc.
+
+\paragraph{Reranking for released open-agent harnesses.}
+Search-R1 and Tongyi DeepResearch are evaluated with their released agent harnesses, since the harness is part of each method. These harnesses do not natively return an importance-tagged curated set capped at $30$ documents. We therefore standardize their final outputs with a shared reranker. For each query, we collect all unique documents encountered during the episode and normalize chunks to document identifiers. If the trajectory pool contains at most $30$ documents, we use the full pool as the curated set $C_q$ without reranking. Otherwise, we rerank the trajectory pool with the shared reranker and keep the top-$30$ documents as $C_q$. Recall and Final-Answer Recall are computed from $C_q$, while Trajectory Recall is computed from the full trajectory pool $P_q$ before reranking.
+
+For Search-R1, this final-set construction usually does not change the
+retrieval outcome much. Although Search-R1 is evaluated under the same protocol,
+its released harness typically performs only four to five text-search rounds in
+our runs. This is consistent with its training setup, which optimizes short
+search-and-answer trajectories rather than long-horizon evidence collection and
+curation. As a result, Search-R1 rarely accumulates a trajectory pool much
+larger than the final document budget. Table~\ref{tab:search_quality} reflects
+this behavior: Search-R1's Recall and Trajectory Recall are nearly identical
+across benchmarks, suggesting that there is little additional evidence in the
+trajectory pool to recover through post-hoc curation.
+
+\paragraph{Answer-accuracy pipeline (modular RAG protocol).} To
+decouple retrieval from generation, each subagent's curated set is
+forwarded to a frozen frontier generator that sees \emph{only} the
+query and curated documents, with no trajectory, intermediate
+reasoning, or tool-use history. For each
+(subagent~$\times$~benchmark) condition, we read the saved trajectory
+JSON, extract the curated document identifiers and corresponding chunk
+text from observation logs, format with the prompt in
+Appendix~\ref{app:ansgen-prompt}, and dispatch to four generators:
+GPT-5.4, Sonnet-4.6, Opus-4.6, and Kimi-K2.5. We use the same
+benchmark instances as the main evaluation. Closed-Book and
+Naive-RAG (top-$10$ BM25$+$dense) anchor the protocol. The judge
+(Appendix~\ref{app:judge-prompt}) is GPT-5.4 at $T{=}0$ with the
+BrowseComp+ template; we report the strict \textsc{correct} rate.
+Every (query, generator, generated-answer, verdict) tuple is saved.
+
+\section{Modular RAG: Curated Sets Yield Higher Answer Accuracy}
+\label{sec:answeracc}
+
+Search quality measures what the subagent returns; what ultimately
+matters is the answer the downstream system gives. Under the modular
+RAG protocol described above, the answer-generator LLM sees only the
+curated set, never the trajectory. Thus, any accuracy difference
+between subagent rows is attributable to the curated set alone.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/answer_accuracy.pdf}
+\caption{\textbf{Answer accuracy} (\%) under the modular RAG
+protocol. Each subplot is a benchmark; each group of bars is a
+search method (or baseline); each bar colour is a different
+frontier answer-generator. \emph{Closed-Book}: generator answers
+from parametric knowledge alone. \emph{Naive RAG}: single
+BM25$+$dense top-$10$ chunk retrieval, no agentic search. All
+other groups: an agentic search subagent curates the document
+set; the generator receives \emph{only} query and curated
+documents, no trajectory. Judging follows the official
+BrowseComp+ template (GPT-5.4, $T{=}0$).}
+\label{fig:answeracc}
+\end{figure}
+
+Three patterns are visible in Figure~\ref{fig:answeracc}. First,
+Closed-Book and Naive RAG are weak on the hardest displayed benchmark
+(BC+), confirming that these tasks require deep agentic search;
+parametric knowledge and single-hop retrieval are insufficient. Second,
+the row ordering across subagents broadly tracks the search-quality
+ordering from Table~\ref{tab:search_quality}: better curated sets yield
+higher answer accuracy across all four generators. Third, column
+variation within a row is modest for strong searchers, since every
+frontier generator can converge on the right answer when given the
+right documents, and larger for weaker searchers, where the generator
+must compensate for missing evidence. Because the generator never sees
+the trajectory, the rank ordering of subagent rows is a clean test of
+curated-set quality: \sys's curated sets dominate the open subagents in
+the reported modular RAG settings.
+
+\section{Harness as Confound: Same LLM, Different Harness}
+\label{app:harness-confound}
+
+A natural concern is that all frontier baselines are evaluated
+under the Context-1 harness, not under \sys's harness. This is
+deliberate: we compare \emph{trained agents} (Context-1 RL,
+\sys RL) each running in their own harness, while frontier LLMs
+serve as untrained baselines using Context-1's harness as a
+common reference environment.
+
+To quantify the harness contribution alone, we ran GPT-5.4 under
+three harness conditions on three in-domain benchmarks:
+\textbf{Naive Search-Add} (minimal loop, no curation, no
+compression, no dedup); \textbf{Context-1 Harness} (production
+Context-1 environment); \textbf{\sys Harness} (full \sys
+environment).
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\textwidth]{figures/harness_comparison.pdf}
+\caption{\textbf{Same LLM (GPT-5.4), different harness.} All
+four retrieval metrics improve monotonically as the harness
+grows richer: naive search-add $\to$ Context-1 harness $\to$
+\sys harness. The harness contributes a $+4$ point recall gain
+on top of Context-1.}
+\label{fig:harness-confound}
+\end{figure}
+
+The progression is monotonically improving. Curated Recall jumps
+from $0.511$ (naive) to $0.807$ (Context-1) to $0.849$ (\sys);
+Final-Answer Recall from $0.612$ to $0.821$ to $0.876$. A $+4.2$
+point recall gain is available to GPT-5.4 simply by switching
+from Context-1's harness to \sys's, \emph{without any RL
+training}. This validates the central thesis: the harness is a
+compute-allocation mechanism that materially changes how much a fixed
+model can discover.
+
+\newpage
+\section{Qualitative Case Studies}
+\label{app:case-studies}
+
+The following abridged trajectories show where the harness changes the
+search process: auto-seeding creates an editable state, curation
+promotes evidence, exact search recovers needles, backtracking removes
+false leads, and full-document reading resolves the final answer.
+Routine prompt boilerplate, redundant curation calls, false-positive
+documents, and repeated metadata are omitted; the unabridged logs are
+retained separately.
+
+\input{case_study_bc643.tex}
+\clearpage
+\input{case_study_sec497.tex}
+\clearpage
+\input{case_study_frames461.tex}
+\clearpage
+\input{case_study_hotpot_snl.tex}
+\clearpage
+\input{case_study_backtracking_hotpot.tex}
+
+% applied throughout the eval pipeline.
+
+\newpage
+\input{checklist.tex}
+
+\end{document}
