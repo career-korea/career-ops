@@ -388,6 +388,29 @@ async function main() {
     process.exit(1);
   }
 
+  // [추가] profile.yml에서 사용자 타겟 직무 정보 로드
+  const profilePath = 'config/profile.yml';
+  let targetRoles = [];
+  if (existsSync(profilePath)) {
+    try {
+      const profile = parseYaml(readFileSync(profilePath, 'utf-8'));
+      const rawRoles = profile.target_roles;
+      if (Array.isArray(rawRoles)) {
+        targetRoles = rawRoles;
+      } else if (rawRoles && typeof rawRoles === 'object') {
+        if (Array.isArray(rawRoles.primary)) {
+          targetRoles = rawRoles.primary;
+        } else {
+          targetRoles = Object.values(rawRoles).filter(Array.isArray).flat();
+        }
+      } else {
+        targetRoles = profile.narrative?.role ? [profile.narrative.role] : [];
+      }
+    } catch (err) {
+      console.warn('⚠️ profile.yml 로드 실패:', err.message);
+    }
+  }
+
   // 2. Read portals.yml
   if (!existsSync(PORTALS_PATH)) {
     console.error('Error: portals.yml not found. Run onboarding first.');
@@ -437,6 +460,7 @@ async function main() {
   const tasks = targets.map(company => async () => {
     let provider = company._provider;
     const ctx = makeHttpCtx();
+    ctx.targetRoles = targetRoles; // [추가] Context에 타겟 직무 주입
     let sourceName = provider.id === 'local-parser' ? 'local-parser' : `${provider.id}-api`;
     try {
       let jobs;
