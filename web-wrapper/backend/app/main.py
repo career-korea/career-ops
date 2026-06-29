@@ -23,6 +23,7 @@ from app.models import (
 )
 from app.services import career_ops
 from app import workspace
+from pydantic import BaseModel
 
 app = FastAPI(title="career-ops Web API", version="0.1.0")
 SESSION_COOKIE = "career_ops_session"
@@ -575,5 +576,145 @@ def script(req: ScriptRequest, user=Depends(require_user)):
         return career_ops.run_allowed_script(user["id"], req.script, req.args)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---------------------------------------------------------------------------
+# AI Interview Simulator API Routes
+# ---------------------------------------------------------------------------
+class InterviewStartRequest(BaseModel):
+    company_name: str
+    job_title: str
+    interview_type: str  # personality, technical, both
+    difficulty: str      # practice, real
+
+class AnswerSubmitRequest(BaseModel):
+    answer_text: str
+
+
+@app.post("/api/interview/session")
+def start_interview_session(req: InterviewStartRequest, user=Depends(require_user)):
+    try:
+        sync_user_setup(user)
+        session_id = db.create_interview_session(
+            user_id=user["id"],
+            company=req.company_name,
+            job_title=req.job_title,
+            interview_type=req.interview_type,
+            difficulty=req.difficulty
+        )
+        
+        # AI 첫 질문 생성 오케스트레이션 호출
+        first_question = career_ops.generate_first_question(user["id"], req.company_name, req.job_title)
+        
+        # 첫 질문 저장
+        db.save_interview_question(session_id, question_index=0, question_text=first_question)
+        
+        return {
+            "session_id": session_id,
+            "question_index": 0,
+            "question": first_question
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/interview/session/{session_id}/answer")
+def submit_interview_answer(session_id: int, req: AnswerSubmitRequest, user=Depends(require_user)):
+    try:
+        session = db.get_interview_session(session_id)
+        if not session:
+            raise HTTPException(status_code=404, detail="Interview session not found")
+        if session["user_id"] != user["id"]:
+            raise HTTPException(status_code=403, detail="Access denied")
+        
+        # 1. 가장 최근의 미답변 질문 조회
+        current_qa = db.get_current_qa(session_id)
+        if not current_qa:
+            raise HTTPException(status_code=400, detail="No active question to answer")
+        
+        # 2. AI를 통한 실시간 답변 피드백 생성
+        feedback = career_ops.generate_answer_feedback(
+            user_id=user["id"],
+            question=current_qa["question_text"],
+            answer=req.answer_text,
+            difficulty=session["difficulty"]
+        )
+        
+        # 3. 문답 및 피드백 업데이트
+        db.update_qa_feedback(current_qa["id"], answer_text=req.answer_text, feedback_text=feedback["content"], score=feedback["score"])
+        
+        # 4. 종료 조건 검사 (예: 10문항 완료 시)
+        total_questions = db.get_qa_count(session_id)
+        if total_questions >= 10:  # 면접 종료
+            report = career_ops.generate_final_report(user["id"], session_id)
+            db.complete_interview_session(session_id, final_report=report)
+            return {
+                "status": "completed",
+                "feedback": feedback,
+                "final_report": report
+            }
+        
+        # 5. 다음 질문 발급
+        next_question = career_ops.generate_next_question(
+            user_id=user["id"],
+            session_id=session_id,
+            company=session["company_name"],
+            job_title=session["job_title"]
+        )
+        
+        # 6. 다음 질문 DB 인서트
+        db.save_interview_question(session_id, question_index=total_questions, question_text=next_question)
+        
+        return {
+            "status": "in_progress",
+            "feedback": feedback,
+            "next_question_index": total_questions,
+            "next_question": next_question
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/interview/session/{session_id}/complete")
+def complete_interview_early(session_id: int, user=Depends(require_user)):
+    try:
+        session = db.get_interview_session(session_id)
+        if not session:
+            raise HTTPException(status_code=404, detail="Interview session not found")
+        if session["user_id"] != user["id"]:
+            raise HTTPException(status_code=403, detail="Access denied")
+        
+        # 조기 종료 시에도 현재까지 진행된 히스토리로 종합 보고서 작성
+        report = career_ops.generate_final_report(user["id"], session_id)
+        db.complete_interview_session(session_id, final_report=report)
+        return {
+            "status": "completed",
+            "final_report": report
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/interview/sessions")
+def list_interview_sessions(user=Depends(require_user)):
+    try:
+        sessions = db.get_user_interview_sessions(user["id"])
+        return {
+            "sessions": [
+                {
+                    "id": s["id"],
+                    "company_name": s["company_name"],
+                    "job_title": s["job_title"],
+                    "interview_type": s["interview_type"],
+                    "difficulty": s["difficulty"],
+                    "status": s["status"],
+                    "final_report": s["final_report"],
+                    "created_at": s["created_at"].isoformat() if s["created_at"] else ""
+                }
+                for s in sessions
+            ]
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

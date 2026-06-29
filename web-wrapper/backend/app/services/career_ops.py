@@ -21,6 +21,7 @@ ALLOWED_SCRIPTS = {
     "patterns": ["node", "analyze-patterns.mjs"],
     "liveness": ["node", "check-liveness.mjs"],
     "sync-check": ["node", "cv-sync-check.mjs"],
+    "interview-sim": ["node", "interview-sim.mjs"],
 }
 
 MODE_PATTERN = re.compile(r"\| `([^`]+)` \| `([^`]+)` \|")
@@ -632,3 +633,69 @@ def read_pipeline(user_id: int) -> list[PipelineItem]:
             raw=line,
         ))
     return items
+
+
+# ---------------------------------------------------------------------------
+# AI Interview Simulator Orchestration
+# ---------------------------------------------------------------------------
+import json
+
+def generate_first_question(user_id: int, company: str, job_title: str) -> str:
+    root = career_root(user_id)
+    cmd = ["node", "interview-sim.mjs", "--action", "first-question", "--company", company, "--role", job_title]
+    res = run_command(cmd, root)
+    if not res.ok:
+        raise RuntimeError(f"First question generation failed: {res.stderr}")
+    return res.stdout.strip()
+
+
+def generate_answer_feedback(user_id: int, question: str, answer: str, difficulty: str) -> dict:
+    root = career_root(user_id)
+    cmd = ["node", "interview-sim.mjs", "--action", "feedback", "--question", question, "--answer", answer, "--difficulty", difficulty]
+    res = run_command(cmd, root)
+    if not res.ok:
+        raise RuntimeError(f"Feedback generation failed: {res.stderr}")
+    try:
+        return json.loads(res.stdout.strip())
+    except Exception:
+        return {
+            "score": 5,
+            "content": f"**잘한 점:** 답변이 접수되었습니다.\n**보완 포인트:** AI 피드백 파싱에 실패했습니다.\n**이렇게 바꾸면:** 수동으로 작성내용을 보완해 보세요."
+        }
+
+
+def generate_next_question(user_id: int, session_id: int, company: str, job_title: str) -> str:
+    from app import db
+    root = career_root(user_id)
+    qa_list = db.get_all_qa_history(session_id)
+    history_data = []
+    for qa in qa_list:
+        if qa["answer_text"]:
+            history_data.append({
+                "question": qa["question_text"],
+                "answer": qa["answer_text"],
+                "feedback": qa["feedback_text"]
+            })
+    cmd = ["node", "interview-sim.mjs", "--action", "next-question", "--company", company, "--role", job_title, "--history-json", json.dumps(history_data)]
+    res = run_command(cmd, root)
+    if not res.ok:
+        raise RuntimeError(f"Next question generation failed: {res.stderr}")
+    return res.stdout.strip()
+
+
+def generate_final_report(user_id: int, session_id: int) -> str:
+    from app import db
+    root = career_root(user_id)
+    qa_list = db.get_all_qa_history(session_id)
+    history_data = []
+    for qa in qa_list:
+        history_data.append({
+            "question": qa["question_text"],
+            "answer": qa["answer_text"],
+            "feedback": qa["feedback_text"]
+        })
+    cmd = ["node", "interview-sim.mjs", "--action", "final-report", "--history-json", json.dumps(history_data)]
+    res = run_command(cmd, root)
+    if not res.ok:
+        raise RuntimeError(f"Final report generation failed: {res.stderr}")
+    return res.stdout.strip()
