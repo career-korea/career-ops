@@ -1,6 +1,6 @@
 import type React from 'react';
 
-export type Page = 'landing' | 'workspace' | 'offer' | 'discover' | 'api' | 'result' | 'setup' | 'account' | 'login' | 'signup' | 'terms' | 'privacy' | 'refund' | 'pricing' | 'autopilot';
+export type Page = 'landing' | 'workspace' | 'offer' | 'discover' | 'api' | 'result' | 'setup' | 'account' | 'login' | 'signup' | 'terms' | 'privacy' | 'refund' | 'pricing' | 'autopilot' | 'resume';
 
 export type Tab = 'evaluate' | 'scan' | 'pipeline' | 'tracker' | 'pdf';
 

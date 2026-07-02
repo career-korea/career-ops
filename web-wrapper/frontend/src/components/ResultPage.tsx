@@ -2,6 +2,7 @@ import { Loader2, PanelLeftOpen } from 'lucide-react';
 import type { CommandResult, RunDetail } from '../types';
 import { cx } from './cx';
 import { Markdown, looksLikeMarkdown } from './Markdown';
+import { OfferCard, parseAtsSummary, stripAtsSummary } from './OfferCard';
 
 export function ResultPage({
   result,
@@ -21,7 +22,15 @@ export function ResultPage({
       ? { stdout: result.stdout || '', mode: result.mode, ok: result.ok, streaming: result.streaming, activity: result.activity, command: result.command, stderr: result.stderr }
       : null;
 
-  const isMarkdown = looksLikeMarkdown(viewing?.stdout);
+  // Gating this on mode === 'oferta'/'auto-pipeline' was fragile — if the
+  // streamed result never carried a resolved mode (e.g. the "done" SSE event
+  // was missed and the UI fell back to a partial state), the card silently
+  // never rendered even though the agent's stdout had a perfectly good
+  // ats-summary block. parseAtsSummary() already requires a real `score:`
+  // field, so it's a strong enough signal on its own — try it on any result.
+  const atsData = viewing?.stdout ? parseAtsSummary(viewing.stdout) : null;
+  const displayStdout = atsData && viewing?.stdout ? stripAtsSummary(viewing.stdout) : (viewing?.stdout ?? '');
+  const isMarkdown = looksLikeMarkdown(displayStdout);
 
   return (
     <section className="analysis-view">
@@ -61,10 +70,12 @@ export function ResultPage({
         </div>
       )}
 
-      {viewing?.stdout && (
+      {atsData && <OfferCard data={atsData} />}
+
+      {displayStdout && (
         <div className="analysis-body" aria-live="polite">
-          {isMarkdown ? <Markdown>{viewing.stdout}</Markdown> : <pre className="result-plain">{viewing.stdout}</pre>}
-          {viewing.streaming && <span className="stream-cursor" aria-hidden="true" />}
+          {isMarkdown ? <Markdown>{displayStdout}</Markdown> : <pre className="result-plain">{displayStdout}</pre>}
+          {viewing?.streaming && <span className="stream-cursor" aria-hidden="true" />}
         </div>
       )}
 

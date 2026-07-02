@@ -31,6 +31,7 @@ import { GoogleButton } from './components/GoogleButton';
 import { OnboardingStrip } from './components/OnboardingStrip';
 import { PipelineList } from './components/PipelineList';
 import { ResultPage } from './components/ResultPage';
+import { ResumeWriterPage } from './components/ResumeWriter';
 import { HistorySidebar } from './components/HistorySidebar';
 import { TrackerTable } from './components/TrackerTable';
 import { cx } from './components/cx';
@@ -47,7 +48,7 @@ const LandingPage = lazy(() => import('./landing/Landing'));
 
 // 해시 라우팅: 공개 페이지(약관·개인정보·환불·이용권)를 공유 가능한 URL로 노출하기 위함.
 // 결제 가맹 심사 시 심사관이 로그인 없이 해당 URL에 직접 접근할 수 있어야 한다.
-const PAGES: Page[] = ['landing', 'workspace', 'offer', 'discover', 'api', 'result', 'setup', 'account', 'login', 'signup', 'terms', 'privacy', 'refund', 'pricing', 'autopilot'];
+const PAGES: Page[] = ['landing', 'workspace', 'offer', 'discover', 'api', 'result', 'setup', 'account', 'login', 'signup', 'terms', 'privacy', 'refund', 'pricing', 'autopilot', 'resume'];
 
 function pageFromHash(): Page | null {
   const raw = window.location.hash.replace(/^#\/?/, '');
@@ -411,6 +412,7 @@ export function App() {
           <button className={page === 'discover' ? 'active' : ''} onClick={() => setPage('discover')}><Search size={16} />공고 탐색</button>
           <button className={page === 'api' ? 'active' : ''} onClick={() => setPage('api')}><Layers3 size={16} />API 모드</button>
           <button className={page === 'autopilot' ? 'active' : ''} onClick={() => setPage('autopilot')}><Zap size={16} />원클릭</button>
+          <button className={page === 'resume' ? 'active' : ''} onClick={() => setPage('resume')}><FileText size={16} />맞춤 이력서</button>
           <button className={page === 'pricing' ? 'active' : ''} onClick={() => setPage('pricing')}><CreditCard size={16} />이용권</button>
           <button className={page === 'setup' ? 'active' : ''} onClick={() => setPage('setup')}><Settings size={16} />설정</button>
         </nav>
@@ -541,6 +543,12 @@ export function App() {
       {page === 'autopilot' && (
         user
           ? <AutopilotPage health={health} commands={commands} pipeline={pipeline} tracker={tracker} />
+          : <AuthPage mode="login" onDone={bootstrap} health={health} onNotice={showNotice} setPage={setPage} />
+      )}
+
+      {page === 'resume' && (
+        user
+          ? <ResumeWriterPage model={model} setModel={setModel} setPage={setPage} />
           : <AuthPage mode="login" onDone={bootstrap} health={health} onNotice={showNotice} setPage={setPage} />
       )}
 

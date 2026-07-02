@@ -1,4 +1,4 @@
-const API = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API = import.meta.env.VITE_API_URL ?? '';
 
 // Error that preserves the HTTP status and parsed `detail` so callers can branch
 // on it (e.g. 401 → login, 402 → paywall). The base Error message stays
