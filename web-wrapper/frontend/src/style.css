@@ -3735,3 +3735,459 @@ tr:last-child td { border-bottom: 0; }
   .autopilot-art { display: none; }
   .autopilot-steps { gap: 6px; }
 }
+
+/* ── Offer Card (적합도 분석 결과) ─────────────────────────────────────── */
+.offer-card {
+  max-width: 760px;
+  margin: 0 auto 24px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  display: grid;
+  gap: 20px;
+  animation: card-in .3s cubic-bezier(.16, 1, .3, 1) both;
+}
+
+.offer-card-top {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.offer-score-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 100px;
+  height: 100px;
+}
+
+.offer-gauge {
+  width: 100%;
+  height: 100%;
+}
+
+.offer-score-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.offer-score-inner strong {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.offer-score-inner span {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.offer-card-meta {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.offer-grade-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.offer-grade {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 2px 10px;
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.offer-grade.safe   { color: var(--success); background: var(--success-soft); border: 1px solid rgba(4, 120, 87, .18); }
+.offer-grade.warn   { color: var(--warning); background: var(--warning-soft); border: 1px solid rgba(180, 83, 9, .18); }
+.offer-grade.danger { color: var(--danger);  background: var(--danger-soft);  border: 1px solid rgba(185, 28, 28, .18); }
+
+.legit-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 24px;
+  padding: 2px 9px;
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.legit-badge.safe   { color: var(--success); background: var(--success-soft); }
+.legit-badge.warn   { color: var(--warning); background: var(--warning-soft); }
+.legit-badge.danger { color: var(--danger);  background: var(--danger-soft); }
+
+.offer-archetype {
+  margin: 0;
+  color: var(--accent);
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: var(--mono);
+}
+
+.offer-summary {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.offer-keywords {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--bg);
+}
+
+.keyword-group { display: grid; gap: 6px; }
+
+.keyword-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.keyword-label.match     { color: var(--success); }
+.keyword-label.missing   { color: var(--danger); }
+.keyword-label.highlight { color: var(--accent); }
+
+.keyword-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.kw-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 2px 9px;
+  border-radius: var(--r-sm);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.kw-tag.match     { color: var(--success); background: var(--success-soft); border: 1px solid rgba(4, 120, 87, .15); }
+.kw-tag.missing   { color: var(--danger);  background: var(--danger-soft);  border: 1px solid rgba(185, 28, 28, .15); }
+.kw-tag.highlight { color: var(--accent);  background: var(--accent-soft);  border: 1px solid var(--accent-ring); }
+
+.kw-empty { color: var(--faint); font-size: 12.5px; }
+
+.section-label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.offer-deductions {
+  padding: 14px 16px;
+  border: 1px solid rgba(185, 28, 28, .15);
+  border-radius: var(--r-lg);
+  background: var(--danger-soft);
+}
+
+.offer-deductions ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.offer-deductions li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+
+.deduct-points {
+  flex-shrink: 0;
+  min-width: 44px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--danger);
+}
+
+.deduct-label { color: var(--ink-soft); }
+
+.offer-hooks {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface-2);
+}
+
+.offer-hooks ol {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 8px;
+}
+
+.offer-hooks li {
+  color: var(--ink-soft);
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+/* ── Resume Writer Page ─────────────────────────────────────────────── */
+.resume-hero { background: var(--surface); }
+
+.resume-paper {
+  position: absolute;
+  inset: 20% 15%;
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+}
+
+.resume-lines {
+  position: absolute;
+  top: 28%;
+  left: 22%;
+  right: 22%;
+  display: grid;
+  gap: 14px;
+}
+
+.resume-lines i {
+  display: block;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--surface-3);
+  font-style: normal;
+}
+
+.resume-lines i:nth-child(1) { width: 70%; }
+.resume-lines i:nth-child(2) { width: 100%; }
+.resume-lines i:nth-child(3) { width: 88%; }
+.resume-lines i:nth-child(4) { width: 95%; }
+.resume-lines i:nth-child(5) { width: 60%; }
+
+.resume-badge {
+  position: absolute;
+  top: 18%;
+  left: 12%;
+  padding: 4px 10px;
+  border-radius: var(--r-sm);
+  background: var(--surface-3);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  box-shadow: var(--shadow-xs);
+}
+
+.resume-badge.after {
+  top: auto;
+  bottom: 18%;
+  left: auto;
+  right: 12%;
+  background: var(--primary);
+  color: #fff;
+}
+
+.resume-coral {
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, var(--accent-soft) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.resume-layout {
+  display: grid;
+  grid-template-columns: minmax(340px, 2fr) minmax(0, 3fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.resume-input-panel {
+  position: sticky;
+  top: 80px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+
+.resume-field-label {
+  display: block;
+  margin: 14px 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.resume-field-label:first-of-type { margin-top: 0; }
+
+.optional {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--faint);
+}
+
+.resume-result-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+  overflow: hidden;
+}
+
+.resume-section-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.resume-section-tabs::-webkit-scrollbar { display: none; }
+
+.resume-tab {
+  flex-shrink: 0;
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color .15s ease, border-color .15s ease, background .15s ease;
+  width: auto;
+}
+
+.resume-tab:hover:not(:disabled) {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.resume-tab.active {
+  color: var(--ink);
+  font-weight: 600;
+  border-bottom-color: var(--accent);
+}
+
+.resume-section-body { padding: 20px; }
+
+.resume-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.resume-section-head h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 0;
+  padding: 5px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r);
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
+  width: auto;
+  flex-shrink: 0;
+  box-shadow: none;
+}
+
+.copy-btn:hover:not(:disabled) {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.copy-btn.copied {
+  color: var(--success);
+  border-color: rgba(4, 120, 87, .25);
+  background: var(--success-soft);
+}
+
+.resume-plain {
+  max-height: none;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: inherit;
+  color: var(--ink-soft);
+}
+
+.resume-empty {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 12px;
+  min-height: 340px;
+  padding: 32px;
+  text-align: center;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  background: var(--surface);
+}
+
+.resume-empty svg { color: var(--faint); }
+.resume-empty p { margin: 0; font-size: 14px; line-height: 1.6; }
+.resume-empty button { width: auto; }
+
+/* ── Resume / Offer responsive ─────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .resume-layout { grid-template-columns: 1fr; }
+  .resume-input-panel { position: static; max-height: none; overflow-y: visible; }
+}
+
+@media (max-width: 620px) {
+  .offer-card-top { flex-direction: column; align-items: center; text-align: center; }
+  .offer-grade-row { justify-content: center; }
+  .resume-tab { font-size: 12px; padding: 8px 12px; }
+}

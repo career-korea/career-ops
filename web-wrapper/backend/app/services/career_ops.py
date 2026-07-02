@@ -303,7 +303,15 @@ def build_agent_prompt(mode: str, root: Path, invocation: str = "", no_save: boo
     sections.append(
         "# Execution Contract\n\n"
         "Follow the loaded career-ops mode instructions. Use the repository files as source of truth. "
-        "Never submit applications; stop at drafts or prepared artifacts for user review."
+        "Never submit applications; stop at drafts or prepared artifacts for user review.\n\n"
+        "Your final chat response IS the product the user sees — the frontend renders it directly "
+        "(it parses a ```ats-summary``` code block, if the mode instructions require one, into a "
+        "dashboard card, then renders the rest as markdown). Saving files and updating the tracker "
+        "are additional steps on top of that, never a substitute for it. So: output the mode's full "
+        "required content (every block it defines, in full) directly in your reply, not a summary of "
+        "what you did or a description of the file you wrote. Match the language the mode instructions "
+        "and CV/profile content are written in — if they're in Korean, reply in Korean, not English, "
+        "even though this scaffolding text is in English."
     )
     return "\n\n---\n\n".join(sections)
 
@@ -414,6 +422,13 @@ def _agent_setup(
         mcp_servers=mcp_servers,
         hooks=hooks,
         include_partial_messages=partial,
+        # settings.anthropic_api_key comes from pydantic-settings, which parses
+        # .env into this process's Settings object without touching os.environ.
+        # The SDK spawns the Claude Code CLI as a subprocess (see
+        # subprocess_cli.py: process_env = {**os.environ, **options.env}), so
+        # without this the child process never sees the key even though it's
+        # sitting right there in settings.
+        env={"ANTHROPIC_API_KEY": settings.anthropic_api_key} if settings.anthropic_api_key else {},
     )
     return mode, root, prompt, options
 
@@ -465,7 +480,11 @@ async def run_agent(
                 stdout_parts.append(text)
         elif isinstance(message, sdk.ResultMessage):
             result = getattr(message, "result", None)
-            if result:
+            # ResultMessage.result mirrors the final AssistantMessage text (a
+            # convenience field, not new content) — only use it as a fallback
+            # when no AssistantMessage text was captured, or every mode's
+            # output gets duplicated in full.
+            if result and not stdout_parts:
                 stdout_parts.append(str(result))
             total_cost = getattr(message, "total_cost_usd", None)
             if total_cost is not None:
@@ -542,38 +561,50 @@ async def stream_agent(
     returncode = 0
     cost_usd = 0.0
 
-    async for message in sdk.query(prompt=prompt, options=options):
-        if isinstance(message, sdk.StreamEvent):
-            event = message.event or {}
-            etype = event.get("type")
-            if etype == "content_block_delta":
-                delta = event.get("delta") or {}
-                if delta.get("type") == "text_delta":
-                    text = delta.get("text") or ""
-                    if text:
-                        yield {"type": "delta", "text": text}
-            elif etype == "content_block_start":
-                block = event.get("content_block") or {}
-                if block.get("type") == "tool_use":
-                    yield {"type": "status", "text": _tool_label(block.get("name") or "tool")}
-            continue
-        if isinstance(message, sdk.SystemMessage) and getattr(message, "subtype", None) == "init":
-            session_id = getattr(message, "data", {}).get("session_id")
-        elif isinstance(message, sdk.AssistantMessage):
-            text = _assistant_text(message)
-            if text:
-                stdout_parts.append(text)
-        elif isinstance(message, sdk.ResultMessage):
-            result = getattr(message, "result", None)
-            if result:
-                stdout_parts.append(str(result))
-            total_cost = getattr(message, "total_cost_usd", None)
-            if total_cost is not None:
-                cost_usd = float(total_cost)
-            subtype = getattr(message, "subtype", None)
-            if subtype and subtype not in {"success", "completion"}:
-                returncode = 1
-                stderr_parts.append(str(subtype))
+    # If sdk.query()'s generator raises mid-loop (e.g. a hard budget/turn-limit
+    # error), the caller (stream_and_meter) only sees a bare exception and emits
+    # a generic {"type": "error"} event — losing the resolved mode and whatever
+    # text already streamed. The frontend then falls back to a result with no
+    # `mode`, which breaks anything gated on it (e.g. OfferCard). Catch here so
+    # a "done" event — marked ok=False, but with real mode/stdout — always goes
+    # out, and let stream_and_meter's except remain a last-resort backstop.
+    try:
+        async for message in sdk.query(prompt=prompt, options=options):
+            if isinstance(message, sdk.StreamEvent):
+                event = message.event or {}
+                etype = event.get("type")
+                if etype == "content_block_delta":
+                    delta = event.get("delta") or {}
+                    if delta.get("type") == "text_delta":
+                        text = delta.get("text") or ""
+                        if text:
+                            yield {"type": "delta", "text": text}
+                elif etype == "content_block_start":
+                    block = event.get("content_block") or {}
+                    if block.get("type") == "tool_use":
+                        yield {"type": "status", "text": _tool_label(block.get("name") or "tool")}
+                continue
+            if isinstance(message, sdk.SystemMessage) and getattr(message, "subtype", None) == "init":
+                session_id = getattr(message, "data", {}).get("session_id")
+            elif isinstance(message, sdk.AssistantMessage):
+                text = _assistant_text(message)
+                if text:
+                    stdout_parts.append(text)
+            elif isinstance(message, sdk.ResultMessage):
+                result = getattr(message, "result", None)
+                # Same fallback-only rule as run_agent() — see comment there.
+                if result and not stdout_parts:
+                    stdout_parts.append(str(result))
+                total_cost = getattr(message, "total_cost_usd", None)
+                if total_cost is not None:
+                    cost_usd = float(total_cost)
+                subtype = getattr(message, "subtype", None)
+                if subtype and subtype not in {"success", "completion"}:
+                    returncode = 1
+                    stderr_parts.append(str(subtype))
+    except Exception as e:
+        returncode = 1
+        stderr_parts.append(str(e))
 
     yield {
         "type": "done",

@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     career_ops_root: str
     workspaces_root: str = ""
     database_url: str = ""
+    anthropic_api_key: str = ""
     backend_cors_origins: str = "http://localhost:5173"
     backend_cors_origin_regex: str = r"https://.*\.vercel\.app"
     command_timeout_seconds: int = 180

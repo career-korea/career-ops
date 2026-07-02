@@ -107,7 +107,14 @@ def public_user(row):
     return {"id": row["id"], "email": row["email"], "plan": row.get("plan", "free")} if row else None
 
 
+# When DATABASE_URL is not set, run in dev mode: all requests are treated as a
+# local superuser so the full LLM pipeline can be tested without Google OAuth or Postgres.
+_DEV_USER = {"id": 0, "email": "dev@local", "plan": "paid"}
+
+
 def require_user(request: Request):
+    if not settings.database_url:
+        return _DEV_USER
     user = db.user_from_session(request.cookies.get(SESSION_COOKIE))
     if not user:
         raise HTTPException(status_code=401, detail="Login required")
@@ -115,6 +122,8 @@ def require_user(request: Request):
 
 
 def optional_user(request: Request):
+    if not settings.database_url:
+        return _DEV_USER
     return db.user_from_session(request.cookies.get(SESSION_COOKIE))
 
 
@@ -122,6 +131,8 @@ def gate_agent(user=Depends(require_user)):
     """Block LLM-cost endpoints once a user hits their plan's daily budget (resets
     at UTC midnight). Free users are prompted to buy a pass; paid users wait for
     the reset. The per-run ceiling (MAX_AGENT_BUDGET_USD) bounds overshoot."""
+    if not settings.database_url:
+        return user  # dev mode: no usage metering
     is_paid = user.get("plan") == "paid"
     limit = settings.paid_daily_budget_usd if is_paid else settings.daily_budget_usd
     if db.usage_today_usd(user["id"]) >= limit:
@@ -271,6 +282,25 @@ async def stream_and_meter(user, agen, input_text: str = ""):
 
 
 def sync_user_setup(user) -> dict[str, bool]:
+    if not settings.database_url:
+        # Dev mode: there's no DB-backed per-user setup to pull from. Materialize
+        # the per-user workspace straight from the base repo's own cv.md /
+        # profile.yml / etc. (the original career-ops checkout at CAREER_OPS_ROOT)
+        # so it isn't left empty — provision_workspace() deliberately skips these
+        # user-specific files, expecting the DB to supply them.
+        base = career_ops.career_root(None)
+
+        def _read(rel: str) -> str:
+            path = base / rel
+            return path.read_text(encoding="utf-8", errors="replace") if path.exists() else ""
+
+        return workspace.materialize_setup(
+            user["id"],
+            _read("cv.md"),
+            _read("config/profile.yml"),
+            _read("modes/_profile.md"),
+            _read("portals.yml"),
+        )
     setup = db.get_setup(user["id"])
     onboarding = workspace.materialize_setup(
         user["id"],
@@ -374,13 +404,39 @@ def me(user=Depends(optional_user)):
     return {"user": public_user(user)}
 
 
+def _dev_mode_setup_payload() -> dict:
+    """No DB in dev mode, so there's no per-user setup row to read/write. Show
+    the base repo's own files (same source sync_user_setup() falls back to)
+    instead of 500ing — read-only here, since there's nowhere to persist edits."""
+    base = career_ops.career_root(None)
+
+    def _read(rel: str) -> str:
+        path = base / rel
+        return path.read_text(encoding="utf-8", errors="replace") if path.exists() else ""
+
+    row = {
+        "cv_md": _read("cv.md"),
+        "profile_yml": _read("config/profile.yml"),
+        "mode_profile_md": _read("modes/_profile.md"),
+        "portals_yml": _read("portals.yml"),
+        "updated_at": None,
+    }
+    return setup_payload(row)
+
+
 @app.get("/api/setup")
 def get_setup(user=Depends(require_user)):
+    if not settings.database_url:
+        return _dev_mode_setup_payload()
     return setup_payload(db.get_setup(user["id"]))
 
 
 @app.put("/api/setup")
 def put_setup(req: SetupRequest, user=Depends(require_user)):
+    if not settings.database_url:
+        # Dev mode: nothing to persist to (no DB). Return the base repo's
+        # actual files unchanged rather than pretending the edit was saved.
+        return _dev_mode_setup_payload()
     setup = db.update_setup(user["id"], req.cv_md, req.profile_yml, req.mode_profile_md, req.portals_yml)
     onboarding = sync_user_setup(user)
     payload = setup_payload(setup)
@@ -392,7 +448,10 @@ def put_setup(req: SetupRequest, user=Depends(require_user)):
 def health(user=Depends(optional_user)):
     try:
         root = career_ops.career_root()
-        onboarding = setup_payload(db.get_setup(user["id"]))["onboarding"] if user else career_ops.onboarding_status()
+        if user and settings.database_url:
+            onboarding = setup_payload(db.get_setup(user["id"]))["onboarding"]
+        else:
+            onboarding = career_ops.onboarding_status()
         return {"ok": True, "career_ops_root": str(root), "onboarding": onboarding, "user": public_user(user)}
     except Exception as e:
         return {"ok": False, "error": str(e)}
@@ -410,6 +469,15 @@ def career_ops_commands():
 
 @app.get("/api/tracker")
 def tracker(user=Depends(require_user)):
+    if not settings.database_url:
+        try:
+            rows = career_ops.read_tracker(None)
+            stats = {}
+            for row in rows:
+                stats[row.status or "Unknown"] = stats.get(row.status or "Unknown", 0) + 1
+            return {"rows": rows, "stats": stats, "total": len(rows)}
+        except Exception:
+            return {"rows": [], "stats": {}, "total": 0}
     try:
         sync_user_setup(user)
         rows = career_ops.read_tracker(user["id"])
@@ -422,6 +490,12 @@ def tracker(user=Depends(require_user)):
 
 @app.get("/api/pipeline")
 def pipeline(user=Depends(require_user)):
+    if not settings.database_url:
+        try:
+            items = career_ops.read_pipeline(None)
+            return {"items": items, "total": len(items)}
+        except Exception:
+            return {"items": [], "total": 0}
     try:
         sync_user_setup(user)
         items = career_ops.read_pipeline(user["id"])
@@ -476,8 +550,96 @@ async def career_ops_agent(req: CareerOpsRequest, user=Depends(gate_agent)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+_MOCK_OFERTA = """\
+```ats-summary
+score: 82
+grade: 경쟁력 있음
+legitimacy: High Confidence
+archetype: LLMOps / Agentic AI
+match_keywords: Python, LLM, FastAPI, RAG, Claude API
+missing_keywords: Kubernetes, MLflow, Terraform
+highlight_skills: Claude Agent SDK, SSE Streaming, FastAPI
+deductions: [-5점] 정량적 성과 수치 부족|[-3점] 클라우드 인프라 경험 명시 필요
+summary: 핵심 AI 스택 일치, 인프라 경험 보강 필요
+hooks: 'LLM 에이전트 파이프라인을 직접 설계·운영한 경험을 이 포지션에 즉시 적용할 수 있습니다.'|'Claude API 기반 스트리밍 아키텍처를 실무에 구현한 몇 안 되는 엔지니어입니다.'|'RAG 시스템 구축부터 배포까지 end-to-end를 담당한 경험이 있습니다.'
+```
+
+## A. 역할 분류
+**아키타입:** LLMOps / Agentic AI — Claude API, FastAPI 기반 실시간 추론 파이프라인을 다루는 포지션입니다.
+
+## B. 이력서 매핑
+| JD 요구사항 | CV 항목 | 갭 |
+|---|---|---|
+| Python 3.10+ | ✅ 주력 언어 | — |
+| LLM API 연동 | ✅ Claude Agent SDK 사용 | — |
+| FastAPI | ✅ 프로젝트 경험 | — |
+| Kubernetes | ⚠️ 미언급 | 보완 필요 |
+
+## C. 시니어리티 분석
+JD는 **Senior** 레벨을 요구합니다. 현재 이력서의 자연 레벨은 **Mid-Senior**입니다. 에이전트 파이프라인 설계 경험을 전면에 배치하면 시니어로 어필 가능합니다.
+
+## D. 보상 데이터
+Glassdoor 기준 해당 포지션 연봉: 데이터 없음 (스타트업 비공개)
+
+## E. 최적화 제안
+1. `cv.md` — "Claude Agent SDK 기반 스트리밍 파이프라인 구축" 수치 추가
+2. LinkedIn — 'LLMOps' 키워드를 헤드라인에 포함
+
+## F. STAR 스토리
+**[S]** 다수의 LLM 호출을 SSE로 클라이언트에 실시간 전달해야 했음
+**[T]** 지연 없이 토큰 단위 스트리밍 구현
+**[A]** FastAPI StreamingResponse + claude-agent-sdk stream_agent() 조합 설계
+**[R]** 평균 응답 체감 속도 3배 단축
+
+## G. 공고 신뢰도
+**High Confidence** — 회사 도메인 검증 완료, 레이오프 신호 없음.
+"""
+
+_MOCK_JASOSEO = """\
+### 1. 성장과정 및 지원동기
+저는 대학교 재학 중 처음 접한 자동화 프로젝트를 계기로 AI 엔지니어링의 길을 걷기 시작했습니다. 팀 내 반복 업무를 Python 스크립트로 자동화하며 **월 40시간**의 공수를 절감한 경험은, 기술이 실질적인 가치를 만들어낼 수 있다는 확신을 심어주었습니다.
+
+귀사의 LLM 파이프라인 포지션에 지원하는 이유는 단순합니다. Claude API 기반 에이전트를 직접 설계·운영하며 쌓은 경험을 귀사의 프로덕션 환경에 즉시 적용할 수 있기 때문입니다. 스타트업 특유의 빠른 의사결정 구조에서 end-to-end 시스템을 담당하고 싶습니다.
+
+### 2. 직무 역량 및 경험
+FastAPI와 Claude Agent SDK를 결합해 **SSE 스트리밍 파이프라인**을 구축한 경험이 있습니다. 토큰 단위 응답을 클라이언트에 실시간 전달하는 아키텍처를 설계하여 사용자 체감 응답 속도를 **3배** 개선했습니다.
+
+또한 RAG(Retrieval-Augmented Generation) 시스템을 직접 구현한 경험이 있습니다. 벡터 DB 선택부터 청킹 전략, 리랭킹 로직까지 전 과정을 담당하며 검색 정확도를 **F1 기준 0.71 → 0.89**로 높였습니다.
+
+### 3. 입사 후 포부
+입사 첫 3개월은 기존 파이프라인의 병목을 파악하고 측정 가능한 개선안을 제시하는 데 집중하겠습니다. 이후 6개월 내로 모델 평가 자동화 체계를 구축해 팀의 실험 주기를 단축하는 데 기여하고 싶습니다.
+
+장기적으로는 LLMOps 분야의 내부 전문가로 성장하며, 팀이 더 빠르게 실험하고 더 안정적으로 배포할 수 있는 인프라를 만드는 사람이 되겠습니다.
+
+### 4. 성격의 장단점
+**장점:** 문서화를 습관화합니다. 구현한 내용을 바로 README와 ADR로 정리해 팀 지식이 개인에게 종속되지 않도록 합니다. 전 팀에서 이 습관 덕분에 온보딩 기간이 **2주 → 4일**로 단축된 사례가 있습니다.
+
+**단점:** 완성도에 집착하는 경향이 있습니다. 이를 보완하기 위해 PR 단위를 작게 유지하고, 리뷰어에게 "이 정도면 충분한가요?"를 명시적으로 물어보는 루틴을 만들었습니다.
+"""
+
+
+async def _mock_stream(mode: str):
+    text = _MOCK_JASOSEO if mode == "jasoseo" else _MOCK_OFERTA
+    yield f"data: {json.dumps({'type': 'status', 'text': '📄 프로필 읽는 중…'})}\n\n"
+    await asyncio.sleep(0.4)
+    yield f"data: {json.dumps({'type': 'status', 'text': '🔍 분석 중…'})}\n\n"
+    await asyncio.sleep(0.6)
+    for i in range(0, len(text), 12):
+        chunk = text[i:i+12]
+        yield f"data: {json.dumps({'type': 'delta', 'text': chunk})}\n\n"
+        await asyncio.sleep(0.02)
+    resolved_mode = "jasoseo" if mode == "jasoseo" else "oferta"
+    yield f"data: {json.dumps({'type': 'done', 'result': {'ok': True, 'returncode': 0, 'stdout': text, 'mode': resolved_mode}})}\n\n"
+
+
 @app.post("/api/career-ops/stream")
 async def career_ops_stream(req: CareerOpsRequest, user=Depends(gate_agent)):
+    if not settings.anthropic_api_key:
+        return StreamingResponse(
+            _mock_stream(req.mode or "oferta"),
+            media_type="text/event-stream",
+            headers=_SSE_HEADERS,
+        )
     # Defined before /api/career-ops/{mode} so "stream" is not captured as a mode.
     # The frontend passes the resolved mode in the body (auto-pipeline -> "").
     sync_user_setup(user)
@@ -518,6 +680,8 @@ async def career_ops_mode(mode: str, req: CareerOpsInputRequest, user=Depends(ga
 
 @app.get("/api/runs")
 def runs_list(user=Depends(require_user)):
+    if not settings.database_url:
+        return {"runs": []}
     rows = db.list_runs(user["id"])
     return {"runs": [
         {
